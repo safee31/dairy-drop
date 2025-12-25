@@ -1,0 +1,162 @@
+{
+  service: 'training-platform-api',
+  message: 'API Error \n' +
+    'Invalid `prisma.user.create()` invocation in\n' +
+    'D:\\My-Github\\training-platform-api\\src\\controllers\\auth.ts:56:34\n' +
+    '\n' +
+    '  53 const otpData = generateOTPWithExpiry(config.OTP_LENGTH, config.OTP_EXPIRY_MINUTES);\n' +
+    '  54 \n' +
+    '  55 // Create user (following your exact pattern)\n' +
+    '→ 56 const user = await prisma.user.create(\n' +
+    'Foreign key constraint violated on the constraint: `users_departmentId_fkey`',
+  stack: undefined,
+  url: '/api/v1/auth/register',
+  method: 'POST',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-28 23:20:12'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error "jwtid" must be a string',
+  stack: undefined,
+  url: '/api/v1/auth/login',
+  method: 'POST',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-28 23:28:53'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error "jwtid" must be a string',
+  stack: undefined,
+  url: '/api/v1/auth/login',
+  method: 'POST',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-28 23:31:53'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Authentication token required',
+  stack: undefined,
+  url: '/api/v1/auth/profile',
+  method: 'GET',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-28 23:35:06'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Authentication token required',
+  stack: undefined,
+  url: '/api/v1/auth/profile',
+  method: 'GET',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-28 23:38:50'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Authentication token required',
+  stack: undefined,
+  url: '/api/v1/auth/profile',
+  method: 'GET',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-28 23:38:54'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Authentication token required',
+  stack: undefined,
+  url: '/api/v1/auth/logout',
+  method: 'POST',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-28 23:42:28'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Please log in to access this feature.',
+  stack: undefined,
+  url: '/api/v1/auth/logout',
+  method: 'POST',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-28 23:44:31'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Please log in to access this feature.',
+  stack: undefined,
+  url: '/api/v1/auth/logout',
+  method: 'POST',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-29 14:41:07'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Please log in to access this feature.',
+  stack: undefined,
+  url: '/api/v1/auth/profile',
+  method: 'GET',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-29 15:29:24'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Your session has expired. Please log in again.',
+  stack: undefined,
+  url: '/api/v1/auth/profile',
+  method: 'GET',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-29 15:58:17'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Your session has expired. Please log in again.',
+  stack: undefined,
+  url: '/api/v1/auth/profile',
+  method: 'GET',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-29 16:31:42'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Your session has expired. Please log in again.',
+  stack: undefined,
+  url: '/api/v1/auth/profile',
+  method: 'GET',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-29 16:32:01'
+}
+{
+  service: 'training-platform-api',
+  message: 'API Error Please log in to access this feature.',
+  stack: undefined,
+  url: '/api/v1/auth/profile',
+  method: 'GET',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'error',
+  timestamp: '2025-07-29 16:32:44'
+}

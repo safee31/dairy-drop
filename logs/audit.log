@@ -1,0 +1,182 @@
+{
+  service: 'training-platform-audit',
+  email: 'saifee3131@gmail.com',
+  companyId: null,
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User registration',
+  timestamp: '2025-07-28 23:28:01'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdnfxx290001uel81m80btwf',
+  email: 'saifee3131@gmail.com',
+  ip: '::1',
+  level: 'info',
+  message: 'Email verified',
+  timestamp: '2025-07-28 23:28:34'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdnfxx290001uel81m80btwf',
+  email: 'saifee3131@gmail.com',
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User login successful',
+  timestamp: '2025-07-28 23:34:33'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdnfxx290001uel81m80btwf',
+  email: 'saifee3131@gmail.com',
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User login successful',
+  timestamp: '2025-07-28 23:42:04'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdnfxx290001uel81m80btwf',
+  email: 'saifee3131@gmail.com',
+  ip: '::1',
+  level: 'info',
+  message: 'User logout',
+  timestamp: '2025-07-28 23:42:25'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdnfxx290001uel81m80btwf',
+  email: 'saifee3131@gmail.com',
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User login successful',
+  timestamp: '2025-07-29 14:41:52'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdnfxx290001uel81m80btwf',
+  email: 'saifee3131@gmail.com',
+  ip: '::1',
+  level: 'info',
+  message: 'User logout',
+  timestamp: '2025-07-29 14:42:58'
+}
+{
+  service: 'training-platform-audit',
+  email: 'saifee3131@gmail.com',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'Password reset requested',
+  timestamp: '2025-07-29 14:43:39'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdnfxx290001uel81m80btwf',
+  email: 'saifee3131@gmail.com',
+  ip: '::1',
+  level: 'info',
+  message: 'Password reset successful',
+  timestamp: '2025-07-29 15:29:05'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdnfxx290001uel81m80btwf',
+  email: 'saifee3131@gmail.com',
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User login successful',
+  timestamp: '2025-07-29 15:29:38'
+}
+{
+  service: 'training-platform-audit',
+  email: 'saifee3131@gmail.com',
+  companyId: null,
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User registration',
+  timestamp: '2025-07-29 15:55:45'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdof84qb0001uelgisejxkrn',
+  email: 'saifee3131@gmail.com',
+  ip: '::1',
+  level: 'info',
+  message: 'Email verified',
+  timestamp: '2025-07-29 15:56:18'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdof84qb0001uelgisejxkrn',
+  email: 'saifee3131@gmail.com',
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User login successful',
+  timestamp: '2025-07-29 15:58:27'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdof84qb0001uelgisejxkrn',
+  email: 'saifee3131@gmail.com',
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User login successful',
+  timestamp: '2025-07-29 16:32:27'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdof84qb0001uelgisejxkrn',
+  email: 'saifee3131@gmail.com',
+  ip: '::1',
+  level: 'info',
+  message: 'User logout',
+  timestamp: '2025-07-29 16:32:39'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdof84qb0001uelgisejxkrn',
+  email: 'saifee3131@gmail.com',
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User login successful',
+  timestamp: '2025-07-29 16:32:47'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdof84qb0001uelgisejxkrn',
+  email: 'saifee3131@gmail.com',
+  ip: '::1',
+  level: 'info',
+  message: 'User logout',
+  timestamp: '2025-07-29 16:33:40'
+}
+{
+  service: 'training-platform-audit',
+  userId: 'cmdof84qb0001uelgisejxkrn',
+  email: 'saifee3131@gmail.com',
+  roleId: 'cmdnfnwus0000ueq0qoaj8raj',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.44.1',
+  level: 'info',
+  message: 'User login successful',
+  timestamp: '2025-07-29 16:33:52'
+}

@@ -1,0 +1,103 @@
+// Dairy Drop PostgreSQL Schema
+// Best Practices: indexes, constraints, relationships
+// Prisma ORM v6.19+
+
+generator client {
+  provider                = "prisma-client"
+  output                  = "../generated/prisma"
+  runtime                 = "nodejs"
+  moduleFormat            = "esm"
+  generatedFileExtension  = "ts"
+  importFileExtension     = "js"
+  previewFeatures         = ["omitApi", "relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Role Model - Permission and access control
+model Role {
+  id          String   @id @default(cuid())
+  type        Int      @unique
+  name        String   @unique
+  description String?
+  permissions Json?    @default("{}")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+
+  @@index([type])
+  @@index([isActive])
+  @@map("roles")
+}
+
+// User Model - Core user data with security fields
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String
+  fullName          String
+  profileImage      String?
+  phoneNumber       String?
+  isActive          Boolean   @default(true)
+  isVerified        Boolean   @default(false)
+  lastLoginAt       DateTime?
+  verifyOTP         String?
+  verifyOTPExpires  DateTime?
+  resetOTP          String?
+  resetOTPExpires   DateTime?
+  roleId            String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  role              Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  addresses         Address[]
+
+  @@index([email])
+  @@index([isActive])
+  @@index([isVerified])
+  @@index([roleId])
+  @@index([createdAt])
+  @@index([lastLoginAt])
+  @@map("users")
+}
+
+// Address Model - Delivery and billing addresses
+model Address {
+  id                String    @id @default(cuid())
+  userId            String
+  label             String?
+  fullName          String
+  phoneNumber       String?
+  streetAddress     String
+  apartment         String?
+  city              String
+  state             String?
+  postalCode        String
+  country           String
+  isPrimary         Boolean   @default(false)
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isPrimary])
+  @@index([isActive])
+  @@map("addresses")
+}
+
+// Notes:
+// Refresh Tokens & Reset Sessions stored in Redis (src/utils/redisClient.ts)
+// Future Models: Order, Payment, Notification, Audit, ProductCategory
+/// - Payment: Payment methods, transaction logs
+/// - Notification: User preferences and notification history
+/// - Audit: Login attempts, permission changes, data access logs
+/// - ProductCategory: Dairy product categories and inventory
+/// - CartItem: Shopping cart items (can be session-based instead)
+
