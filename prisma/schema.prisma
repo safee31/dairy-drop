@@ -1,20 +1,16 @@
-// Dairy Drop PostgreSQL Schema
-// Best Practices: indexes, constraints, relationships
-// Prisma ORM v6.19+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider                = "prisma-client"
-  output                  = "../generated/prisma"
-  runtime                 = "nodejs"
-  moduleFormat            = "esm"
-  generatedFileExtension  = "ts"
-  importFileExtension     = "js"
-  previewFeatures         = ["omitApi", "relationJoins"]
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // Role Model - Permission and access control
@@ -91,13 +87,3 @@ model Address {
   @@index([isActive])
   @@map("addresses")
 }
-
-// Notes:
-// Refresh Tokens & Reset Sessions stored in Redis (src/utils/redisClient.ts)
-// Future Models: Order, Payment, Notification, Audit, ProductCategory
-/// - Payment: Payment methods, transaction logs
-/// - Notification: User preferences and notification history
-/// - Audit: Login attempts, permission changes, data access logs
-/// - ProductCategory: Dairy product categories and inventory
-/// - CartItem: Shopping cart items (can be session-based instead)
-
