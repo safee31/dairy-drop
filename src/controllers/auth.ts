@@ -1,18 +1,17 @@
-import { PrismaClient } from "@prisma/client";
 import asyncHandler from "@/utils/asyncHandler";
 import { generateTokenPair, setCookie, clearCookie } from "@/utils/jwt";
-import { generateOTPWithExpiry, generateResetToken, hashResetToken } from "@/utils/otp";
+import { generateResetToken, hashResetToken } from "@/utils/otp";
 import { verifyRefreshToken, revokeRefreshToken } from "@/utils/jwt";
 import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } from "@/utils/emailService";
-import { logger, auditLogger } from "@/utils/logger";
+import { logger, auditLogger, requestContext } from "@/utils/logger";
 import { responseHandler } from "@/middleware/responseHandler";
 import config from "@/config/env";
-import { setKey, getKey, delKey } from "@/utils/redisClient";
+import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
 import { authUtils } from "@/models/User";
-const prisma = new PrismaClient();
-import path from "path";
+import { prisma }  from "@/config/database";
 import fileStorage from "@/services/fileStorage";
 import { extractFolderAndFilename } from "@/utils/file";
+import { generateOTP, storeOTP, verifyOTP, isAccountLockedByFailedLogins, trackFailedLogin, resetFailedLoginAttempts } from "@/utils/redis";
 
 const parseExpiryToSeconds = (val?: string): number => {
   if (!val) return 300;
@@ -65,20 +64,12 @@ export const registerCustomer = asyncHandler(async (req, res) => {
     config.BCRYPT_SALT_ROUNDS,
   );
 
-  // Generate OTP for email verification
-  const otpData = generateOTPWithExpiry(
-    config.OTP_LENGTH,
-    config.OTP_EXPIRY_MINUTES,
-  );
-
-  // Create user data object
+  // Create user data object (OTP stored in Redis, not DB)
   const userData: Record<string, unknown> = {
     email: email.toLowerCase(),
     fullName,
     password: hashedPassword,
     roleId: customerRole.id,
-    verifyOTP: otpData.code,
-    verifyOTPExpires: otpData.expiresAt,
     isVerified: false,
     isActive: true,
   };
@@ -95,23 +86,26 @@ export const registerCustomer = asyncHandler(async (req, res) => {
     },
   });
 
+  // Generate OTP and store in Redis
+  const verificationOTP = generateOTP();
+  await storeOTP(email.toLowerCase(), verificationOTP, "verify");
+
   // Send verification email
   try {
-    await sendVerificationEmail(email, otpData.code, fullName);
-    logger.info("Verification email sent", { email });
+    await sendVerificationEmail(email, verificationOTP, fullName);
   } catch (emailError) {
     logger.error("Failed to send verification email", {
-      email,
-      error: emailError,
+      error: emailError instanceof Error ? emailError.message : String(emailError),
     });
   }
 
-  // Log registration
-  auditLogger.info("Customer registration", {
+  // Log registration (only email, no paths or sensitive data)
+  const requestId = requestContext.getStore()?.requestId || "";
+  auditLogger.info("User registered", {
+    requestId,
+    userId: user.id,
     email: user.email,
-    roleId: user.roleId,
     ip: req.ip,
-    userAgent: req.get("User-Agent"),
   });
 
   return responseHandler.success(
@@ -136,16 +130,13 @@ export const verifyEmail = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "User not found!", 404);
   }
 
-  if (user.isVerified && !user.verifyOTP) {
+  if (user.isVerified) {
     return responseHandler.error(res, "User is already verified!", 404);
   }
 
-  if (
-    !user.verifyOTP ||
-    user.verifyOTP !== otp ||
-    !user.verifyOTPExpires ||
-    new Date() > user.verifyOTPExpires
-  ) {
+  // Verify OTP from Redis
+  const isValidOTP = await verifyOTP(email.toLowerCase(), otp, "verify");
+  if (!isValidOTP) {
     return responseHandler.error(res, "Invalid or expired OTP", 400);
   }
 
@@ -154,24 +145,25 @@ export const verifyEmail = asyncHandler(async (req, res) => {
     where: { id: user.id },
     data: {
       isVerified: true,
-      verifyOTP: null,
-      verifyOTPExpires: null,
     },
   });
 
-  // Log email verification
+  // Log email verification (safe: userId + email only)
+  const verifyRequestId = requestContext.getStore()?.requestId || "";
   auditLogger.info("Email verified", {
+    requestId: verifyRequestId,
     userId: user.id,
-    email: user.email,
     ip: req.ip,
   });
 
   // Send welcome email
   try {
     await sendWelcomeEmail(email, user.fullName);
-    logger.info("Welcome email sent", { email });
+    logger.info("Welcome email sent");
   } catch (emailError) {
-    logger.error("Failed to send welcome email", { email, error: emailError });
+    logger.error("Failed to send welcome email", {
+      error: emailError instanceof Error ? emailError.message : String(emailError),
+    });
   }
 
   return responseHandler.success(res, {}, "Email verified successfully!");
@@ -183,6 +175,16 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 export const loginCustomer = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
+  // Check for account lockout due to failed login attempts
+  const isLocked = await isAccountLockedByFailedLogins(email.toLowerCase());
+  if (isLocked) {
+    return responseHandler.error(
+      res,
+      "Account temporarily locked due to too many failed login attempts. Please try again later.",
+      429,
+    );
+  }
+
   const user = await prisma.user.findUnique({
     where: { email: email.toLowerCase() },
     include: {
@@ -191,8 +193,13 @@ export const loginCustomer = asyncHandler(async (req, res) => {
   });
 
   if (!user || !(await authUtils.comparePassword(password, user.password))) {
+    // Track failed login attempt
+    await trackFailedLogin(email.toLowerCase());
     return responseHandler.unauthorized(res, "Incorrect email or password!");
   }
+
+  // Reset failed login attempts on successful login
+  await resetFailedLoginAttempts(email.toLowerCase());
 
   // Ensure user is verified
   if (!user.isVerified) {
@@ -232,13 +239,12 @@ export const loginCustomer = asyncHandler(async (req, res) => {
     data: { lastLoginAt: new Date() },
   });
 
-  // Log successful login
-  auditLogger.info("User login successful", {
+  // Log successful login (only userId, email, IP - no User-Agent)
+  const loginRequestId = requestContext.getStore()?.requestId || "";
+  auditLogger.info("Login successful", {
+    requestId: loginRequestId,
     userId: user.id,
-    email: user.email,
-    roleId: user.roleId,
     ip: req.ip,
-    userAgent: req.get("User-Agent"),
   });
 
   return responseHandler.success(
@@ -304,21 +310,12 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "User not found!", 404);
   }
 
-  // Generate OTP and expiry
-  const otpData = generateOTPWithExpiry();
-
-  // Update user with reset OTP (no reset session yet)
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      resetOTP: otpData.code,
-      resetOTPExpires: otpData.expiresAt,
-      // Clear any existing reset session data handled in Redis instead
-    },
-  });
+  // Generate OTP and store in Redis (not DB)
+  const resetOTP = generateOTP();
+  await storeOTP(email.toLowerCase(), resetOTP, "reset");
 
   // Send OTP via email
-  await sendPasswordResetEmail(email, otpData.code, user.fullName);
+  await sendPasswordResetEmail(email, resetOTP, user.fullName);
 
   // Clear any existing session cookies
   clearCookie(res, "tpa_session");
@@ -372,13 +369,9 @@ export const resetPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Invalid or expired reset session", 400);
   }
 
-  // Validate OTP
-  if (
-    !user.resetOTP ||
-    user.resetOTP !== otp ||
-    !user.resetOTPExpires ||
-    new Date() > user.resetOTPExpires
-  ) {
+  // Validate OTP from Redis
+  const isValidOTP = await verifyOTP(email.toLowerCase(), otp, "reset");
+  if (!isValidOTP) {
     return responseHandler.error(res, "Invalid or expired OTP", 400);
   }
 
@@ -393,8 +386,6 @@ export const resetPassword = asyncHandler(async (req, res) => {
     where: { id: user.id },
     data: {
       password: hashedPassword,
-      resetOTP: null,
-      resetOTPExpires: null,
     },
   });
 
@@ -488,25 +479,13 @@ export const verifyUserOTP = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "User not found!", 404);
   }
 
-  let storedOTP;
-  let storedOTPExpires;
-
-  if (otpType === "verify") {
-    storedOTP = user.verifyOTP;
-    storedOTPExpires = user.verifyOTPExpires;
-  } else if (otpType === "reset") {
-    storedOTP = user.resetOTP;
-    storedOTPExpires = user.resetOTPExpires;
-  } else {
+  if (!["verify", "reset"].includes(otpType)) {
     return responseHandler.error(res, "Invalid OTP type!", 400);
   }
 
-  if (
-    !storedOTP ||
-    storedOTP !== otp ||
-    !storedOTPExpires ||
-    new Date() > storedOTPExpires
-  ) {
+  // Verify OTP from Redis
+  const isValidOTP = await verifyOTP(email.toLowerCase(), otp, otpType);
+  if (!isValidOTP) {
     return responseHandler.error(res, "Invalid or expired OTP!", 400);
   }
 
@@ -516,8 +495,6 @@ export const verifyUserOTP = asyncHandler(async (req, res) => {
       where: { id: user.id },
       data: {
         isVerified: true,
-        verifyOTP: null,
-        verifyOTPExpires: null,
       },
     });
   } else if (otpType === "reset") {
@@ -558,37 +535,21 @@ export const sendUserOTP = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "User not found!", 404);
   }
 
-  const otpData = generateOTPWithExpiry(
-    config.OTP_LENGTH,
-    config.OTP_EXPIRY_MINUTES,
-  );
+  // Generate OTP and store in Redis
+  const otp = generateOTP();
+  await storeOTP(email.toLowerCase(), otp, otpType);
 
   if (otpType === "verify") {
-    await sendVerificationEmail(email, otpData.code, user.fullName);
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        verifyOTP: otpData.code,
-        verifyOTPExpires: otpData.expiresAt,
-      },
-    });
+    await sendVerificationEmail(email, otp, user.fullName);
   } else if (otpType === "reset") {
-    await sendPasswordResetEmail(email, otpData.code, user.fullName);
+    await sendPasswordResetEmail(email, otp, user.fullName);
 
+    // Generate and store reset session
     const resetSession = generateResetToken();
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        resetOTP: otpData.code,
-        resetOTPExpires: otpData.expiresAt,
-      },
-    });
-
     const hashed = hashResetToken(resetSession);
     await setKey(`reset:${hashed}`, user.id, config.RESET_TOKEN_EXPIRY_MINUTES * 60);
 
+    // Clear session cookies and set reset session cookie
     clearCookie(res, "tpa_session");
     clearCookie(res, "tpa_refresh");
     setCookie(res, "resetSession", resetSession, {

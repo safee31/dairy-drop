@@ -1,0 +1,361 @@
+{
+  message: 'Initializing Redis...',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: 'Connecting to Redis at redis://127.0.0.1:6379...',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: 'Redis connected',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: 'Redis ready',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: 'Redis initialized successfully',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: 'Redis connected successfully',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: 'Connecting to database...',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: 'Database connected successfully',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: '🚀 Server running on port 8000',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: '📡 API Version: v1',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: '🔗 Health Check: http://localhost:8000/health',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  message: '📚 API Info: http://localhost:8000/api/v1',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 22:25:25'
+}
+{
+  service: 'dairy-drop-api',
+  error: Error: Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to
+  535 5.7.8  https://support.google.com/mail/?p=BadCredentials ffacd0b85a97d-4324ea1b1b1sm40632442f8f.3 - gsmtp
+      at SMTPConnection._formatError (D:\My-Github\dairy-drop\node_modules\nodemailer\lib\smtp-connection\index.js:809:19)
+      at SMTPConnection._actionAUTHComplete (D:\My-Github\dairy-drop\node_modules\nodemailer\lib\smtp-connection\index.js:1617:34)
+      at SMTPConnection.<anonymous> (D:\My-Github\dairy-drop\node_modules\nodemailer\lib\smtp-connection\index.js:556:26)
+      at SMTPConnection._processResponse (D:\My-Github\dairy-drop\node_modules\nodemailer\lib\smtp-connection\index.js:993:20)
+      at SMTPConnection._onData (D:\My-Github\dairy-drop\node_modules\nodemailer\lib\smtp-connection\index.js:774:14)
+      at SMTPConnection._onSocketData (D:\My-Github\dairy-drop\node_modules\nodemailer\lib\smtp-connection\index.js:195:44)
+      at TLSSocket.emit (node:events:524:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'EAUTH',
+    response: '535-5.7.8 Username and Password not accepted. For more information, go to\n' +
+      '535 5.7.8  https://support.google.com/mail/?p=BadCredentials ffacd0b85a97d-4324ea1b1b1sm40632442f8f.3 - gsmtp',
+    responseCode: 535,
+    command: 'AUTH PLAIN'
+  },
+  level: 'error',
+  message: 'Email sending failed:',
+  timestamp: '2025-12-25 22:33:55'
+}
+{
+  service: 'dairy-drop-api',
+  email: 'saifee3131@gmail.com',
+  error: Error: Failed to send email
+      at sendEmail (D:\My-Github\dairy-drop\src\utils\emailService.ts:39:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async sendVerificationEmail (D:\My-Github\dairy-drop\src\utils\emailService.ts:68:10)
+      at async <anonymous> (D:\My-Github\dairy-drop\src\controllers\auth.ts:99:5),
+  level: 'error',
+  message: 'Failed to send verification email',
+  timestamp: '2025-12-25 22:33:55'
+}
+{
+  message: 'Initializing Redis...',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: 'Connecting to Redis at redis://127.0.0.1:6379...',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: 'Redis connected',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: 'Redis ready',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: 'Redis initialized successfully',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: 'Redis connected successfully',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: 'Connecting to database...',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: 'Database connected successfully',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: '🚀 Server running on port 8000',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: '📡 API Version: v1',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: '🔗 Health Check: http://localhost:8000/health',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+{
+  message: '📚 API Info: http://localhost:8000/api/v1',
+  level: 'info',
+  service: 'dairy-drop-api',
+  timestamp: '2025-12-25 23:13:04'
+}
+23:14:39 [[32minfo[39m]: Initializing Redis...
+23:14:39 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:14:39 [[32minfo[39m]: Redis connected
+23:14:39 [[32minfo[39m]: Redis ready
+23:14:39 [[32minfo[39m]: Redis initialized successfully
+23:14:39 [[32minfo[39m]: Redis connected successfully
+23:14:39 [[32minfo[39m]: Connecting to database...
+23:14:39 [[32minfo[39m]: Database connected successfully
+23:14:39 [[32minfo[39m]: 🚀 Server running on port 8000
+23:14:39 [[32minfo[39m]: 📡 API Version: v1
+23:14:39 [[32minfo[39m]: 🌍 Environment: development
+23:14:39 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:14:39 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:15:08 [[32minfo[39m]: Initializing Redis...
+23:15:08 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:15:08 [[32minfo[39m]: Redis connected
+23:15:08 [[32minfo[39m]: Redis ready
+23:15:08 [[32minfo[39m]: Redis initialized successfully
+23:15:08 [[32minfo[39m]: Redis connected successfully
+23:15:08 [[32minfo[39m]: Connecting to database...
+23:15:08 [[32minfo[39m]: Database connected successfully
+23:15:08 [[32minfo[39m]: 🚀 Server running on port 8000
+23:15:08 [[32minfo[39m]: 📡 API Version: v1
+23:15:08 [[32minfo[39m]: 🌍 Environment: development
+23:15:08 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:15:08 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:15:25 [[32minfo[39m]: Initializing Redis...
+23:15:25 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:15:25 [[32minfo[39m]: Redis connected
+23:15:25 [[32minfo[39m]: Redis ready
+23:15:25 [[32minfo[39m]: Redis initialized successfully
+23:15:25 [[32minfo[39m]: Redis connected successfully
+23:15:25 [[32minfo[39m]: Connecting to database...
+23:15:25 [[32minfo[39m]: Database connected successfully
+23:15:25 [[32minfo[39m]: 🚀 Server running on port 8000
+23:15:25 [[32minfo[39m]: 📡 API Version: v1
+23:15:25 [[32minfo[39m]: 🌍 Environment: development
+23:15:25 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:15:25 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:15:40 [[32minfo[39m]: Initializing Redis...
+23:15:40 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:15:41 [[32minfo[39m]: Redis connected
+23:15:41 [[32minfo[39m]: Redis ready
+23:15:41 [[32minfo[39m]: Redis initialized successfully
+23:15:41 [[32minfo[39m]: Redis connected successfully
+23:15:41 [[32minfo[39m]: Connecting to database...
+23:15:41 [[32minfo[39m]: Database connected successfully
+23:15:41 [[32minfo[39m]: 🚀 Server running on port 8000
+23:15:41 [[32minfo[39m]: 📡 API Version: v1
+23:15:41 [[32minfo[39m]: 🌍 Environment: development
+23:15:41 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:15:41 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:15:48 [[32minfo[39m]: Initializing Redis...
+23:15:48 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:15:48 [[32minfo[39m]: Redis connected
+23:15:48 [[32minfo[39m]: Redis ready
+23:15:48 [[32minfo[39m]: Redis initialized successfully
+23:15:48 [[32minfo[39m]: Redis connected successfully
+23:15:48 [[32minfo[39m]: Connecting to database...
+23:15:48 [[32minfo[39m]: Database connected successfully
+23:15:48 [[32minfo[39m]: 🚀 Server running on port 8000
+23:15:48 [[32minfo[39m]: 📡 API Version: v1
+23:15:48 [[32minfo[39m]: 🌍 Environment: development
+23:15:48 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:15:48 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:15:56 [[32minfo[39m]: Initializing Redis...
+23:15:56 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:15:56 [[32minfo[39m]: Redis connected
+23:15:56 [[32minfo[39m]: Redis ready
+23:15:56 [[32minfo[39m]: Redis initialized successfully
+23:15:56 [[32minfo[39m]: Redis connected successfully
+23:15:56 [[32minfo[39m]: Connecting to database...
+23:15:56 [[32minfo[39m]: Database connected successfully
+23:15:56 [[32minfo[39m]: 🚀 Server running on port 8000
+23:15:56 [[32minfo[39m]: 📡 API Version: v1
+23:15:56 [[32minfo[39m]: 🌍 Environment: development
+23:15:56 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:15:56 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:16:07 [[32minfo[39m]: Initializing Redis...
+23:16:07 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:16:07 [[32minfo[39m]: Redis connected
+23:16:07 [[32minfo[39m]: Redis ready
+23:16:07 [[32minfo[39m]: Redis initialized successfully
+23:16:07 [[32minfo[39m]: Redis connected successfully
+23:16:07 [[32minfo[39m]: Connecting to database...
+23:16:07 [[32minfo[39m]: Database connected successfully
+23:16:07 [[32minfo[39m]: 🚀 Server running on port 8000
+23:16:07 [[32minfo[39m]: 📡 API Version: v1
+23:16:07 [[32minfo[39m]: 🌍 Environment: development
+23:16:07 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:16:07 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:18:16 [[32minfo[39m]: Initializing Redis...
+23:18:16 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:18:16 [[32minfo[39m]: Redis connected
+23:18:17 [[32minfo[39m]: Redis ready
+23:18:17 [[32minfo[39m]: Redis initialized successfully
+23:18:17 [[32minfo[39m]: Redis connected successfully
+23:18:17 [[32minfo[39m]: Connecting to database...
+23:18:17 [[32minfo[39m]: Database connected successfully
+23:18:17 [[32minfo[39m]: 🚀 Server running on port 8000
+23:18:17 [[32minfo[39m]: 📡 API Version: v1
+23:18:17 [[32minfo[39m]: 🌍 Environment: development
+23:18:17 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:18:17 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:28:08 [[32minfo[39m]: Initializing Redis...
+23:28:08 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:28:08 [[32minfo[39m]: Redis connected
+23:28:08 [[32minfo[39m]: Redis ready
+23:28:08 [[32minfo[39m]: Redis initialized successfully
+23:28:08 [[32minfo[39m]: Redis connected successfully
+23:28:08 [[32minfo[39m]: Connecting to database...
+23:28:09 [[32minfo[39m]: Database connected successfully
+23:28:09 [[32minfo[39m]: 🚀 Server running on port 8000
+23:28:09 [[32minfo[39m]: 📡 API Version: v1
+23:28:09 [[32minfo[39m]: 🌍 Environment: development
+23:28:09 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:28:09 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:33:23 [[32minfo[39m]: Initializing Redis...
+23:33:23 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:33:23 [[32minfo[39m]: Redis connected
+23:33:23 [[32minfo[39m]: Redis ready
+23:33:23 [[32minfo[39m]: Redis initialized successfully
+23:33:23 [[32minfo[39m]: Redis connected successfully
+23:33:23 [[32minfo[39m]: Connecting to database...
+23:33:23 [[32minfo[39m]: Database connected successfully
+23:33:23 [[32minfo[39m]: 🚀 Server running on port 8000
+23:33:23 [[32minfo[39m]: 📡 API Version: v1
+23:33:23 [[32minfo[39m]: 🌍 Environment: development
+23:33:23 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:33:23 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:39:41 [[32minfo[39m]: Initializing Redis...
+23:39:41 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:39:41 [[32minfo[39m]: Redis connected
+23:39:41 [[32minfo[39m]: Redis ready
+23:39:41 [[32minfo[39m]: Redis initialized successfully
+23:39:41 [[32minfo[39m]: Redis connected successfully
+23:39:41 [[32minfo[39m]: Connecting to database...
+23:39:41 [[32minfo[39m]: Database connected successfully
+23:39:41 [[32minfo[39m]: 🚀 Server running on port 8000
+23:39:41 [[32minfo[39m]: 📡 API Version: v1
+23:39:41 [[32minfo[39m]: 🌍 Environment: development
+23:39:41 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:39:41 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:39:53 [[32minfo[39m]: Initializing Redis...
+23:39:53 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:39:53 [[32minfo[39m]: Redis connected
+23:39:53 [[32minfo[39m]: Redis ready
+23:39:53 [[32minfo[39m]: Redis initialized successfully
+23:39:53 [[32minfo[39m]: Redis connected successfully
+23:39:53 [[32minfo[39m]: Connecting to database...
+23:39:53 [[32minfo[39m]: Database connected successfully
+23:39:53 [[32minfo[39m]: 🚀 Server running on port 8000
+23:39:53 [[32minfo[39m]: 📡 API Version: v1
+23:39:53 [[32minfo[39m]: 🌍 Environment: development
+23:39:53 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:39:53 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:45:27 [[32minfo[39m]: Initializing Redis...
+23:45:27 [[32minfo[39m]: Connecting to Redis at redis://127.0.0.1:6379...
+23:45:27 [[32minfo[39m]: Redis connected
+23:45:27 [[32minfo[39m]: Redis ready
+23:45:27 [[32minfo[39m]: Redis initialized successfully
+23:45:27 [[32minfo[39m]: Redis connected successfully
+23:45:27 [[32minfo[39m]: Connecting to database...
+23:45:27 [[32minfo[39m]: Database connected successfully
+23:45:27 [[32minfo[39m]: 🚀 Server running on port 8000
+23:45:27 [[32minfo[39m]: 📡 API Version: v1
+23:45:27 [[32minfo[39m]: 🌍 Environment: development
+23:45:27 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
+23:45:27 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1

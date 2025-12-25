@@ -2,10 +2,9 @@ import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import config from "@/config/env";
 import { customError, AuthErrors } from "@/utils/customError";
-import { setKey, getKey, delKey } from "@/utils/redisClient";
-import { PrismaClient } from "@prisma/client";
+import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
 
-const prisma = new PrismaClient();
+import { prisma }  from "@/config/database";
 
 const parseExpiryToSeconds = (val?: string): number | null => {
   if (!val) return null;

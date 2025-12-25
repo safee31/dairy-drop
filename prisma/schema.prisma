@@ -1,89 +1,79 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// prisma/schema.prisma
+// Clean PostgreSQL Schema - No external config files needed
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-// Role Model - Permission and access control
+// ============================================================================
+// CORE MODELS
+// ============================================================================
+
 model Role {
   id          String   @id @default(cuid())
   type        Int      @unique
-  name        String   @unique
-  description String?
-  permissions Json?    @default("{}")
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.VarChar(500)
+  permissions Json     @default("{}")
   isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
 
-  users       User[]
+  users User[]
 
   @@index([type])
   @@index([isActive])
   @@map("roles")
 }
 
-// User Model - Core user data with security fields
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  password          String
-  fullName          String
-  profileImage      String?
-  phoneNumber       String?
-  isActive          Boolean   @default(true)
-  isVerified        Boolean   @default(false)
-  lastLoginAt       DateTime?
-  verifyOTP         String?
-  verifyOTPExpires  DateTime?
-  resetOTP          String?
-  resetOTPExpires   DateTime?
-  roleId            String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  email            String    @unique @db.VarChar(255)
+  password         String    @db.VarChar(255)
+  fullName         String    @db.VarChar(100)
+  profileImage     String?   @db.VarChar(500)
+  phoneNumber      String?   @db.VarChar(20)
+  isActive         Boolean   @default(true)
+  isVerified       Boolean   @default(false)
+  lastLoginAt      DateTime? @db.Timestamptz(3)
+  roleId           String?
+  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(3)
 
-  role              Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
-  addresses         Address[]
+  role      Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  addresses Address[]
 
   @@index([email])
-  @@index([isActive])
-  @@index([isVerified])
+  @@index([isActive, isVerified])
   @@index([roleId])
-  @@index([createdAt])
-  @@index([lastLoginAt])
   @@map("users")
 }
 
-// Address Model - Delivery and billing addresses
 model Address {
-  id                String    @id @default(cuid())
-  userId            String
-  label             String?
-  fullName          String
-  phoneNumber       String?
-  streetAddress     String
-  apartment         String?
-  city              String
-  state             String?
-  postalCode        String
-  country           String
-  isPrimary         Boolean   @default(false)
-  isActive          Boolean   @default(true)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id            String   @id @default(cuid())
+  userId        String
+  label         String?  @db.VarChar(50)
+  fullName      String   @db.VarChar(100)
+  phoneNumber   String?  @db.VarChar(20)
+  streetAddress String   @db.VarChar(255)
+  apartment     String?  @db.VarChar(50)
+  city          String   @db.VarChar(100)
+  state         String?  @db.VarChar(100)
+  postalCode    String   @db.VarChar(20)
+  country       String   @db.VarChar(100)
+  isPrimary     Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
 
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  @@index([userId, isActive])
   @@index([userId, isPrimary])
-  @@index([isActive])
   @@map("addresses")
 }

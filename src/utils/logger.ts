@@ -1,59 +1,78 @@
 import winston from "winston";
 import path from "path";
 import config from "@/config/env";
+import { AsyncLocalStorage } from "async_hooks";
 
-// Define log format
-const logFormat = winston.format.combine(
+// AsyncLocalStorage for request-scoped context (no extra package needed)
+export const requestContext = new AsyncLocalStorage<{ requestId: string }>();
+
+// Get current requestId or empty string
+const getRequestId = (): string => {
+  return requestContext.getStore()?.requestId || "";
+};
+
+// Production format: clean JSON with only necessary fields
+const prodFormat = winston.format.combine(
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-  winston.format.errors({ stack: true }),
+  winston.format.errors({ stack: false }), // Don't log stack traces in prod
   winston.format.json(),
-  winston.format.prettyPrint(),
+  winston.format.printf(({ timestamp, level, message, requestId, ...meta }) => {
+    const log: Record<string, unknown> = {
+      timestamp,
+      level,
+      message,
+      service: "dairy-drop-api",
+    };
+    if (requestId) log.requestId = requestId;
+    if (Object.keys(meta).length && meta.service !== "dairy-drop-api") {
+      log.context = meta;
+    }
+    return JSON.stringify(log);
+  }),
 );
 
-// Create logger instance
+// Development format: colored console output, easy to read
+const devFormat = winston.format.combine(
+  winston.format.timestamp({ format: "HH:mm:ss" }),
+  winston.format.colorize(),
+  winston.format.printf(({ timestamp, level, message, requestId, ...meta }) => {
+    const rid = requestId ? ` [${requestId}]` : "";
+    const metaStr =
+      Object.keys(meta).length && meta.service !== "dairy-drop-api"
+        ? ` ${JSON.stringify(meta)}`
+        : "";
+    return `${timestamp} [${level}]${rid}: ${message}${metaStr}`;
+  }),
+);
+
+// Create main logger
 export const logger = winston.createLogger({
-  level: config.IN_PROD ? "info" : "debug",
-  format: logFormat,
-  defaultMeta: { service: "dairy-drop-api" },
+  level: config.IN_PROD ? "warn" : "debug", // Only warn/error in prod, debug in dev
+  format: config.IN_PROD ? prodFormat : devFormat,
   transports: [
-    // Write errors to error.log
+    // Errors and warnings only (no request-level logs to reduce file size)
     new winston.transports.File({
       filename: path.join("logs", "error.log"),
       level: "error",
       maxsize: 5242880, // 5MB
       maxFiles: 5,
     }),
-    // Write all logs to combined.log
-    new winston.transports.File({
-      filename: path.join("logs", "combined.log"),
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
   ],
 });
 
-// Add console transport for non-production
+// Console in development only
 if (!config.IN_PROD) {
   logger.add(
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple(),
-        winston.format.printf(({ timestamp, level, message, ...meta }) => {
-          return `${timestamp} [${level}]: ${message} ${
-            Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""
-          }`;
-        }),
-      ),
+      format: devFormat,
     }),
   );
 }
 
-// Create audit logger for compliance
+// Audit logger for compliance (login, register, auth events)
 export const auditLogger = winston.createLogger({
   level: "info",
-  format: logFormat,
-  defaultMeta: { service: "dairy-drop-audit" },
+  format: prodFormat,
   transports: [
     new winston.transports.File({
       filename: path.join("logs", "audit.log"),
@@ -62,3 +81,9 @@ export const auditLogger = winston.createLogger({
     }),
   ],
 });
+
+// Helper: log with requestId automatically injected
+export const logWithContext = (level: "info" | "warn" | "error" | "debug", message: string, meta?: Record<string, unknown>) => {
+  const requestId = getRequestId();
+  logger[level](message, requestId ? { requestId, ...meta } : meta);
+};

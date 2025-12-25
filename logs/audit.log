@@ -1,0 +1,10 @@
+{
+  service: 'dairy-drop-audit',
+  email: 'saifee3131@gmail.com',
+  roleId: 'cmjlq24o000001guexnlj7wde',
+  ip: '::1',
+  userAgent: 'PostmanRuntime/7.51.0',
+  level: 'info',
+  message: 'Customer registration',
+  timestamp: '2025-12-25 22:33:55'
+}

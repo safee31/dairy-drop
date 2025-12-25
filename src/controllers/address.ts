@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import asyncHandler from "../utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { auditLogger } from "../utils/logger";
 
-const prisma = new PrismaClient();
+import { prisma }  from "@/config/database";
+
 
 export const getUserAddresses = asyncHandler(async (req, res) => {
   const userId = req.user?.id;

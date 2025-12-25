@@ -57,9 +57,15 @@ const getKey = async (key: string) => {
   return await client.get(key);
 };
 
-const delKey = async (key: string) => {
+const delKey = async (...keys: string[]) => {
   if (!isConnected) throw new Error("Redis not connected");
-  return await client.del(key);
+  if (keys.length === 0) return 0;
+  return await client.del(keys);
 };
 
-export { client as redisClient, initRedis, setKey, getKey, delKey };
+const incrementKey = async (key: string) => {
+  if (!isConnected) throw new Error("Redis not connected");
+  return await client.incr(key);
+};
+
+export { client as redisClient, initRedis, setKey, getKey, delKey, incrementKey };
