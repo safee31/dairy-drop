@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  // Use default output and engine settings provided by Prisma
 }
 
 datasource db {
@@ -21,8 +21,8 @@ model Role {
   description String?  @db.VarChar(500)
   permissions Json     @default("{}")
   isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   users User[]
 
@@ -40,10 +40,10 @@ model User {
   phoneNumber      String?   @db.VarChar(20)
   isActive         Boolean   @default(true)
   isVerified       Boolean   @default(false)
-  lastLoginAt      DateTime? @db.Timestamptz(3)
+  lastLoginAt      DateTime?
   roleId           String?
-  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime  @updatedAt @db.Timestamptz(3)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   role      Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
   addresses Address[]
@@ -68,8 +68,8 @@ model Address {
   country       String   @db.VarChar(100)
   isPrimary     Boolean  @default(false)
   isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

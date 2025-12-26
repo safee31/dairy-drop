@@ -8,3 +8,4 @@
   message: 'Customer registration',
   timestamp: '2025-12-25 22:33:55'
 }
+{"timestamp":"2025-12-26 00:03:43","level":"info","message":"User registered","service":"dairy-drop-api","requestId":"4f70ee51-a779-4726-98d8-30c8c4dbdb6f","context":{"userId":"cmjlt9jie0000bsuesjwz44n2","email":"safeesafee31@gmail.com","ip":"::1"}}
