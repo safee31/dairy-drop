@@ -2,7 +2,7 @@ import path from "path";
 import { extractFolderAndFilename, validateKey } from "@/utils/file";
 import { promises as fs } from "fs";
 
-const deleteFileFromServer = async ({ fileName, folder }) => {
+const deleteFileFromServer = async ({ fileName, folder }: { fileName: string; folder: string }) => {
   if (!fileName || !folder) {
     console.error({ fileName, folder });
     throw new Error(
@@ -31,11 +31,11 @@ const deleteFileFromServer = async ({ fileName, folder }) => {
     };
   } catch (error) {
     console.error("Error deleting file from server:", error);
-    throw new Error(`Failed to delete file from server: ${error.message}`);
+    throw new Error(`Failed to delete file from server: ${(error as Error).message}`);
   }
 };
 
-const updateFileOnServer = async ({ file, originalKey }) => {
+const updateFileOnServer = async ({ file, originalKey }: { file: Express.Multer.File; originalKey: string }) => {
   // Validate the key format - EXACTLY like S3 version
   validateKey(originalKey);
 
@@ -66,7 +66,7 @@ const updateFileOnServer = async ({ file, originalKey }) => {
     };
   } catch (error) {
     console.error("Error updating file:", error);
-    throw new Error(`Failed to update file: ${error.message}`);
+    throw new Error(`Failed to update file: ${(error as Error).message}`);
   } finally {
     // Clean up temp file if exists - EXACTLY like S3 version
     if (file.path) await fs.unlink(file.path).catch(() => {});

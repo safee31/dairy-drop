@@ -1,6 +1,25 @@
 import crypto from "crypto";
 import config from "../config/env";
 
+export const parseExpiryToSeconds = (val?: string): number => {
+  if (!val) return 300;
+  const match = /^([0-9]+)([smhd])?$/.exec(val.trim());
+  if (!match) return 300;
+  const n = parseInt(match[1], 10);
+  const unit = match[2] || "s";
+  switch (unit) {
+    case "d":
+      return n * 24 * 60 * 60;
+    case "h":
+      return n * 60 * 60;
+    case "m":
+      return n * 60;
+    case "s":
+    default:
+      return n;
+  }
+};
+
 /**
  * Generate a secure OTP code
  */

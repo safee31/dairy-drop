@@ -1,33 +1,45 @@
 // src/config/database.ts
-import { PrismaClient } from "../../generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import "reflect-metadata";
+import { DataSource, DataSourceOptions } from "typeorm";
+import config from "./env";
 import { logger } from "@/utils/logger";
 
-// Prisma Client Singleton
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+// Import entities
+import { User } from "@/models/User";
+import { Role } from "@/models/Role";
+import { Address } from "@/models/Address";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+// Common configuration
+const baseConfig: DataSourceOptions = {
+  type: "postgres",
+  url: config.DATABASE_URL,
+  entities: [User, Role, Address],
+  migrations: ["src/migrations/*.ts"],
+  subscribers: [],
+};
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    adapter,
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["error", "warn"]
-        : ["error"],
-  });
+// Create DataSource for application (with synchronize based on environment)
+export const AppDataSource = new DataSource({
+  ...baseConfig,
+  synchronize: config.IN_PROD ? false : true,
+  logging: config.IN_PROD ? false : true,
+});
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+// Create DataSource for CLI (with synchronize always false)
+export const CliDataSource = new DataSource({
+  ...baseConfig,
+  synchronize: false,
+  logging: true,
+});
 
-// Connect to database
+// Database connection helpers
 export const connectDatabase = async (): Promise<void> => {
   try {
-    await prisma.$connect();
-    if (!process.env.NODE_ENV?.includes("production")) {
-      console.log("✓ Database connected");
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      if (!config.IN_PROD) {
+        console.log("✓ Database connected");
+      }
     }
   } catch (error) {
     logger.error("Database connection failed", { error });
@@ -35,12 +47,15 @@ export const connectDatabase = async (): Promise<void> => {
   }
 };
 
-// Disconnect from database
 export const disconnectDatabase = async (): Promise<void> => {
   try {
-    await prisma.$disconnect();
-    logger.info("Database disconnected successfully");
+    if (AppDataSource.isInitialized) {
+      await AppDataSource.destroy();
+      logger.info("Database disconnected successfully");
+    }
   } catch (error) {
     logger.error("Database disconnection failed", { error });
   }
 };
+
+export default AppDataSource;

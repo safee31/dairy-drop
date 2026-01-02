@@ -13,6 +13,8 @@
       "declaration": true,
       "declarationMap": true,
       "sourceMap": true,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
       "baseUrl": "./src",
       "paths": {
         "@/*": ["./*"],
@@ -23,9 +25,10 @@
         "@/routes/*": ["./routes/*"],
         "@/utils/*": ["./utils/*"],
         "@/config/*": ["./config/*"],
-        "@/types/*": ["./types/*"]
+        "@/types/*": ["./types/*"],
+        "@/migrations/*": ["./migrations/*"]
       }
     },
-    "include": ["src/**/*", "generated/**/*"],
+    "include": ["src/**/*"],
     "exclude": ["node_modules", "dist"]
 } 

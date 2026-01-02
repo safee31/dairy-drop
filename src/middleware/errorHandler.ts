@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { Prisma } from "../../generated/prisma/client";
 import { logger } from "../utils/logger";
+import { QueryFailedError } from "typeorm";
+import config from "@/config/env";
 
 export interface ApiError extends Error {
   statusCode?: number;
@@ -24,13 +25,11 @@ export const errorHandler = (
   err: ApiError,
   req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction,
 ): Response | void => {
   let error = { ...err };
   error.message = err.message;
 
-  // Log error
   logger.error("API Error", {
     message: error.message,
     stack: error.stack,
@@ -40,19 +39,11 @@ export const errorHandler = (
     userAgent: req.get("User-Agent"),
   });
 
-  // Prisma errors
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    const message = handlePrismaError(err);
+  if (err instanceof QueryFailedError) {
+    const message = handleDatabaseError(err);
     error = new AppError(message, 400);
   }
 
-  // Prisma validation errors
-  if (err instanceof Prisma.PrismaClientValidationError) {
-    const message = "Invalid data provided";
-    error = new AppError(message, 400);
-  }
-
-  // JWT errors
   if (err.name === "JsonWebTokenError") {
     const message = "Invalid token";
     error = new AppError(message, 401);
@@ -63,7 +54,6 @@ export const errorHandler = (
     error = new AppError(message, 401);
   }
 
-  // Default error
   const statusCode = error.statusCode || 500;
   const message = error.message || "Internal Server Error";
 
@@ -71,38 +61,32 @@ export const errorHandler = (
     success: false,
     error: {
       message,
-      ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
+      ...(!config.IN_PROD && { stack: error.stack }),
     },
   });
 };
 
-const handlePrismaError = (err: Prisma.PrismaClientKnownRequestError): string => {
-  switch (err.code) {
-    case "P2002": {
-      // Unique constraint violation
-      const target = err.meta?.target as string[];
-      return `${target?.join(", ")} already exists`;
-    }
-    case "P2014":
-      return "Invalid ID provided";
-    case "P2003": {
-      // Foreign key constraint violation
-      const fieldName = err.meta?.field_name as string;
-      if (fieldName === "users_roleId_fkey") {
-        return "Role not found. Please provide a valid role ID.";
-      }
-      return "Invalid reference provided";
-    }
-    case "P2025":
-      return "Record not found";
-    default:
-      return "Database error occurred";
+const handleDatabaseError = (err: QueryFailedError): string => {
+  const code = (err as any)?.code;
+
+  if (code === "23505") {
+    const match = err.message.match(/Key \(([^)]+)\)/);
+    const field = match ? match[1] : "field";
+    return `${field} already exists`;
   }
+
+  if (code === "23503") {
+    return "Invalid reference provided";
+  }
+
+  if (code === "23502") {
+    return "Required field is missing";
+  }
+
+  return "Database error occurred";
 };
 
-// Async error wrapper
-export const asyncHandler =
-  (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
-    (req: Request, res: Response, next: NextFunction) => {
-      Promise.resolve(fn(req, res, next)).catch(next);
-    };
+(fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };

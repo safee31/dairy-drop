@@ -1,9 +1,9 @@
 import asyncHandler from "../utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { auditLogger } from "../utils/logger";
-
-import { prisma }  from "@/config/database";
-
+import { AppDataSource } from "@/config/database";
+import { User } from "@/models/User";
+import { Address } from "@/models/Address";
 
 export const getUserAddresses = asyncHandler(async (req, res) => {
   const userId = req.user?.id;
@@ -11,21 +11,23 @@ export const getUserAddresses = asyncHandler(async (req, res) => {
 
   const skip = (Number(page) - 1) * Number(limit);
 
-  const where: any = { userId };
-  if (isPrimary !== undefined) where.isPrimary = isPrimary === "true";
-  if (isActive !== undefined) where.isActive = isActive === "true";
+  const addressRepository = AppDataSource.getRepository(Address);
+  const queryBuilder = addressRepository.createQueryBuilder("address")
+    .where("address.userId = :userId", { userId });
 
-  const [total, addresses] = await Promise.all([
-    prisma.address.count({ where }),
-    prisma.address.findMany({
-      where,
-      skip,
-      take: Number(limit),
-      orderBy: {
-        [String(sortBy)]: String(sortOrder).toLowerCase(),
-      },
-    }),
-  ]);
+  if (isPrimary !== undefined) {
+    queryBuilder.andWhere("address.isPrimary = :isPrimary", { isPrimary: isPrimary === "true" });
+  }
+  if (isActive !== undefined) {
+    queryBuilder.andWhere("address.isActive = :isActive", { isActive: isActive === "true" });
+  }
+
+  const total = await queryBuilder.getCount();
+  const addresses = await queryBuilder
+    .orderBy(`address.${String(sortBy)}`, String(sortOrder).toUpperCase() as "ASC" | "DESC")
+    .skip(skip)
+    .take(Number(limit))
+    .getMany();
 
   return responseHandler.success(
     res,
@@ -43,12 +45,11 @@ export const getUserAddresses = asyncHandler(async (req, res) => {
 });
 
 export const getAddressById = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+  const { id } = req.params as { id: string };
+  const userId = req.user?.id as string;
 
-  const address = await prisma.address.findFirst({
-    where: { id, userId },
-  });
+  const addressRepository = AppDataSource.getRepository(Address);
+  const address = await addressRepository.findOneBy({ id, userId });
 
   if (!address) {
     return responseHandler.error(res, "Address not found", 404);
@@ -58,37 +59,31 @@ export const getAddressById = asyncHandler(async (req, res) => {
 });
 
 export const createAddress = asyncHandler(async (req, res) => {
-  const userId = req.user?.id;
+  const userId = req.user?.id as string;
   const { isPrimary, ...addressData } = req.body;
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user?.isVerified) {
-    return responseHandler.error(
-      res,
-      "Please verify your email before adding addresses",
-      400,
+  const addressRepository = AppDataSource.getRepository(Address);
+
+  if (isPrimary) {
+    await addressRepository.update(
+      { userId, isPrimary: true },
+      { isPrimary: false }
     );
   }
 
-  if (isPrimary) {
-    await prisma.address.updateMany({
-      where: { userId, isPrimary: true },
-      data: { isPrimary: false },
-    });
-  }
+  const addressDataToSave: Partial<Address> = {
+    userId,
+    isPrimary: isPrimary || false,
+    ...addressData,
+  };
 
-  const address = await prisma.address.create({
-    data: {
-      userId,
-      isPrimary: isPrimary || false,
-      ...addressData,
-    },
-  });
+  const address = addressRepository.create(addressDataToSave);
+  const savedAddress = await addressRepository.save(address);
 
   auditLogger.info("Address created", {
     userId,
-    addressId: address.id,
-    label: address.label,
+    addressId: savedAddress.id,
+    label: savedAddress.label,
   });
 
   return responseHandler.success(
@@ -100,32 +95,29 @@ export const createAddress = asyncHandler(async (req, res) => {
 });
 
 export const updateAddress = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+  const { id } = req.params as { id: string };
+  const userId = req.user?.id as string;
   const { isPrimary, ...addressData } = req.body;
 
-  const address = await prisma.address.findFirst({
-    where: { id, userId },
-  });
+  const addressRepository = AppDataSource.getRepository(Address);
+  const address = await addressRepository.findOneBy({ id, userId });
 
   if (!address) {
     return responseHandler.error(res, "Address not found", 404);
   }
 
   if (isPrimary) {
-    await prisma.address.updateMany({
-      where: { userId, isPrimary: true, id: { not: id } },
-      data: { isPrimary: false },
-    });
+    await addressRepository.update(
+      { userId, isPrimary: true, id },
+      { isPrimary: false }
+    );
   }
 
-  const updatedAddress = await prisma.address.update({
-    where: { id },
-    data: {
-      ...addressData,
-      ...(isPrimary !== undefined && { isPrimary }),
-    },
-  });
+  Object.assign(address, addressData);
+  if (isPrimary !== undefined) {
+    address.isPrimary = isPrimary;
+  }
+  await addressRepository.save(address);
 
   auditLogger.info("Address updated", {
     userId,
@@ -134,24 +126,23 @@ export const updateAddress = asyncHandler(async (req, res) => {
 
   return responseHandler.success(
     res,
-    { address: updatedAddress },
+    { address },
     "Address updated successfully",
   );
 });
 
 export const deleteAddress = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+  const { id } = req.params as { id: string };
+  const userId = req.user?.id as string;
 
-  const address = await prisma.address.findFirst({
-    where: { id, userId },
-  });
+  const addressRepository = AppDataSource.getRepository(Address);
+  const address = await addressRepository.findOneBy({ id, userId });
 
   if (!address) {
     return responseHandler.error(res, "Address not found", 404);
   }
 
-  const addressCount = await prisma.address.count({ where: { userId, isActive: true } });
+  const addressCount = await addressRepository.countBy({ userId, isActive: true });
   if (addressCount === 1) {
     return responseHandler.error(
       res,
@@ -160,22 +151,18 @@ export const deleteAddress = asyncHandler(async (req, res) => {
     );
   }
 
-  const deletedAddress = await prisma.address.update({
-    where: { id },
-    data: { isActive: false },
-  });
+  address.isActive = false;
+  await addressRepository.save(address);
 
-  if (deletedAddress.isPrimary) {
-    const nextAddress = await prisma.address.findFirst({
-      where: { userId, isActive: true, id: { not: id } },
-      orderBy: { createdAt: "asc" },
+  if (address.isPrimary) {
+    const nextAddress = await addressRepository.findOne({
+      where: { userId, isActive: true },
+      order: { createdAt: "ASC" },
     });
 
     if (nextAddress) {
-      await prisma.address.update({
-        where: { id: nextAddress.id },
-        data: { isPrimary: true },
-      });
+      nextAddress.isPrimary = true;
+      await addressRepository.save(nextAddress);
     }
   }
 
@@ -188,12 +175,11 @@ export const deleteAddress = asyncHandler(async (req, res) => {
 });
 
 export const setPrimaryAddress = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+  const { id } = req.params as { id: string };
+  const userId = req.user?.id as string;
 
-  const address = await prisma.address.findFirst({
-    where: { id, userId },
-  });
+  const addressRepository = AppDataSource.getRepository(Address);
+  const address = await addressRepository.findOneBy({ id, userId });
 
   if (!address) {
     return responseHandler.error(res, "Address not found", 404);
@@ -203,15 +189,13 @@ export const setPrimaryAddress = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Cannot set inactive address as primary", 400);
   }
 
-  await prisma.address.updateMany({
-    where: { userId, isPrimary: true, id: { not: id } },
-    data: { isPrimary: false },
-  });
+  await addressRepository.update(
+    { userId, isPrimary: true },
+    { isPrimary: false }
+  );
 
-  const updatedAddress = await prisma.address.update({
-    where: { id },
-    data: { isPrimary: true },
-  });
+  address.isPrimary = true;
+  await addressRepository.save(address);
 
   auditLogger.info("Primary address updated", {
     userId,
@@ -220,7 +204,7 @@ export const setPrimaryAddress = asyncHandler(async (req, res) => {
 
   return responseHandler.success(
     res,
-    { address: updatedAddress },
+    { address },
     "Primary address updated successfully",
   );
 });

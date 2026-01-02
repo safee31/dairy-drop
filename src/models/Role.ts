@@ -1,12 +1,52 @@
 import Joi from "joi";
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  Index,
+} from "typeorm";
+import { User } from "./User";
 
-// Role validation schemas
+@Entity("roles")
+@Index(["type"])
+@Index(["isActive"])
+export class Role {
+  @PrimaryColumn("varchar", { length: 50 })
+  id!: string;
+
+  @Column("integer", { unique: true })
+  type!: number;
+
+  @Column("varchar", { length: 50, unique: true })
+  name!: string;
+
+  @Column("varchar", { length: 500, nullable: true })
+  description!: string | null;
+
+  @Column("jsonb", { default: {} })
+  permissions!: Record<string, boolean>;
+
+  @Column("boolean", { default: true })
+  isActive!: boolean;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
+
+  @OneToMany(() => User, (user) => user.role, { nullable: true })
+  users!: User[];
+}
+
 const roleSchemas = {
-  // Schema for creating a new role
   create: Joi.object({
     type: Joi.number()
       .integer()
-      .valid(1, 2) // 1 = Admin, 2 = Customer
+      .valid(1, 2)
       .required()
       .messages({
         "number.base": "Role type must be a number",
@@ -32,15 +72,11 @@ const roleSchemas = {
     permissions: Joi.object()
       .pattern(Joi.string(), Joi.boolean())
       .optional()
-      .default({})
-      .description(
-        'Key-Value permissions (e.g., { "create_user": true, "delete_user": false })',
-      ),
+      .default({}),
 
     isActive: Joi.boolean().default(true).optional(),
   }),
 
-  // Schema for updating a role
   update: Joi.object({
     name: Joi.string().trim().min(2).max(50).optional().messages({
       "string.min": "Role name must be at least 2 characters long",
@@ -58,13 +94,11 @@ const roleSchemas = {
 
     permissions: Joi.object()
       .pattern(Joi.string(), Joi.boolean())
-      .optional()
-      .description("Key-Value permissions"),
+      .optional(),
 
     isActive: Joi.boolean().optional(),
-  }).min(1), // At least one field must be provided for update
+  }).min(1),
 
-  // Schema for updating permissions only
   updatePermissions: Joi.object({
     permissions: Joi.object()
       .pattern(Joi.string(), Joi.boolean())
@@ -75,7 +109,6 @@ const roleSchemas = {
       }),
   }),
 
-  // Schema for role ID parameter
   params: {
     id: Joi.string().trim().required().messages({
       "string.empty": "Role ID is required",
@@ -87,40 +120,17 @@ const roleSchemas = {
     }),
   },
 
-  // Schema for query parameters (filtering, pagination)
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1).optional(),
-
     limit: Joi.number().integer().min(1).max(100).default(10).optional(),
-
-    search: Joi.string()
-      .trim()
-      .min(1)
-      .optional()
-      .description("Search in role name or description"),
-
-    type: Joi.number()
-      .integer()
-      .valid(1, 2, 3)
-      .optional()
-      .description("Filter by role type"),
-
-    isActive: Joi.boolean().optional().description("Filter by active status"),
-
-    hasPermission: Joi.string()
-      .trim()
-      .optional()
-      .description("Filter roles that have a specific permission"),
-
-    sortBy: Joi.string()
-      .valid("name", "type", "createdAt", "updatedAt")
-      .default("type")
-      .optional(),
-
+    search: Joi.string().trim().min(1).optional(),
+    type: Joi.number().integer().valid(1, 2, 3).optional(),
+    isActive: Joi.boolean().optional(),
+    hasPermission: Joi.string().trim().optional(),
+    sortBy: Joi.string().valid("name", "type", "createdAt", "updatedAt").default("type").optional(),
     sortOrder: Joi.string().valid("asc", "desc").default("asc").optional(),
   }),
 
-  // Schema for bulk operations
   bulkCreate: Joi.object({
     roles: Joi.array()
       .items(
@@ -144,7 +154,6 @@ const roleSchemas = {
       }),
   }),
 
-  // Schema for bulk permission update
   bulkUpdatePermissions: Joi.object({
     roleIds: Joi.array()
       .items(Joi.string().trim().required())
@@ -155,7 +164,6 @@ const roleSchemas = {
         "array.min": "At least one role ID is required",
         "array.max": "Cannot update more than 50 roles at once",
       }),
-
     permissions: Joi.object()
       .pattern(Joi.string(), Joi.boolean())
       .required()
@@ -163,41 +171,18 @@ const roleSchemas = {
         "object.base": "Permissions must be an object",
         "any.required": "Permissions are required",
       }),
-
-    operation: Joi.string()
-      .valid("merge", "replace")
-      .default("merge")
-      .optional()
-      .description(
-        "Whether to merge with existing permissions or replace them",
-      ),
+    operation: Joi.string().valid("merge", "replace").default("merge").optional(),
   }),
 
-  // Schema for role cloning
   clone: Joi.object({
     name: Joi.string().trim().min(2).max(50).required().messages({
       "string.empty": "New role name is required",
       "string.min": "Role name must be at least 2 characters long",
       "string.max": "Role name cannot exceed 50 characters",
     }),
-
-    type: Joi.number()
-      .integer()
-      .valid(1, 2, 3)
-      .optional()
-      .description("New role type (defaults to source role type)"),
-
-    description: Joi.string()
-      .trim()
-      .max(250)
-      .optional()
-      .allow(null, "")
-      .description("New role description"),
-
-    copyPermissions: Joi.boolean()
-      .default(true)
-      .optional()
-      .description("Whether to copy permissions from source role"),
+    type: Joi.number().integer().valid(1, 2, 3).optional(),
+    description: Joi.string().trim().max(250).optional().allow(null, ""),
+    copyPermissions: Joi.boolean().default(true).optional(),
   }),
 };
 

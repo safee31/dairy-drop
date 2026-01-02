@@ -2,7 +2,7 @@ import { createClient } from "redis";
 import config from "@/config/env";
 import { logger } from "@/utils/logger";
 
-const redisUrl = process.env.REDIS_URL || `redis://${config.REDIS_HOST || '127.0.0.1'}:${config.REDIS_PORT || 6379}`;
+const redisUrl = config.REDIS_URL || `redis://${config.REDIS_HOST || '127.0.0.1'}:${config.REDIS_PORT || 6379}`;
 
 const client = createClient({ url: redisUrl, socket: { reconnectStrategy: (retries) => Math.min(retries * 50, 500) } });
 
@@ -25,14 +25,14 @@ client.on("ready", () => {
 // Connect once on initialization with timeout
 const initRedis = async (timeoutMs: number = 5000): Promise<void> => {
   if (isConnected) return;
-  
+
   try {
     logger.info(`Connecting to Redis at ${redisUrl}...`);
     const connectPromise = client.connect();
-    const timeoutPromise = new Promise((_, reject) => 
+    const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Redis connection timeout")), timeoutMs)
     );
-    
+
     await Promise.race([connectPromise, timeoutPromise]);
     isConnected = true;
     logger.info("Redis initialized successfully");

@@ -3,12 +3,11 @@ import { Request, Response } from "express";
 import config from "@/config/env";
 import { customError, AuthErrors } from "@/utils/customError";
 import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
-
-import { prisma }  from "@/config/database";
+import { AppDataSource } from "@/config/database";
+import { User } from "@/models/User";
 
 const parseExpiryToSeconds = (val?: string): number | null => {
   if (!val) return null;
-  // Support formats like '7d', '24h', '60m', '3600s' or plain seconds
   const match = /^([0-9]+)([smhd])?$/.exec(val.trim());
   if (!match) return null;
   const n = parseInt(match[1], 10);
@@ -30,7 +29,7 @@ export interface JWTPayload {
   userId: string;
   email: string;
   roleId: string;
-  jti?: string; // JWT ID for token tracking
+  jti?: string;
 }
 
 export interface TokenPair {
@@ -78,10 +77,8 @@ export const generateTokenPair = async (
     config.JWT_REFRESH_EXPIRES_IN,
   );
 
-  // Store refresh token hash in Redis with TTL
   const tokenHash = await hashToken(refreshToken);
-  // Determine TTL (seconds) from config or default 7 days
-  const ttlSeconds = parseExpiryToSeconds(config.JWT_REFRESH_EXPIRES_IN) || 5 * 60; // default 5 minutes
+  const ttlSeconds = parseExpiryToSeconds(config.JWT_REFRESH_EXPIRES_IN) || 5 * 60;
   await setKey(`refresh:${tokenHash}`, payload.userId, ttlSeconds);
 
   return { accessToken, refreshToken };
@@ -111,15 +108,10 @@ export const verifyAccessToken = async (token: string) => {
 
   const decoded = verifyToken(token, config.JWT_ACCESS_SECRET) as JWTPayload;
 
-  const user = await prisma.user.findUnique({
+  const userRepository = AppDataSource.getRepository(User);
+  const user = await userRepository.findOne({
     where: { id: decoded.userId },
-    include: {
-      role: true,
-      addresses: {
-        where: { isActive: true },
-        orderBy: { isPrimary: "desc" },
-      },
-    },
+    relations: ["role", "addresses"],
   });
 
   if (!user) {
@@ -134,6 +126,9 @@ export const verifyAccessToken = async (token: string) => {
     throw customError(AuthErrors.EMAIL_NOT_VERIFIED, 401);
   }
 
+  const activeAddresses = user.addresses.filter((addr) => addr.isActive);
+  const primaryAddresses = activeAddresses.filter((addr) => addr.isPrimary);
+
   return {
     user: {
       id: user.id,
@@ -146,7 +141,7 @@ export const verifyAccessToken = async (token: string) => {
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       role: user.role,
-      addresses: user.addresses,
+      addresses: primaryAddresses.length > 0 ? primaryAddresses : activeAddresses,
     },
   };
 };
@@ -179,7 +174,7 @@ export const setCookie = (
   options: {
     httpOnly?: boolean;
     secure?: boolean;
-    sameSite?: string;
+    sameSite?: boolean | "none" | "lax" | "strict" | undefined;
     maxAge?: number;
   } = {},
 ) => {
@@ -188,8 +183,8 @@ export const setCookie = (
   res.cookie(name, value, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-    maxAge: options.maxAge || 7 * 24 * 60 * 60 * 1000, // 7 days default
+    sameSite: isProduction ? 'none' : 'lax',
+    maxAge: options.maxAge || 7 * 24 * 60 * 60 * 1000,
     path: "/",
     domain: config.COOKIE_DOMAIN,
     ...options,
@@ -198,27 +193,26 @@ export const setCookie = (
 
 export const clearCookie = (res: Response, name: string) => {
   const isProduction = config.IN_PROD;
+  const sameSiteValue = isProduction ? ("none" as const) : ("lax" as const);
 
   res.clearCookie(name, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    sameSite: sameSiteValue,
     path: "/",
     domain: config.COOKIE_DOMAIN,
   });
 };
 
 export const extractToken = (req: Request): string | null => {
-  // Only check cookies for authentication
   const token = req.cookies?.tpa_session;
   return token || null;
 };
 
 export const cleanupExpiredTokens = async (): Promise<void> => {
-  // Redis handles key expiry automatically; nothing to cleanup here.
+  //
 };
 
-// Cleanup expired tokens every hour
 if (typeof global !== "undefined") {
   global.setInterval(cleanupExpiredTokens, 60 * 60 * 1000);
 }

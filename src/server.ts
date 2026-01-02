@@ -9,7 +9,7 @@ import { logger } from "./utils/logger";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestIdMiddleware } from "./middleware/requestId";
 import { httpLoggerMiddleware } from "./middleware/httpLogger";
-import { prisma, connectDatabase } from "./config/database";
+import { connectDatabase, disconnectDatabase } from "./config/database";
 import config from "./config/env";
 import path from "path";
 import { initRedis } from "./utils/redis/redisClient";
@@ -134,13 +134,13 @@ const startServer = async () => {
 // Graceful shutdown
 process.on("SIGINT", async () => {
   if (!config.IN_PROD) console.log("Shutting down server...");
-  await prisma.$disconnect();
+  await disconnectDatabase();
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
   logger.info("Shutting down server...");
-  await prisma.$disconnect();
+  await disconnectDatabase();
   process.exit(0);
 });
 

@@ -2,6 +2,74 @@ import Joi from "joi";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  Index,
+  JoinColumn,
+  Relation,
+} from "typeorm";
+import { Role } from "./Role";
+import { Address } from "./Address";
+
+@Entity("users")
+@Index(["email"])
+@Index(["isActive", "isVerified"])
+@Index(["roleId"])
+export class User {
+  @PrimaryColumn("varchar", { length: 50 })
+  id!: string;
+
+  @Column("varchar", { length: 255, unique: true })
+  email!: string;
+
+  @Column("varchar", { length: 255 })
+  password!: string;
+
+  @Column("varchar", { length: 100 })
+  fullName!: string;
+
+  @Column("varchar", { length: 500, nullable: true })
+  profileImage!: string | null;
+
+  @Column("varchar", { length: 20, nullable: true })
+  phoneNumber!: string | null;
+
+  @Column("boolean", { default: true })
+  isActive!: boolean;
+
+  @Column("boolean", { default: false })
+  isVerified!: boolean;
+
+  @Column("timestamp", { nullable: true })
+  lastLoginAt!: Date | null;
+
+  @Column("varchar", { length: 50, nullable: true })
+  roleId!: string | null;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
+
+  @ManyToOne(() => Role, (role) => role.users, {
+    onDelete: "SET NULL",
+    nullable: true,
+  })
+  @JoinColumn({ name: "roleId" })
+  role!: Relation<Role> | null;
+
+  @OneToMany(() => Address, (address) => address.user, {
+    onDelete: "CASCADE",
+  })
+  addresses!: Relation<Address[]>;
+}
 
 // User validation schemas
 const userSchemas = {
@@ -88,7 +156,7 @@ const userSchemas = {
       }),
 
     isActive: Joi.boolean().optional(),
-  }).min(1), // At least one field must be provided for update
+  }).min(1),
 
   // Schema for user login
   login: Joi.object({
@@ -253,28 +321,15 @@ const userSchemas = {
   // Schema for query parameters (filtering, pagination)
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1).optional(),
-
     limit: Joi.number().integer().min(1).max(100).default(10).optional(),
-
-    search: Joi.string()
-      .trim()
-      .min(1)
-      .optional()
-      .description("Search in full name or email"),
-
-    roleId: Joi.string().trim().optional().description("Filter by role ID"),
-
-    isActive: Joi.boolean().optional().description("Filter by active status"),
-
-    isVerified: Joi.boolean()
-      .optional()
-      .description("Filter by verification status"),
-
+    search: Joi.string().trim().min(1).optional(),
+    roleId: Joi.string().trim().optional(),
+    isActive: Joi.boolean().optional(),
+    isVerified: Joi.boolean().optional(),
     sortBy: Joi.string()
       .valid("fullName", "email", "createdAt")
       .default("fullName")
       .optional(),
-
     sortOrder: Joi.string().valid("asc", "desc").default("asc").optional(),
   }),
 
@@ -307,12 +362,6 @@ const userSchemas = {
 
 // Auth utility functions
 const authUtils = {
-  /**
-   * Hash a password using bcrypt
-   * @param password - Plain text password
-   * @param saltRounds - Number of salt rounds (default: 12)
-   * @returns Hashed password
-   */
   hashPassword: async (
     password: string,
     saltRounds: number = 12,
@@ -320,12 +369,6 @@ const authUtils = {
     return await bcrypt.hash(password, saltRounds);
   },
 
-  /**
-   * Compare a plain text password with a hashed password
-   * @param password - Plain text password
-   * @param hashedPassword - Hashed password to compare against
-   * @returns True if passwords match, false otherwise
-   */
   comparePassword: async (
     password: string,
     hashedPassword: string,
@@ -333,13 +376,6 @@ const authUtils = {
     return await bcrypt.compare(password, hashedPassword);
   },
 
-  /**
-   * Generate JWT token for user
-   * @param user - User object with id, email, roleId
-   * @param secret - JWT secret key
-   * @param expiresIn - Token expiration time
-   * @returns JWT token
-   */
   generateJWT: (
     user: { id: string; email: string; roleId: string },
     secret: string,
@@ -359,12 +395,6 @@ const authUtils = {
     } as jwt.SignOptions);
   },
 
-  /**
-   * Verify JWT token
-   * @param token - JWT token to verify
-   * @param secret - JWT secret key
-   * @returns Decoded token payload
-   */
   verifyJWT: (token: string, secret: string): Record<string, unknown> => {
     try {
       return jwt.verify(token, secret) as Record<string, unknown>;
@@ -373,22 +403,13 @@ const authUtils = {
     }
   },
 
-  /**
-   * Generate a secure random token
-   * @param length - Length of the token (default: 32)
-   * @returns Random token string
-   */
   generateSecureToken: (length: number = 32): string => {
     return crypto.randomBytes(length).toString("hex");
   },
 
-  /**
-   * Hash a token using SHA-256
-   * @param token - Token to hash
-   * @returns Hashed token
-   */
   hashToken: (token: string): string => {
     return crypto.createHash("sha256").update(token).digest("hex");
   },
 };
+
 export { userSchemas, authUtils };
