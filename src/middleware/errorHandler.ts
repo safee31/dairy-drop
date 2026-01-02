@@ -1,8 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientValidationError,
-} from "@prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 import { logger } from "../utils/logger";
 
 export interface ApiError extends Error {
@@ -44,13 +41,13 @@ export const errorHandler = (
   });
 
   // Prisma errors
-  if (err instanceof PrismaClientKnownRequestError) {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
     const message = handlePrismaError(err);
     error = new AppError(message, 400);
   }
 
   // Prisma validation errors
-  if (err instanceof PrismaClientValidationError) {
+  if (err instanceof Prisma.PrismaClientValidationError) {
     const message = "Invalid data provided";
     error = new AppError(message, 400);
   }
@@ -79,7 +76,7 @@ export const errorHandler = (
   });
 };
 
-const handlePrismaError = (err: PrismaClientKnownRequestError): string => {
+const handlePrismaError = (err: Prisma.PrismaClientKnownRequestError): string => {
   switch (err.code) {
     case "P2002": {
       // Unique constraint violation
@@ -106,6 +103,6 @@ const handlePrismaError = (err: PrismaClientKnownRequestError): string => {
 // Async error wrapper
 export const asyncHandler =
   (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
+    (req: Request, res: Response, next: NextFunction) => {
+      Promise.resolve(fn(req, res, next)).catch(next);
+    };

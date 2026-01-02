@@ -78,6 +78,9 @@ const config = {
     ? parseInt(process.env.RESET_TOKEN_EXPIRY_MINUTES)
     : 5,
 
+  // Allow unverified users to login (useful for ecommerce flows where verification can be deferred)
+  ALLOW_UNVERIFIED_LOGIN: process.env.ALLOW_UNVERIFIED_LOGIN === "true",
+
   // Security Headers
   SECURITY_HEADERS: {
     "X-Content-Type-Options": "nosniff",

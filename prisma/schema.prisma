@@ -1,18 +1,11 @@
-// prisma/schema.prisma
-// Clean PostgreSQL Schema - No external config files needed
-
 generator client {
-  provider = "prisma-client-js"
-  // Use default output and engine settings provided by Prisma
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
-
-// ============================================================================
-// CORE MODELS
-// ============================================================================
 
 model Role {
   id          String   @id @default(cuid())

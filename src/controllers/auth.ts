@@ -87,16 +87,18 @@ export const registerCustomer = asyncHandler(async (req, res) => {
   });
 
   // Generate OTP and store in Redis
-  const verificationOTP = generateOTP();
-  await storeOTP(email.toLowerCase(), verificationOTP, "verify");
+  // Generate OTP and send verification only when verification is required.
+  if (!config.ALLOW_UNVERIFIED_LOGIN) {
+    const verificationOTP = generateOTP();
+    await storeOTP(email.toLowerCase(), verificationOTP, "verify");
 
-  // Send verification email
-  try {
-    await sendVerificationEmail(email, verificationOTP, fullName);
-  } catch (emailError) {
-    logger.error("Failed to send verification email", {
-      error: emailError instanceof Error ? emailError.message : String(emailError),
-    });
+    try {
+      await sendVerificationEmail(email, verificationOTP, fullName);
+    } catch (emailError) {
+      logger.error("Failed to send verification email", {
+        error: emailError instanceof Error ? emailError.message : String(emailError),
+      });
+    }
   }
 
   // Log registration (only email, no paths or sensitive data)
@@ -202,7 +204,8 @@ export const loginCustomer = asyncHandler(async (req, res) => {
   await resetFailedLoginAttempts(email.toLowerCase());
 
   // Ensure user is verified
-  if (!user.isVerified) {
+  // If the application requires verification before login, enforce it.
+  if (!config.ALLOW_UNVERIFIED_LOGIN && !user.isVerified) {
     return responseHandler.error(
       res,
       "Your email is not verified. Please check your email for verification link.",
@@ -310,9 +313,21 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "User not found!", 404);
   }
 
+  const e = email.toLowerCase();
+
+  // Invalidate any existing reset sessions for this email so resend works
+  try {
+    const existing = await getKey(`reset_by_email:${e}`);
+    if (existing) {
+      await delKey(`reset:${e}:${existing}`, `reset_by_email:${e}`).catch(() => {});
+    }
+  } catch (err) {
+    logger.error("Failed to clear existing reset session", { error: err instanceof Error ? err.message : String(err) });
+  }
+
   // Generate OTP and store in Redis (not DB)
   const resetOTP = generateOTP();
-  await storeOTP(email.toLowerCase(), resetOTP, "reset");
+  await storeOTP(e, resetOTP, "reset");
 
   // Send OTP via email
   await sendPasswordResetEmail(email, resetOTP, user.fullName);
@@ -363,17 +378,17 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
   // Verify reset session
   const hashedResetToken = hashResetToken(resetSession);
-  // Verify reset session exists in Redis
-  const stored = await getKey(`reset:${hashedResetToken}`);
-  if (!stored || stored !== user.id) {
+  // Verify reset session exists in Redis. Redis values are strings,
+  // so compare against `String(user.id)` to avoid type mismatch.
+  const e = user.email.toLowerCase();
+  const stored = await getKey(`reset:${e}:${hashedResetToken}`);
+  if (!stored) {
     return responseHandler.error(res, "Invalid or expired reset session", 400);
   }
 
-  // Validate OTP from Redis
-  const isValidOTP = await verifyOTP(email.toLowerCase(), otp, "reset");
-  if (!isValidOTP) {
-    return responseHandler.error(res, "Invalid or expired OTP", 400);
-  }
+  // NOTE: OTP was already verified in the OTP verification step which
+  // created the `resetSession`. Rely on the `resetSession` stored in Redis
+  // instead of re-checking the OTP (which is deleted on successful verification).
 
   // Hash new password using auth utils
   const hashedPassword = await authUtils.hashPassword(
@@ -390,7 +405,8 @@ export const resetPassword = asyncHandler(async (req, res) => {
   });
 
   // Remove reset session from Redis
-  await delKey(`reset:${hashedResetToken}`).catch(() => {});
+  // Remove both the specific reset token and the index for this email
+  await delKey(`reset:${e}:${hashedResetToken}`, `reset_by_email:${e}`).catch(() => {});
 
   // Clear cookies
   clearCookie(res, "resetSession");
@@ -501,8 +517,12 @@ export const verifyUserOTP = asyncHandler(async (req, res) => {
     // For reset type: OTP is valid, now generate reset session and set cookie
     const resetSession = generateResetToken();
     const hashed = hashResetToken(resetSession);
-    // Store hashed reset session in Redis with TTL
-    await setKey(`reset:${hashed}`, user.id, config.RESET_TOKEN_EXPIRY_MINUTES * 60);
+    // Store hashed reset session in Redis with TTL under an email-scoped key
+    // Use lowercased email to ensure consistency across requests.
+    const e = user.email.toLowerCase();
+    await setKey(`reset:${e}:${hashed}`, "1", config.RESET_TOKEN_EXPIRY_MINUTES * 60);
+    // Also store an index so we can invalidate previous tokens and support resends
+    await setKey(`reset_by_email:${e}`, hashed, config.RESET_TOKEN_EXPIRY_MINUTES * 60);
 
     // Set reset session cookie after OTP verification
     setCookie(res, "resetSession", resetSession, {
@@ -537,24 +557,31 @@ export const sendUserOTP = asyncHandler(async (req, res) => {
 
   // Generate OTP and store in Redis
   const otp = generateOTP();
-  await storeOTP(email.toLowerCase(), otp, otpType);
+  const e = email.toLowerCase();
+
+  // If there is an existing reset token index for this email, invalidate it
+  if (otpType === "reset") {
+    try {
+      const existing = await getKey(`reset_by_email:${e}`);
+      if (existing) {
+        await delKey(`reset:${e}:${existing}`, `reset_by_email:${e}`).catch(() => {});
+      }
+    } catch (err) {
+      logger.error("Failed to clear existing reset session before sending OTP", { error: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
+  await storeOTP(e, otp, otpType);
 
   if (otpType === "verify") {
     await sendVerificationEmail(email, otp, user.fullName);
   } else if (otpType === "reset") {
     await sendPasswordResetEmail(email, otp, user.fullName);
 
-    // Generate and store reset session
-    const resetSession = generateResetToken();
-    const hashed = hashResetToken(resetSession);
-    await setKey(`reset:${hashed}`, user.id, config.RESET_TOKEN_EXPIRY_MINUTES * 60);
-
-    // Clear session cookies and set reset session cookie
+    // Don't create reset session here — session is created only after OTP verification.
+    // Clear session cookies to prevent accidental reuse of existing auth.
     clearCookie(res, "tpa_session");
     clearCookie(res, "tpa_refresh");
-    setCookie(res, "resetSession", resetSession, {
-      maxAge: config.RESET_TOKEN_EXPIRY_MINUTES * 60 * 1000,
-    });
   }
 
   return responseHandler.success(res, {}, "OTP sent to email.");

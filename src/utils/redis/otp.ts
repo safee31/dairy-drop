@@ -69,7 +69,6 @@ export const verifyOTP = async (
   try {
     const key = `otp:${purpose}:${email}`;
     const attemptKey = `otp:${purpose}:${email}:attempts`;
-    const ttlSeconds = (config.OTP_EXPIRY_MINUTES || 60) * 60;
 
     // Check and increment attempts
     const storedOTP = await getKey(key);
