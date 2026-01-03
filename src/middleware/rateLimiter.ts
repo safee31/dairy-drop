@@ -81,8 +81,8 @@ export const passwordResetRateLimiter = rateLimiter({
  * General API rate limiter
  */
 export const apiRateLimiter = rateLimiter({
-  windowMs: config.RATE_LIMIT_WINDOW_MS, // 15 minutes
-  maxRequests: config.RATE_LIMIT_MAX_REQUESTS, // 100 requests per 15 minutes
+  windowMs: config.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000, // Default: 15 minutes in milliseconds
+  maxRequests: config.RATE_LIMIT_MAX_REQUESTS || 100, // Default: 100 requests per window
   message: "Too many requests. Please try again later.",
   keyGenerator: (req) => `api:${req.ip}`,
 });

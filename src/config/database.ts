@@ -9,6 +9,24 @@ import { User } from "@/models/User";
 import { Role } from "@/models/Role";
 import { Address } from "@/models/Address";
 
+// Redis cache configuration for TypeORM
+const getCacheConfig = () => {
+  if (config.REDIS_URL || (config.REDIS_HOST && config.REDIS_PORT)) {
+    const redisUrl = config.REDIS_URL || `redis://${config.REDIS_HOST}:${config.REDIS_PORT}`;
+    return {
+      type: "redis" as const,
+      options: {
+        url: redisUrl,
+        socket: {
+          reconnectStrategy: (retries: number) => Math.min(retries * 50, 500),
+        },
+      },
+      duration: 30000, // Cache for 30 seconds
+    };
+  }
+  return false; // Disable caching if Redis not available
+};
+
 // Common configuration
 const baseConfig: DataSourceOptions = {
   type: "postgres",
@@ -16,20 +34,27 @@ const baseConfig: DataSourceOptions = {
   entities: [User, Role, Address],
   migrations: ["src/migrations/*.ts"],
   subscribers: [],
+  // Performance optimizations
+  cache: getCacheConfig(),
+  // Logging: only errors and warnings in production, queries in development
+  logging: config.IN_PROD 
+    ? ["error", "warn"] 
+    : ["error", "warn", "query", "schema"],
+  logger: config.IN_PROD ? "file" : "advanced-console",
+  maxQueryExecutionTime: 1000, // Log queries taking longer than 1 second
 };
 
 // Create DataSource for application (with synchronize based on environment)
 export const AppDataSource = new DataSource({
   ...baseConfig,
   synchronize: config.IN_PROD ? false : true,
-  logging: config.IN_PROD ? false : true,
 });
 
 // Create DataSource for CLI (with synchronize always false)
 export const CliDataSource = new DataSource({
   ...baseConfig,
   synchronize: false,
-  logging: true,
+  logging: ["error", "warn", "query", "schema"],
 });
 
 // Database connection helpers

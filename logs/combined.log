@@ -359,3 +359,6 @@
 23:45:27 [[32minfo[39m]: 🌍 Environment: development
 23:45:27 [[32minfo[39m]: 🔗 Health Check: http://localhost:8000/health
 23:45:27 [[32minfo[39m]: 📚 API Info: http://localhost:8000/api/v1
+23:41:52 [[31merror[39m]: API Error Password must be at least 8 characters long {"url":"/api/v1/auth/register","method":"POST","ip":"::1","userAgent":"PostmanRuntime/7.51.0"}
+23:42:02 [[31merror[39m]: API Error Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character {"url":"/api/v1/auth/register","method":"POST","ip":"::1","userAgent":"PostmanRuntime/7.51.0"}
+23:42:29 [[31merror[39m]: API Error Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character {"url":"/api/v1/auth/register","method":"POST","ip":"::1","userAgent":"PostmanRuntime/7.51.0"}

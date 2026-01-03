@@ -45,16 +45,23 @@ const devFormat = winston.format.combine(
   }),
 );
 
-// Create main logger
+// Create main logger - minimal logging for scalability
 export const logger = winston.createLogger({
-  level: config.IN_PROD ? "warn" : "debug", // Only warn/error in prod, debug in dev
+  level: config.IN_PROD ? "warn" : "info", // Only warn/error in prod, info in dev
   format: config.IN_PROD ? prodFormat : devFormat,
   transports: [
-    // Errors and warnings only (no request-level logs to reduce file size)
+    // Errors only - keep logs minimal and scalable
     new winston.transports.File({
       filename: path.join("logs", "error.log"),
-      level: "error",
-      maxsize: 5242880, // 5MB
+      level: "error", // Only errors to file
+      maxsize: 10485760, // 10MB
+      maxFiles: 10,
+    }),
+    // Warnings to combined log (for monitoring)
+    new winston.transports.File({
+      filename: path.join("logs", "combined.log"),
+      level: "warn", // warn and above
+      maxsize: 10485760, // 10MB
       maxFiles: 5,
     }),
   ],
@@ -69,20 +76,33 @@ if (!config.IN_PROD) {
   );
 }
 
-// Audit logger for compliance (login, register, auth events)
-export const auditLogger = winston.createLogger({
+const baseAuditLogger = winston.createLogger({
   level: "info",
   format: prodFormat,
   transports: [
     new winston.transports.File({
       filename: path.join("logs", "audit.log"),
-      maxsize: 10485760, // 10MB
+      maxsize: 10485760,
       maxFiles: 10,
     }),
   ],
 });
 
-// Helper: log with requestId automatically injected
+export const auditLogger = {
+  info: (message: string, meta?: Record<string, unknown>) => {
+    const requestId = getRequestId();
+    baseAuditLogger.info(message, requestId ? { requestId, ...meta } : meta);
+  },
+  warn: (message: string, meta?: Record<string, unknown>) => {
+    const requestId = getRequestId();
+    baseAuditLogger.warn(message, requestId ? { requestId, ...meta } : meta);
+  },
+  error: (message: string, meta?: Record<string, unknown>) => {
+    const requestId = getRequestId();
+    baseAuditLogger.error(message, requestId ? { requestId, ...meta } : meta);
+  },
+};
+
 export const logWithContext = (level: "info" | "warn" | "error" | "debug", message: string, meta?: Record<string, unknown>) => {
   const requestId = getRequestId();
   logger[level](message, requestId ? { requestId, ...meta } : meta);

@@ -29,12 +29,21 @@ module.exports = [
             '@typescript-eslint': tseslint,
         },
         rules: {
-            '@typescript-eslint/no-unused-vars': 'error',
+            // TypeScript specific rules
+            '@typescript-eslint/no-unused-vars': ['error', { 
+                argsIgnorePattern: '^_',
+                varsIgnorePattern: '^_',
+            }],
             '@typescript-eslint/no-explicit-any': 'warn',
-            'no-console': 'warn',
+            '@typescript-eslint/no-floating-promises': 'error',
+            '@typescript-eslint/no-misused-promises': 'error',
+            
+            // General JavaScript/TypeScript rules
+            'no-console': ['warn', { allow: ['warn', 'error'] }],
             'prefer-const': 'error',
             'no-var': 'error',
             'no-unused-vars': 'off', // Turn off base rule in favor of TypeScript version
+            'eqeqeq': ['error', 'always', { null: 'ignore' }],
         },
     },
     {

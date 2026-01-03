@@ -10,3 +10,7 @@
 }
 {"timestamp":"2025-12-26 00:03:43","level":"info","message":"User registered","service":"dairy-drop-api","requestId":"4f70ee51-a779-4726-98d8-30c8c4dbdb6f","context":{"userId":"cmjlt9jie0000bsuesjwz44n2","email":"safeesafee31@gmail.com","ip":"::1"}}
 {"timestamp":"2026-01-02 22:27:09","level":"info","message":"User registered","service":"dairy-drop-api","requestId":"a541e428-d5ec-445c-8922-fbdce11d68d1","context":{"userId":"52kdazef1x5","email":"saifee3131@gmail.com","ip":"::1"}}
+{"timestamp":"2026-01-03 23:30:40","level":"info","message":"Password reset successful","service":"dairy-drop-api","requestId":"aed0a280-aaf1-4664-95bc-0183f2877fc9","context":{"userId":"52kdazef1x5","email":"saifee3131@gmail.com","ip":"::1"}}
+{"timestamp":"2026-01-03 23:30:55","level":"info","message":"Login successful","service":"dairy-drop-api","requestId":"b4f646a6-52f7-4c86-8e13-a5e023bb2b91","context":{"userId":"52kdazef1x5","ip":"::1"}}
+{"timestamp":"2026-01-03 23:42:48","level":"info","message":"User registered","service":"dairy-drop-api","requestId":"b7bb2896-eeae-441c-87a9-5f99e63791c4","context":{"userId":"8n3vmtb8yba","email":"safeesafee3131@gmail.com","ip":"::1"}}
+{"timestamp":"2026-01-03 23:43:23","level":"info","message":"Login successful","service":"dairy-drop-api","requestId":"15ea8cfc-1cb1-492e-859f-7301e8f59f21","context":{"userId":"8n3vmtb8yba","ip":"::1"}}

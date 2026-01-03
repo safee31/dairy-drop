@@ -3,8 +3,7 @@ import { Request, Response } from "express";
 import config from "@/config/env";
 import { customError, AuthErrors } from "@/utils/customError";
 import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
-import { AppDataSource } from "@/config/database";
-import { User } from "@/models/User";
+import { UserRepo } from "@/models/repositories";
 
 const parseExpiryToSeconds = (val?: string): number | null => {
   if (!val) return null;
@@ -108,8 +107,7 @@ export const verifyAccessToken = async (token: string) => {
 
   const decoded = verifyToken(token, config.JWT_ACCESS_SECRET) as JWTPayload;
 
-  const userRepository = AppDataSource.getRepository(User);
-  const user = await userRepository.findOne({
+  const user = await UserRepo.findOne({
     where: { id: decoded.userId },
     relations: ["role", "addresses"],
   });

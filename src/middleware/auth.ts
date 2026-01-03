@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken, extractToken, verifyRefreshToken } from "@/utils/jwt";
 import { customError, AuthErrors } from "@/utils/customError";
-import { auditLogger, requestContext } from "@/utils/logger";
+import { auditLogger } from "@/utils/logger";
 
 // Extend Request interface to include user and account
 declare global {
@@ -24,8 +24,7 @@ export const authenticate = async (
     const token = extractToken(req);
 
     if (!token) {
-      const requestId = requestContext.getStore()?.requestId || "";
-      auditLogger.warn("Auth: missing token", { requestId, ip: req.ip });
+      auditLogger.warn("Auth: missing token", { ip: req.ip });
       return next(customError(AuthErrors.TOKEN_REQUIRED, 401));
     }
 
@@ -36,20 +35,12 @@ export const authenticate = async (
     }
 
     if (!user.isVerified) {
-      const requestId = requestContext.getStore()?.requestId || "";
-      auditLogger.info("Auth: unverified email", {
-        requestId,
-        userId: user.id,
-      });
+      auditLogger.info("Auth: unverified email", { userId: user.id });
       return next(customError(AuthErrors.EMAIL_NOT_VERIFIED, 401));
     }
 
     if (!user.isActive) {
-      const requestId = requestContext.getStore()?.requestId || "";
-      auditLogger.warn("Auth: inactive account", {
-        requestId,
-        userId: user.id,
-      });
+      auditLogger.warn("Auth: inactive account", { userId: user.id });
       return next(customError(AuthErrors.ACCOUNT_INACTIVE, 401));
     }
 
@@ -57,8 +48,7 @@ export const authenticate = async (
 
     next();
   } catch {
-    const requestId = requestContext.getStore()?.requestId || "";
-    auditLogger.warn("Auth: invalid token", { requestId, ip: req.ip });
+    auditLogger.warn("Auth: invalid token", { ip: req.ip });
     return next(customError(AuthErrors.INVALID_TOKEN, 401));
   }
 };

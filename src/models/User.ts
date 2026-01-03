@@ -105,10 +105,9 @@ const userSchemas = {
 
     confirmPassword: Joi.string()
       .valid(Joi.ref("password"))
-      .required()
+      .optional()
       .messages({
         "any.only": "Passwords do not match",
-        "string.empty": "Password confirmation is required",
       }),
 
     phoneNumber: Joi.string()
@@ -177,14 +176,14 @@ const userSchemas = {
       "string.email": "Please provide a valid email address",
     }),
 
-    otpCode: Joi.string()
-      .length(6)
+    otp: Joi.string()
+      .length(4)
       .pattern(/^[0-9]+$/)
       .required()
       .messages({
-        "string.empty": "OTP code is required",
-        "string.length": "OTP code must be exactly 6 digits",
-        "string.pattern.base": "OTP code must contain only numbers",
+        "string.empty": "OTP is required",
+        "string.length": "OTP must be exactly 4 digits",
+        "string.pattern.base": "OTP must contain only numbers",
       }),
   }),
 

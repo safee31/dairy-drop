@@ -3,39 +3,36 @@ import { generateTokenPair, setCookie, clearCookie } from "@/utils/jwt";
 import { generateResetToken, hashResetToken, parseExpiryToSeconds } from "@/utils/otp";
 import { verifyRefreshToken, revokeRefreshToken } from "@/utils/jwt";
 import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } from "@/utils/emailService";
-import { logger, auditLogger, requestContext } from "@/utils/logger";
+import { logger, auditLogger } from "@/utils/logger";
 import { responseHandler } from "@/middleware/responseHandler";
 import config from "@/config/env";
 import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
-import { authUtils } from "@/models/User";
-import { AppDataSource } from "@/config/database";
-import { User } from "@/models/User";
-import { Role } from "@/models/Role";
-import { generateOTP, storeOTP, verifyOTP, isAccountLockedByFailedLogins, trackFailedLogin, resetFailedLoginAttempts } from "@/utils/redis";
+import { authUtils, userSchemas } from "@/models/User";
+import { UserRepo, RoleRepo } from "@/models/repositories";
+import { generateOTP, storeOTP, verifyOTP } from "@/utils/redis";
+import { normalizeEmail } from "@/utils/helpers";
+import { validate } from "@/middleware/validate";
 
 export const registerCustomer = asyncHandler(async (req, res) => {
   const { email, password, fullName, phoneNumber, profileImage } = req.body;
 
-  const userRepository = AppDataSource.getRepository(User);
-  const roleRepository = AppDataSource.getRepository(Role);
-
-  const existingUser = await userRepository.findOneBy({ email: email.toLowerCase() });
+  const existingUser = await UserRepo.findOneBy({ email: normalizeEmail(email) });
 
   if (existingUser) {
     return responseHandler.error(res, "User already exists!", 400);
   }
 
-  let customerRole = await roleRepository.findOneBy({ name: "Customer", type: 2 });
+  let customerRole = await RoleRepo.findOneBy({ name: "Customer", type: 2 });
 
   if (!customerRole) {
-    customerRole = roleRepository.create({
+    customerRole = RoleRepo.create({
       id: Math.random().toString(36).substring(2, 15),
       name: "Customer",
       type: 2,
       description: "Default customer role",
       permissions: {},
     });
-    await roleRepository.save(customerRole);
+    await RoleRepo.save(customerRole);
   }
 
   const hashedPassword = await authUtils.hashPassword(
@@ -43,9 +40,9 @@ export const registerCustomer = asyncHandler(async (req, res) => {
     config.BCRYPT_SALT_ROUNDS,
   );
 
-  const newUser = userRepository.create({
+  const newUser = UserRepo.create({
     id: Math.random().toString(36).substring(2, 15),
-    email: email.toLowerCase(),
+    email: normalizeEmail(email),
     fullName,
     password: hashedPassword,
     roleId: customerRole.id,
@@ -55,11 +52,11 @@ export const registerCustomer = asyncHandler(async (req, res) => {
     profileImage: profileImage || null,
   });
 
-  const user = await userRepository.save(newUser);
+  const user = await UserRepo.save(newUser);
 
   if (!config.ALLOW_UNVERIFIED_LOGIN) {
     const verificationOTP = generateOTP();
-    await storeOTP(email.toLowerCase(), verificationOTP, "verify");
+    await storeOTP(normalizeEmail(email), verificationOTP, "verify");
 
     try {
       await sendVerificationEmail(email, verificationOTP, fullName);
@@ -70,9 +67,7 @@ export const registerCustomer = asyncHandler(async (req, res) => {
     }
   }
 
-  const requestId = requestContext.getStore()?.requestId || "";
   auditLogger.info("User registered", {
-    requestId,
     userId: user.id,
     email: user.email,
     ip: req.ip,
@@ -89,8 +84,7 @@ export const registerCustomer = asyncHandler(async (req, res) => {
 export const verifyEmail = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
 
-  const userRepository = AppDataSource.getRepository(User);
-  const user = await userRepository.findOneBy({ email: email.toLowerCase() });
+  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
@@ -101,18 +95,16 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   }
 
   // Verify OTP from Redis
-  const isValidOTP = await verifyOTP(email.toLowerCase(), otp, "verify");
+  const isValidOTP = await verifyOTP(normalizeEmail(email), otp, "verify");
   if (!isValidOTP) {
     return responseHandler.error(res, "Invalid or expired OTP", 400);
   }
 
   user.isVerified = true;
-  await userRepository.save(user);
+  await UserRepo.save(user);
 
   // Log email verification (safe: userId + email only)
-  const verifyRequestId = requestContext.getStore()?.requestId || "";
   auditLogger.info("Email verified", {
-    requestId: verifyRequestId,
     userId: user.id,
     ip: req.ip,
   });
@@ -133,29 +125,14 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 export const loginCustomer = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const isLocked = await isAccountLockedByFailedLogins(email.toLowerCase());
-  if (isLocked) {
-    return responseHandler.error(
-      res,
-      "Account temporarily locked due to too many failed login attempts. Please try again later.",
-      429,
-    );
-  }
-
-  const userRepository = AppDataSource.getRepository(User);
-  const user = await userRepository.findOne({
-    where: { email: email.toLowerCase() },
+  const user = await UserRepo.findOne({
+    where: { email: normalizeEmail(email) },
     relations: ["role"],
   });
 
   if (!user || !(await authUtils.comparePassword(password, user.password))) {
-    // Track failed login attempt
-    await trackFailedLogin(email.toLowerCase());
     return responseHandler.unauthorized(res, "Incorrect email or password!");
   }
-
-  // Reset failed login attempts on successful login
-  await resetFailedLoginAttempts(email.toLowerCase());
 
   if (!config.ALLOW_UNVERIFIED_LOGIN && !user.isVerified) {
     return responseHandler.error(
@@ -186,12 +163,10 @@ export const loginCustomer = asyncHandler(async (req, res) => {
   setCookie(res, "tpa_refresh", refreshToken, { maxAge: refreshTtlMs });
 
   user.lastLoginAt = new Date();
-  await userRepository.save(user);
+  await UserRepo.save(user);
 
   // Log successful login (only userId, email, IP - no User-Agent)
-  const loginRequestId = requestContext.getStore()?.requestId || "";
   auditLogger.info("Login successful", {
-    requestId: loginRequestId,
     userId: user.id,
     ip: req.ip,
   });
@@ -230,7 +205,11 @@ export const refreshTokens = asyncHandler(async (req, res) => {
   await revokeRefreshToken(oldRefresh).catch(() => { });
 
   // Issue new token pair
-  const payload = { userId: decoded.userId, email: decoded.email, roleId: decoded.roleId } as any;
+  const payload = { 
+    userId: decoded.userId, 
+    email: decoded.email, 
+    roleId: decoded.roleId 
+  };
   const { accessToken, refreshToken } = await generateTokenPair(payload);
 
   // Set cookies
@@ -251,14 +230,13 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Email is required", 400);
   }
 
-  const userRepository = AppDataSource.getRepository(User);
-  const user = await userRepository.findOneBy({ email: email.toLowerCase() });
+  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
   }
 
-  const e = email.toLowerCase();
+  const e = normalizeEmail(email);
 
   // Invalidate any existing reset sessions for this email so resend works
   try {
@@ -312,15 +290,14 @@ export const resetPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "OTP is required", 400);
   }
 
-  const userRepository = AppDataSource.getRepository(User);
-  const user = await userRepository.findOneBy({ email: email.toLowerCase() });
+  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
   }
 
   const hashedResetToken = hashResetToken(resetSession);
-  const e = user.email.toLowerCase();
+  const e = normalizeEmail(user.email);
   const stored = await getKey(`reset:${e}:${hashedResetToken}`);
   if (!stored) {
     return responseHandler.error(res, "Invalid or expired reset session", 400);
@@ -332,7 +309,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   );
 
   user.password = hashedPassword;
-  await userRepository.save(user);
+  await UserRepo.save(user);
 
   // Remove reset session from Redis
   await delKey(`reset:${e}:${hashedResetToken}`, `reset_by_email:${e}`).catch(() => { });
@@ -416,8 +393,7 @@ export const verifyUserOTP = asyncHandler(async (req, res) => {
     );
   }
 
-  const userRepository = AppDataSource.getRepository(User);
-  const user = await userRepository.findOneBy({ email: email.toLowerCase() });
+  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
@@ -428,18 +404,18 @@ export const verifyUserOTP = asyncHandler(async (req, res) => {
   }
 
   // Verify OTP from Redis
-  const isValidOTP = await verifyOTP(email.toLowerCase(), otp, otpType);
+  const isValidOTP = await verifyOTP(normalizeEmail(email), otp, otpType);
   if (!isValidOTP) {
     return responseHandler.error(res, "Invalid or expired OTP!", 400);
   }
 
   if (otpType === "verify") {
     user.isVerified = true;
-    await userRepository.save(user);
+    await UserRepo.save(user);
   } else if (otpType === "reset") {
     const resetSession = generateResetToken();
     const hashed = hashResetToken(resetSession);
-    const e = user.email.toLowerCase();
+    const e = normalizeEmail(user.email);
     await setKey(`reset:${e}:${hashed}`, "1", config.RESET_TOKEN_EXPIRY_MINUTES * 60);
     await setKey(`reset_by_email:${e}`, hashed, config.RESET_TOKEN_EXPIRY_MINUTES * 60);
     setCookie(res, "resetSession", resetSession, {
@@ -464,8 +440,7 @@ export const sendUserOTP = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Invalid OTP type!", 400);
   }
 
-  const userRepository = AppDataSource.getRepository(User);
-  const user = await userRepository.findOneBy({ email: email.toLowerCase() });
+  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
@@ -473,7 +448,7 @@ export const sendUserOTP = asyncHandler(async (req, res) => {
 
   // Generate OTP and store in Redis
   const otp = generateOTP();
-  const e = email.toLowerCase();
+  const e = normalizeEmail(email);
 
   // If there is an existing reset token index for this email, invalidate it
   if (otpType === "reset") {

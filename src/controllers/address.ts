@@ -1,8 +1,7 @@
 import asyncHandler from "../utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { auditLogger } from "../utils/logger";
-import { AppDataSource } from "@/config/database";
-import { User } from "@/models/User";
+import { AddressRepo } from "@/models/repositories";
 import { Address } from "@/models/Address";
 
 export const getUserAddresses = asyncHandler(async (req, res) => {
@@ -11,8 +10,7 @@ export const getUserAddresses = asyncHandler(async (req, res) => {
 
   const skip = (Number(page) - 1) * Number(limit);
 
-  const addressRepository = AppDataSource.getRepository(Address);
-  const queryBuilder = addressRepository.createQueryBuilder("address")
+  const queryBuilder = AddressRepo.createQueryBuilder("address")
     .where("address.userId = :userId", { userId });
 
   if (isPrimary !== undefined) {
@@ -48,8 +46,7 @@ export const getAddressById = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
   const userId = req.user?.id as string;
 
-  const addressRepository = AppDataSource.getRepository(Address);
-  const address = await addressRepository.findOneBy({ id, userId });
+  const address = await AddressRepo.findOneBy({ id, userId });
 
   if (!address) {
     return responseHandler.error(res, "Address not found", 404);
@@ -62,10 +59,9 @@ export const createAddress = asyncHandler(async (req, res) => {
   const userId = req.user?.id as string;
   const { isPrimary, ...addressData } = req.body;
 
-  const addressRepository = AppDataSource.getRepository(Address);
 
   if (isPrimary) {
-    await addressRepository.update(
+    await AddressRepo.update(
       { userId, isPrimary: true },
       { isPrimary: false }
     );
@@ -77,8 +73,8 @@ export const createAddress = asyncHandler(async (req, res) => {
     ...addressData,
   };
 
-  const address = addressRepository.create(addressDataToSave);
-  const savedAddress = await addressRepository.save(address);
+  const address = AddressRepo.create(addressDataToSave);
+  const savedAddress = await AddressRepo.save(address);
 
   auditLogger.info("Address created", {
     userId,
@@ -99,15 +95,14 @@ export const updateAddress = asyncHandler(async (req, res) => {
   const userId = req.user?.id as string;
   const { isPrimary, ...addressData } = req.body;
 
-  const addressRepository = AppDataSource.getRepository(Address);
-  const address = await addressRepository.findOneBy({ id, userId });
+  const address = await AddressRepo.findOneBy({ id, userId });
 
   if (!address) {
     return responseHandler.error(res, "Address not found", 404);
   }
 
   if (isPrimary) {
-    await addressRepository.update(
+    await AddressRepo.update(
       { userId, isPrimary: true, id },
       { isPrimary: false }
     );
@@ -117,7 +112,7 @@ export const updateAddress = asyncHandler(async (req, res) => {
   if (isPrimary !== undefined) {
     address.isPrimary = isPrimary;
   }
-  await addressRepository.save(address);
+  await AddressRepo.save(address);
 
   auditLogger.info("Address updated", {
     userId,
@@ -135,14 +130,13 @@ export const deleteAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
   const userId = req.user?.id as string;
 
-  const addressRepository = AppDataSource.getRepository(Address);
-  const address = await addressRepository.findOneBy({ id, userId });
+  const address = await AddressRepo.findOneBy({ id, userId });
 
   if (!address) {
     return responseHandler.error(res, "Address not found", 404);
   }
 
-  const addressCount = await addressRepository.countBy({ userId, isActive: true });
+  const addressCount = await AddressRepo.countBy({ userId, isActive: true });
   if (addressCount === 1) {
     return responseHandler.error(
       res,
@@ -152,17 +146,17 @@ export const deleteAddress = asyncHandler(async (req, res) => {
   }
 
   address.isActive = false;
-  await addressRepository.save(address);
+  await AddressRepo.save(address);
 
   if (address.isPrimary) {
-    const nextAddress = await addressRepository.findOne({
+    const nextAddress = await AddressRepo.findOne({
       where: { userId, isActive: true },
       order: { createdAt: "ASC" },
     });
 
     if (nextAddress) {
       nextAddress.isPrimary = true;
-      await addressRepository.save(nextAddress);
+      await AddressRepo.save(nextAddress);
     }
   }
 
@@ -178,8 +172,7 @@ export const setPrimaryAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
   const userId = req.user?.id as string;
 
-  const addressRepository = AppDataSource.getRepository(Address);
-  const address = await addressRepository.findOneBy({ id, userId });
+  const address = await AddressRepo.findOneBy({ id, userId });
 
   if (!address) {
     return responseHandler.error(res, "Address not found", 404);
@@ -189,13 +182,13 @@ export const setPrimaryAddress = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Cannot set inactive address as primary", 400);
   }
 
-  await addressRepository.update(
+  await AddressRepo.update(
     { userId, isPrimary: true },
     { isPrimary: false }
   );
 
   address.isPrimary = true;
-  await addressRepository.save(address);
+  await AddressRepo.save(address);
 
   auditLogger.info("Primary address updated", {
     userId,
