@@ -16,7 +16,7 @@ interface RateLimitConfig {
  * Rate limiting middleware
  */
 export const rateLimiter = (config: RateLimitConfig) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const key = config.keyGenerator
       ? config.keyGenerator(req)
       : req.ip || "unknown";

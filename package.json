@@ -29,7 +29,8 @@
     "security:audit": "npm audit --audit-level=moderate",
     "security:fix": "npm audit fix",
     "logs:clear": "rimraf logs/*.log",
-    "cache:clear": "rimraf node_modules/.cache"
+    "cache:clear": "rimraf node_modules/.cache",
+    "seed:admin": "tsx src/seeds/admin.seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -50,6 +51,7 @@
     "pg": "^8.16.3",
     "redis": "^4.7.1",
     "reflect-metadata": "^0.1.14",
+    "sharp": "^0.34.5",
     "typeorm": "^0.3.20",
     "winston": "^3.17.0",
     "zod": "^4.0.8"
@@ -66,6 +68,7 @@
     "@types/node": "^20.19.27",
     "@types/nodemailer": "^6.4.14",
     "@types/pg": "^8.16.0",
+    "@types/sharp": "^0.31.1",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
     "eslint": "^9.31.0",

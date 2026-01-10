@@ -1,0 +1,1160 @@
+{
+  "info": {
+    "name": "Dairy Drop API",
+    "_postman_id": "dairy-drop-api-v1",
+    "description": "Complete Postman collection for Dairy Drop API. Import and set variables: baseUrl (http://localhost:8000) and token (after login).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token from login response"
+    },
+    {
+      "key": "customer_id",
+      "value": "",
+      "type": "string",
+      "description": "Customer ID for admin operations"
+    },
+    {
+      "key": "address_id",
+      "value": "",
+      "type": "string",
+      "description": "Address ID for address operations"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth - Authentication & Password Management",
+      "description": "User authentication, OTP verification, password reset, and profile endpoints",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.environment.set('registration_email', pm.request.body.raw ? JSON.parse(pm.request.body.raw).email : '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"fullName\": \"Jane Smith\",\n  \"password\": \"SecurePass123!\",\n  \"confirmPassword\": \"SecurePass123!\",\n  \"phoneNumber\": \"+1234567890\",\n  \"profileImage\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register a new customer account. Password must contain uppercase, lowercase, number, and special character."
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-email"
+              ]
+            },
+            "description": "Verify email with OTP sent during registration"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.data && jsonData.data.user) {",
+                  "    pm.environment.set('token', pm.cookies.get('dd_session'));",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login with email and password. Returns access and refresh tokens in cookies and response."
+          }
+        },
+        {
+          "name": "Refresh Tokens",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Refresh access token using refresh token cookie"
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            },
+            "description": "Retrieve authenticated user profile (protected)"
+          }
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"otpType\": \"verify\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/send-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "send-otp"
+              ]
+            },
+            "description": "Send OTP to user email. otpType: 'verify' or 'reset'"
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"otp\": \"123456\",\n  \"otpType\": \"verify\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-otp"
+              ]
+            },
+            "description": "Verify OTP for email verification or password reset"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Request password reset OTP to be sent to email"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewSecurePass456!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "Reset password using OTP from forgot-password endpoint"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logout user and clear authentication cookies (protected)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Addresses - Customer Delivery Addresses",
+      "description": "Manage customer delivery addresses with primary address selection",
+      "item": [
+        {
+          "name": "List All Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/addresses?page=1&limit=10&sortBy=createdAt&sortOrder=desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "isPrimary",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "isActive",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "List all addresses for authenticated user with pagination and sorting (protected)"
+          }
+        },
+        {
+          "name": "Create Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.data && jsonData.data.address) {",
+                  "    pm.environment.set('address_id', jsonData.data.address.id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Home\",\n  \"fullName\": \"Jane Smith\",\n  \"phoneNumber\": \"+1234567890\",\n  \"streetAddress\": \"123 Main Street\",\n  \"apartment\": \"Apt 4B\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"postalCode\": \"10001\",\n  \"country\": \"United States\",\n  \"isPrimary\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/addresses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses"
+              ]
+            },
+            "description": "Create new delivery address. If isPrimary=true, other primary addresses are auto-downgraded (protected)"
+          }
+        },
+        {
+          "name": "Get Address by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/addresses/{{address_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses",
+                "{{address_id}}"
+              ]
+            },
+            "description": "Retrieve specific address by ID (protected)"
+          }
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Office\",\n  \"fullName\": \"Jane Smith\",\n  \"phoneNumber\": \"+1234567890\",\n  \"streetAddress\": \"456 Business Ave\",\n  \"apartment\": \"Suite 200\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"postalCode\": \"10002\",\n  \"country\": \"United States\",\n  \"isPrimary\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/addresses/{{address_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses",
+                "{{address_id}}"
+              ]
+            },
+            "description": "Update existing address details (protected)"
+          }
+        },
+        {
+          "name": "Set Primary Address",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/addresses/{{address_id}}/set-primary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses",
+                "{{address_id}}",
+                "set-primary"
+              ]
+            },
+            "description": "Set address as primary for the user (protected)"
+          }
+        },
+        {
+          "name": "Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/addresses/{{address_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses",
+                "{{address_id}}"
+              ]
+            },
+            "description": "Soft delete address (sets isActive=false). Cannot delete if it's the only active address (protected)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users - Customer User Profiles",
+      "description": "Customer user profile management (placeholder endpoints for future implementation)",
+      "item": [
+        {
+          "name": "Get All Users (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "List all users (admin role required)"
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ]
+            },
+            "description": "Get current user profile (protected)"
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Jane Smith Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ]
+            },
+            "description": "Update current user profile (protected)"
+          }
+        },
+        {
+          "name": "Get User by ID (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{customer_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{customer_id}}"
+              ]
+            },
+            "description": "Get specific user by ID (admin role required)"
+          }
+        },
+        {
+          "name": "Update User (Admin Only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{customer_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{customer_id}}"
+              ]
+            },
+            "description": "Update user by ID (admin role required)"
+          }
+        },
+        {
+          "name": "Delete User (Admin Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{customer_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{customer_id}}"
+              ]
+            },
+            "description": "Delete user by ID (admin role required)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Management",
+      "description": "Admin endpoints for managing platform entities (customers, products, categories, inventory, orders)",
+      "item": [
+        {
+          "name": "Customers",
+          "description": "Customer account management, profiles, and status",
+          "item": [
+            {
+              "name": "List All Customers",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/customers?page=1&limit=10&search=&sortBy=createdAt&sortOrder=desc",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "customers"
+                  ]
+                },
+                "description": "Get all customers with pagination, search, filtering, and sorting (admin only, protected)"
+              }
+            },
+            {
+              "name": "Get Customer by ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/customers/{{customer_id}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "customers",
+                    "{{customer_id}}"
+                  ]
+                },
+                "description": "Get specific customer details by ID (admin only, protected)"
+              }
+            },
+            {
+              "name": "Create Customer",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  var jsonData = pm.response.json();",
+                      "  if (jsonData.data && jsonData.data.customer) {",
+                      "    pm.environment.set('customer_id', jsonData.data.customer.id);",
+                      "  }",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "email",
+                      "value": "newcustomer@example.com",
+                      "type": "text"
+                    },
+                    {
+                      "key": "fullName",
+                      "value": "John Anderson",
+                      "type": "text"
+                    },
+                    {
+                      "key": "password",
+                      "value": "AdminPass123!",
+                      "type": "text"
+                    },
+                    {
+                      "key": "phoneNumber",
+                      "value": "+1987654321",
+                      "type": "text"
+                    },
+                    {
+                      "key": "profileImage",
+                      "type": "file",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/customers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "customers"
+                  ]
+                },
+                "description": "Create new customer account (admin only, protected). Supports multipart form-data with optional profile image file"
+              }
+            },
+            {
+              "name": "Update Customer",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "fullName",
+                      "value": "John Anderson Updated",
+                      "type": "text"
+                    },
+                    {
+                      "key": "phoneNumber",
+                      "value": "+1987654321",
+                      "type": "text"
+                    },
+                    {
+                      "key": "password",
+                      "value": "NewAdminPass456!",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "isActive",
+                      "value": "true",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "profileImage",
+                      "type": "file",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/customers/{{customer_id}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "customers",
+                    "{{customer_id}}"
+                  ]
+                },
+                "description": "Update customer details by ID (admin only, protected). All fields optional except at least one must be provided"
+              }
+            },
+            {
+              "name": "Toggle Customer Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/customers/{{customer_id}}/toggle-status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "customers",
+                    "{{customer_id}}",
+                    "toggle-status"
+                  ]
+                },
+                "description": "Toggle customer active status (admin only, protected)"
+              }
+            },
+            {
+              "name": "Delete Customer",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/customers/{{customer_id}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "customers",
+                    "{{customer_id}}"
+                  ]
+                },
+                "description": "Delete customer by ID (admin only, protected)"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Products",
+          "description": "Admin product management and images",
+          "item": [
+            {
+              "name": "List Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/products?page=1&limit=10&search=&categoryId=&isActive=&sortBy=createdAt&order=DESC",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin","products"]
+                },
+                "description": "List products with filters and pagination (admin only)"
+              }
+            },
+            {
+              "name": "Get Product by ID",
+              "request": {
+                "method": "GET",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}"] }
+              }
+            },
+            {
+              "name": "Create Product",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Milk 1L\",\n  \"description\": \"Fresh milk\",\n  \"sku\": \"MILK-1L\",\n  \"categoryLevel2Id\": \"\",\n  \"price\": 100.00,\n  \"brand\": \"Dairy\",\n  \"fatContent\": \"1%\",\n  \"weight\": { \"value\": 1000, \"unit\": \"ml\" },\n  \"shelfLife\": \"7 days\",\n  \"discount\": null\n}\n" },
+                "url": { "raw": "{{baseUrl}}/admin/products", "host": ["{{baseUrl}}"], "path": ["admin","products"] },
+                "description": "Create a new product (admin only)"
+              }
+            },
+            {
+              "name": "Update Product",
+              "request": {
+                "method": "PUT",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"price\": 90.00,\n  \"discount\": { \"type\": \"percentage\", \"value\": 10 }\n}\n" },
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}"] },
+                "description": "Update product details (admin only)"
+              }
+            },
+            {
+              "name": "Delete Product",
+              "request": {
+                "method": "DELETE",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}"] },
+                "description": "Delete a product (admin only)"
+              }
+            },
+            {
+              "name": "Toggle Product Status",
+              "request": {
+                "method": "PATCH",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}/toggle-status", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}","toggle-status"] },
+                "description": "Toggle product active status (admin only)"
+              }
+            },
+            {
+              "name": "List Product Images",
+              "request": {
+                "method": "GET",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}/images", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}","images"] },
+                "description": "List images for a product"
+              }
+            },
+            {
+              "name": "Upload Product Images (bulk)",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+                "body": { "mode": "formdata", "formdata": [ { "key": "images", "type": "file", "disabled": true } ] },
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}/images", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}","images"] },
+                "description": "Bulk upload product images (multipart/form-data)"
+              }
+            },
+            {
+              "name": "Add Single Product Image",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+                "body": { "mode": "formdata", "formdata": [ { "key": "image", "type": "file", "disabled": true } ] },
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}/images/add", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}","images","add"] },
+                "description": "Add a single product image (multipart/form-data)"
+              }
+            },
+            {
+              "name": "Update Product Image",
+              "request": {
+                "method": "PATCH",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+                "body": { "mode": "formdata", "formdata": [ { "key": "image", "type": "file", "disabled": true } ] },
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}/images/{{image_id}}", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}","images","{{image_id}}"] },
+                "description": "Replace or update a product image"
+              }
+            },
+            {
+              "name": "Delete Product Image",
+              "request": {
+                "method": "DELETE",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}/images/{{image_id}}", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}","images","{{image_id}}"] },
+                "description": "Delete an image from a product"
+              }
+            },
+            {
+              "name": "Set Primary Product Image",
+              "request": {
+                "method": "PATCH",
+                "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+                "body": { "mode": "raw", "raw": "" },
+                "url": { "raw": "{{baseUrl}}/admin/products/{{product_id}}/images/{{image_id}}/set-primary", "host": ["{{baseUrl}}"], "path": ["admin","products","{{product_id}}","images","{{image_id}}","set-primary"] },
+                "description": "Mark an image as primary for the product"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Categories",
+          "description": "Category management (root, level1, level2)",
+          "item": [
+            {
+              "name": "List Root Categories",
+              "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/categories", "host": ["{{baseUrl}}"], "path": ["admin","categories"] } }
+            },
+            { "name": "Get Root Category by ID", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/categories/{{category_id}}", "host": ["{{baseUrl}}"], "path": ["admin","categories","{{category_id}}"] } } },
+            { "name": "Create Root Category", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" } ], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Dairy\"\n}\n" }, "url": { "raw": "{{baseUrl}}/admin/categories", "host": ["{{baseUrl}}"], "path": ["admin","categories"] } } },
+            { "name": "Update Root Category", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" } ], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Dairy Updated\"\n}\n" }, "url": { "raw": "{{baseUrl}}/admin/categories/{{category_id}}", "host": ["{{baseUrl}}"], "path": ["admin","categories","{{category_id}}"] } } },
+            { "name": "Delete Root Category", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/categories/{{category_id}}", "host": ["{{baseUrl}}"], "path": ["admin","categories","{{category_id}}"] } } },
+            { "name": "Toggle Root Category Status", "request": { "method": "PATCH", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/categories/{{category_id}}/toggle-status", "host": ["{{baseUrl}}"], "path": ["admin","categories","{{category_id}}","toggle-status"] } } },
+            { "name": "List Category Level1", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/category-level1?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["admin","category-level1"] } } },
+            { "name": "Create Category Level1", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" } ], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Milk Products\",\n  \"categoryId\": \"{{category_id}}\"\n}\n" }, "url": { "raw": "{{baseUrl}}/admin/category-level1", "host": ["{{baseUrl}}"], "path": ["admin","category-level1"] } } },
+            { "name": "List Category Level2", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/category-level2?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["admin","category-level2"] } } }
+          ]
+        },
+        {
+          "name": "Inventory",
+          "description": "Inventory management and history",
+          "item": [
+            { "name": "List Inventory", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/inventory", "host": ["{{baseUrl}}"], "path": ["admin","inventory"] } } },
+            { "name": "Inventory Summary", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/inventory/summary", "host": ["{{baseUrl}}"], "path": ["admin","inventory","summary"] } } },
+            { "name": "Low Stock Products", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/inventory/low-stock", "host": ["{{baseUrl}}"], "path": ["admin","inventory","low-stock"] } } },
+            { "name": "Get Inventory By ID", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/inventory/{{inventory_id}}", "host": ["{{baseUrl}}"], "path": ["admin","inventory","{{inventory_id}}"] } } },
+            { "name": "Update Stock", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" } ], "body": { "mode": "raw", "raw": "{\n  \"quantity\": 50\n}\n" }, "url": { "raw": "{{baseUrl}}/admin/inventory/{{inventory_id}}/update-stock", "host": ["{{baseUrl}}"], "path": ["admin","inventory","{{inventory_id}}","update-stock"] } } },
+            { "name": "Adjust Stock (create history)", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" } ], "body": { "mode": "raw", "raw": "{\n  \"adjustmentType\": \"increase\",\n  \"quantity\": 10,\n  \"reason\": \"Stock correction\"\n}\n" }, "url": { "raw": "{{baseUrl}}/admin/inventory/{{inventory_id}}/adjust-stock", "host": ["{{baseUrl}}"], "path": ["admin","inventory","{{inventory_id}}","adjust-stock"] } } },
+            { "name": "Inventory History", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ], "url": { "raw": "{{baseUrl}}/admin/inventory/{{inventory_id}}/history", "host": ["{{baseUrl}}"], "path": ["admin","inventory","{{inventory_id}}","history"] } } }
+          ]
+        },
+        {
+          "name": "Orders",
+          "description": "Order management (future endpoints)",
+          "item": [
+            {
+              "name": "Placeholder - Coming Soon",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "orders"
+                  ]
+                },
+                "description": "Future order management endpoints - coming soon"
+              }
+            }
+          ]
+        }
+      ]
+    }
+
+  ]
+}

@@ -2,7 +2,7 @@ import asyncHandler from "../utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { auditLogger } from "../utils/logger";
 import { AddressRepo } from "@/models/repositories";
-import { Address } from "@/models/Address";
+import { Address } from "@/models/address";
 
 export const getUserAddresses = asyncHandler(async (req, res) => {
   const userId = req.user?.id;

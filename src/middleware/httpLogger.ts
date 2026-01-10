@@ -1,5 +1,5 @@
+import { logger } from "@/utils/logger";
 import { Request, Response, NextFunction } from "express";
-import { requestContext } from "@/utils/logger";
 
 /**
  * HTTP Logger Middleware - Minimal logging for scalability
@@ -25,5 +25,10 @@ export const httpLoggerMiddleware = (
   // RequestId is already set by requestIdMiddleware
   // We don't log requests here - only errors and audit events are logged
   // This keeps logging minimal, scalable, and easy to understand
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    logger.info(`${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms`);
+  });
   next();
 };

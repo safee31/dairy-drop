@@ -61,14 +61,14 @@ app.use(cookieParser(config.COOKIE_SECRET));
 
 // Security headers
 Object.entries(config.SECURITY_HEADERS).forEach(([key, value]) => {
-  app.use((req, res, next) => {
+  app.use((_req, res, next) => {
     res.setHeader(key, value);
     next();
   });
 });
 
 // Health check
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.status(200).json({
     status: "OK",
     timestamp: new Date().toISOString(),

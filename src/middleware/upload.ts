@@ -1,6 +1,4 @@
 import multer from "multer";
-import config from "@/config/env";
-import path from "path";
 
 // Use memory storage so we can handle files in memory and pass buffers
 const storage = multer.memoryStorage();
@@ -11,7 +9,7 @@ const ALLOWED_MIMETYPES = ["image/jpeg", "image/png", "image/webp"];
 // Max file size: 2MB
 const MAX_UPLOAD_SIZE_BYTES = 2 * 1024 * 1024;
 
-const fileFilter = (req: any, file: any, cb: any) => {
+const fileFilter = (_req: any, file: any, cb: any) => {
   if (!ALLOWED_MIMETYPES.includes(file.mimetype)) {
     return cb(new Error("Invalid file type. Only JPG, PNG and WEBP are allowed."), false);
   }

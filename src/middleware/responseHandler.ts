@@ -11,7 +11,7 @@ export const responseHandler = {
    */
   success: (
     res: Response,
-    data: Record<string, unknown> = {},
+    data: Record<string, unknown> | any = {},
     message: string = "Success",
     status: number = 200,
   ) => {

@@ -5,9 +5,19 @@ import config from "./env";
 import { logger } from "@/utils/logger";
 
 // Import entities
-import { User } from "@/models/User";
-import { Role } from "@/models/Role";
-import { Address } from "@/models/Address";
+import { User } from "@/models/user";
+import { Role } from "@/models/role";
+import { Address } from "@/models/address";
+import { Category } from "@/models/category/category.entity";
+import { CategoryLevel1 } from "@/models/category/category-level1.entity";
+import { CategoryLevel2 } from "@/models/category/category-level2.entity";
+import { Product } from "@/models/product";
+import { ProductImage } from "@/models/productImage";
+import { Inventory } from "@/models/inventory";
+import { InventoryHistory } from "@/models/inventoryHistory";
+import { Cart } from "@/models/cart";
+import { CartItem } from "@/models/cart";
+import { Order, OrderLineItem, OrderDeliveryHistory } from "@/models/order";
 
 // Redis cache configuration for TypeORM
 const getCacheConfig = () => {
@@ -31,7 +41,7 @@ const getCacheConfig = () => {
 const baseConfig: DataSourceOptions = {
   type: "postgres",
   url: config.DATABASE_URL,
-  entities: [User, Role, Address],
+  entities: [User, Role, Address, Category, CategoryLevel1, CategoryLevel2, Product, ProductImage, Inventory, InventoryHistory, Cart, CartItem, Order, OrderLineItem, OrderDeliveryHistory],
   migrations: ["src/migrations/*.ts"],
   subscribers: [],
   // Performance optimizations

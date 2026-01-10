@@ -3,7 +3,7 @@ import * as authController from "@/controllers/auth";
 import { authenticate } from "@/middleware/auth";
 import { loginRateLimiter, passwordResetRateLimiter, otpRateLimiter } from "@/middleware/rateLimiter";
 import { validate } from "@/middleware/validate";
-import { userSchemas } from "@/models/User";
+import { userSchemas } from "@/models/user";
 
 const router = Router();
 

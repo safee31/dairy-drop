@@ -3,12 +3,12 @@ import { Request, Response } from "express";
 import config from "@/config/env";
 import { customError, AuthErrors } from "@/utils/customError";
 import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
-import { UserRepo } from "@/models/repositories";
+import { UserRepo, AddressRepo } from "@/models/repositories";
 
-const parseExpiryToSeconds = (val?: string): number | null => {
-  if (!val) return null;
+export const parseExpiryToSeconds = (val?: string): number => {
+  if (!val) return 300; // Default 5 minutes
   const match = /^([0-9]+)([smhd])?$/.exec(val.trim());
-  if (!match) return null;
+  if (!match) return 300; // Invalid format, use default
   const n = parseInt(match[1], 10);
   const unit = match[2] || "s";
   switch (unit) {
@@ -47,8 +47,8 @@ export const generateToken = (
 
   return jwt.sign(payload, secret, {
     expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
-    issuer: "tpa-api",
-    audience: "tpa-users",
+    issuer: "dd-api",
+    audience: "dd-users",
   });
 };
 
@@ -76,9 +76,10 @@ export const generateTokenPair = async (
     config.JWT_REFRESH_EXPIRES_IN,
   );
 
+  // Store refresh token in Redis with TTL matching token expiry
   const tokenHash = await hashToken(refreshToken);
-  const ttlSeconds = parseExpiryToSeconds(config.JWT_REFRESH_EXPIRES_IN) || 5 * 60;
-  await setKey(`refresh:${tokenHash}`, payload.userId, ttlSeconds);
+  const refreshTtlSeconds = parseExpiryToSeconds(config.JWT_REFRESH_EXPIRES_IN);
+  await setKey(`refresh:${tokenHash}`, payload.userId, refreshTtlSeconds);
 
   return { accessToken, refreshToken };
 };
@@ -109,7 +110,7 @@ export const verifyAccessToken = async (token: string) => {
 
   const user = await UserRepo.findOne({
     where: { id: decoded.userId },
-    relations: ["role", "addresses"],
+    relations: ["role"],
   });
 
   if (!user) {
@@ -124,23 +125,35 @@ export const verifyAccessToken = async (token: string) => {
     throw customError(AuthErrors.EMAIL_NOT_VERIFIED, 401);
   }
 
-  const activeAddresses = user.addresses.filter((addr) => addr.isActive);
-  const primaryAddresses = activeAddresses.filter((addr) => addr.isPrimary);
+  // Build response with user data
+  const userData: any = {
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName,
+    phoneNumber: user.phoneNumber,
+    profileImage: user.profileImage,
+    isVerified: user.isVerified,
+    isActive: user.isActive,
+    lastLoginAt: user.lastLoginAt,
+    createdAt: user.createdAt,
+    role: user.role,
+  };
+
+  // For customers (role type 2), query primary active address from database
+  if (user.role?.type === 2) {
+    const primaryAddress = await AddressRepo.findOne({
+      where: {
+        userId: user.id,
+        isPrimary: true,
+        isActive: true,
+      },
+    });
+
+    userData.address = primaryAddress || null;
+  }
 
   return {
-    user: {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      phoneNumber: user.phoneNumber,
-      profileImage: user.profileImage,
-      isVerified: user.isVerified,
-      isActive: user.isActive,
-      lastLoginAt: user.lastLoginAt,
-      createdAt: user.createdAt,
-      role: user.role,
-      addresses: primaryAddresses.length > 0 ? primaryAddresses : activeAddresses,
-    },
+    user: userData,
   };
 };
 
@@ -178,11 +191,24 @@ export const setCookie = (
 ) => {
   const isProduction = config.IN_PROD;
 
+  // Calculate default maxAge based on token type
+  let defaultMaxAgeMs: number;
+  if (name === "dd_session") {
+    // Access token: use JWT_ACCESS_EXPIRES_IN
+    defaultMaxAgeMs = parseExpiryToSeconds(config.JWT_ACCESS_EXPIRES_IN) * 1000;
+  } else if (name === "dd_refresh") {
+    // Refresh token: use JWT_REFRESH_EXPIRES_IN
+    defaultMaxAgeMs = parseExpiryToSeconds(config.JWT_REFRESH_EXPIRES_IN) * 1000;
+  } else {
+    // Default fallback: 7 days
+    defaultMaxAgeMs = 7 * 24 * 60 * 60 * 1000;
+  }
+
   res.cookie(name, value, {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    maxAge: options.maxAge || 7 * 24 * 60 * 60 * 1000,
+    maxAge: options.maxAge !== undefined ? options.maxAge : defaultMaxAgeMs,
     path: "/",
     domain: config.COOKIE_DOMAIN,
     ...options,
@@ -203,14 +229,6 @@ export const clearCookie = (res: Response, name: string) => {
 };
 
 export const extractToken = (req: Request): string | null => {
-  const token = req.cookies?.tpa_session;
+  const token = req.cookies?.dd_session;
   return token || null;
 };
-
-export const cleanupExpiredTokens = async (): Promise<void> => {
-  //
-};
-
-if (typeof global !== "undefined") {
-  global.setInterval(cleanupExpiredTokens, 60 * 60 * 1000);
-}

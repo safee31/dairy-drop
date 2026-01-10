@@ -1,71 +1,29 @@
 import Joi from "joi";
-import {
-  Entity,
-  PrimaryColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  Index,
-  JoinColumn,
-  Relation,
-} from "typeorm";
-import { User } from "./User";
 
-@Entity("addresses")
-@Index(["userId", "isActive"])
-@Index(["userId", "isPrimary"])
-export class Address {
-  @PrimaryColumn("varchar", { length: 50 })
-  id!: string;
-
-  @Column("varchar", { length: 50 })
-  userId!: string;
-
-  @Column("varchar", { length: 50, nullable: true })
-  label!: string | null;
-
-  @Column("varchar", { length: 100 })
+export class CreateAddress {
+  label?: string | null;
   fullName!: string;
-
-  @Column("varchar", { length: 20, nullable: true })
-  phoneNumber!: string | null;
-
-  @Column("varchar", { length: 255 })
+  phoneNumber?: string | null;
   streetAddress!: string;
-
-  @Column("varchar", { length: 50, nullable: true })
-  apartment!: string | null;
-
-  @Column("varchar", { length: 100 })
+  apartment?: string | null;
   city!: string;
-
-  @Column("varchar", { length: 100, nullable: true })
-  state!: string | null;
-
-  @Column("varchar", { length: 20 })
+  state?: string | null;
   postalCode!: string;
-
-  @Column("varchar", { length: 100 })
   country!: string;
+  isPrimary?: boolean;
+}
 
-  @Column("boolean", { default: false })
-  isPrimary!: boolean;
-
-  @Column("boolean", { default: true })
-  isActive!: boolean;
-
-  @CreateDateColumn()
-  createdAt!: Date;
-
-  @UpdateDateColumn()
-  updatedAt!: Date;
-
-  @ManyToOne(() => User, (user) => user.addresses, {
-    onDelete: "CASCADE",
-  })
-  @JoinColumn({ name: "userId" })
-  user!: Relation<User>;
+export class UpdateAddress {
+  label?: string | null;
+  fullName?: string;
+  phoneNumber?: string | null;
+  streetAddress?: string;
+  apartment?: string | null;
+  city?: string;
+  state?: string | null;
+  postalCode?: string;
+  country?: string;
+  isPrimary?: boolean;
 }
 
 const addressSchemas = {

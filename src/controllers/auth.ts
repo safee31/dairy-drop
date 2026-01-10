@@ -1,17 +1,15 @@
 import asyncHandler from "@/utils/asyncHandler";
-import { generateTokenPair, setCookie, clearCookie } from "@/utils/jwt";
-import { generateResetToken, hashResetToken, parseExpiryToSeconds } from "@/utils/otp";
-import { verifyRefreshToken, revokeRefreshToken } from "@/utils/jwt";
+import { generateTokenPair, setCookie, clearCookie, verifyRefreshToken, revokeRefreshToken } from "@/utils/jwt";
+import { generateResetToken, hashResetToken } from "@/utils/otp";
 import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } from "@/utils/emailService";
 import { logger, auditLogger } from "@/utils/logger";
 import { responseHandler } from "@/middleware/responseHandler";
 import config from "@/config/env";
 import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
-import { authUtils, userSchemas } from "@/models/User";
+import { authUtils } from "@/models/user/utils";
 import { UserRepo, RoleRepo } from "@/models/repositories";
 import { generateOTP, storeOTP, verifyOTP } from "@/utils/redis";
 import { normalizeEmail } from "@/utils/helpers";
-import { validate } from "@/middleware/validate";
 
 export const registerCustomer = asyncHandler(async (req, res) => {
   const { email, password, fullName, phoneNumber, profileImage } = req.body;
@@ -158,9 +156,9 @@ export const loginCustomer = asyncHandler(async (req, res) => {
 
   const { accessToken, refreshToken } = await generateTokenPair(tokenPayload);
 
-  setCookie(res, "tpa_session", accessToken);
-  const refreshTtlMs = (parseExpiryToSeconds(config.JWT_REFRESH_EXPIRES_IN) || 300) * 1000;
-  setCookie(res, "tpa_refresh", refreshToken, { maxAge: refreshTtlMs });
+  // setCookie handles maxAge automatically based on token type
+  setCookie(res, "dd_session", accessToken);
+  setCookie(res, "dd_refresh", refreshToken);
 
   user.lastLoginAt = new Date();
   await UserRepo.save(user);
@@ -191,10 +189,10 @@ export const loginCustomer = asyncHandler(async (req, res) => {
 });
 
 /**
- * Refresh tokens (rotate): accepts `tpa_refresh` cookie, validates it, issues new tokens
+ * Refresh tokens (rotate): accepts `dd_refresh` cookie, validates it, issues new tokens
  */
 export const refreshTokens = asyncHandler(async (req, res) => {
-  const oldRefresh = req.cookies?.tpa_refresh;
+  const oldRefresh = req.cookies?.dd_refresh;
   if (!oldRefresh) return responseHandler.unauthorized(res, "Refresh token required");
 
   // Validate old refresh token
@@ -212,10 +210,9 @@ export const refreshTokens = asyncHandler(async (req, res) => {
   };
   const { accessToken, refreshToken } = await generateTokenPair(payload);
 
-  // Set cookies
-  setCookie(res, "tpa_session", accessToken);
-  const refreshTtlMs = (parseExpiryToSeconds(config.JWT_REFRESH_EXPIRES_IN) || 300) * 1000;
-  setCookie(res, "tpa_refresh", refreshToken, { maxAge: refreshTtlMs });
+  // setCookie handles maxAge automatically based on token type
+  setCookie(res, "dd_session", accessToken);
+  setCookie(res, "dd_refresh", refreshToken);
 
   return responseHandler.success(res, { accessToken }, "Tokens refreshed");
 });
@@ -256,8 +253,8 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   await sendPasswordResetEmail(email, resetOTP, user.fullName);
 
   // Clear any existing session cookies
-  clearCookie(res, "tpa_session");
-  clearCookie(res, "tpa_refresh");
+  clearCookie(res, "dd_session");
+  clearCookie(res, "dd_refresh");
   clearCookie(res, "resetSession");
 
   return responseHandler.success(
@@ -316,8 +313,8 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
   // Clear cookies
   clearCookie(res, "resetSession");
-  clearCookie(res, "tpa_session");
-  clearCookie(res, "tpa_refresh");
+  clearCookie(res, "dd_session");
+  clearCookie(res, "dd_refresh");
 
   // Log password reset
   auditLogger.info("Password reset successful", {
@@ -366,8 +363,8 @@ export const readUser = asyncHandler(async (req, res) => {
 export const logout = asyncHandler(async (req, res) => {
   // Clear the authentication and reset session cookies
   clearCookie(res, "resetSession");
-  clearCookie(res, "tpa_session");
-  clearCookie(res, "tpa_refresh");
+  clearCookie(res, "dd_session");
+  clearCookie(res, "dd_refresh");
 
   // Log logout
   auditLogger.info("User logout", {
@@ -471,8 +468,8 @@ export const sendUserOTP = asyncHandler(async (req, res) => {
 
     // Don't create reset session here — session is created only after OTP verification.
     // Clear session cookies to prevent accidental reuse of existing auth.
-    clearCookie(res, "tpa_session");
-    clearCookie(res, "tpa_refresh");
+    clearCookie(res, "dd_session");
+    clearCookie(res, "dd_refresh");
   }
 
   return responseHandler.success(res, {}, "OTP sent to email.");

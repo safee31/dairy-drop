@@ -17,7 +17,7 @@ declare global {
  */
 export const authenticate = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   try {
@@ -57,7 +57,7 @@ export const authenticate = async (
  * Role-based access control middleware
  */
 export const requireRole = (allowedRoles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user || !req.user.role) {
       return next(customError(AuthErrors.INSUFFICIENT_PERMISSIONS, 403));
     }
@@ -83,7 +83,7 @@ export const requireCustomer = requireRole(["2"]);
  */
 export const optionalAuth = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   try {
@@ -106,11 +106,11 @@ export const optionalAuth = async (
  */
 export const authenticateRefresh = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   try {
-    const refreshToken = req.cookies?.tpa_refresh;
+    const refreshToken = req.cookies?.dd_refresh;
 
     if (!refreshToken) {
       return next(customError(AuthErrors.TOKEN_REQUIRED, 401));

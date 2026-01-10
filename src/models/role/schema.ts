@@ -1,45 +1,17 @@
 import Joi from "joi";
-import {
-  Entity,
-  PrimaryColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-  Index,
-} from "typeorm";
-import { User } from "./User";
 
-@Entity("roles")
-@Index(["type"])
-@Index(["isActive"])
-export class Role {
-  @PrimaryColumn("varchar", { length: 50 })
-  id!: string;
-
-  @Column("integer", { unique: true })
+export class CreateRole {
   type!: number;
-
-  @Column("varchar", { length: 50, unique: true })
   name!: string;
+  description?: string | null;
+  permissions?: Record<string, boolean>;
+}
 
-  @Column("varchar", { length: 500, nullable: true })
-  description!: string | null;
-
-  @Column("jsonb", { default: {} })
-  permissions!: Record<string, boolean>;
-
-  @Column("boolean", { default: true })
-  isActive!: boolean;
-
-  @CreateDateColumn()
-  createdAt!: Date;
-
-  @UpdateDateColumn()
-  updatedAt!: Date;
-
-  @OneToMany(() => User, (user) => user.role, { nullable: true })
-  users!: User[];
+export class UpdateRole {
+  name?: string;
+  description?: string | null;
+  permissions?: Record<string, boolean>;
+  isActive?: boolean;
 }
 
 const roleSchemas = {
