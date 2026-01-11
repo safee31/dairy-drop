@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
-import { customError } from "@/utils/customError";
+import { AppError } from "@/middleware/errorHandler";
 
 export const validate = (schema: Joi.ObjectSchema) => {
   return (req: Request, _res: Response, next: NextFunction) => {
@@ -11,7 +11,7 @@ export const validate = (schema: Joi.ObjectSchema) => {
 
     if (error) {
       const errors = error.details.map((detail) => detail.message);
-      return next(customError(errors[0], 400));
+      return next(new AppError(errors[0], 400));
     }
 
     req.body = value;

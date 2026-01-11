@@ -59,10 +59,8 @@ export const errorHandler = (
 
   res.status(statusCode).json({
     success: false,
-    error: {
-      message,
-      ...(!config.IN_PROD && { stack: error.stack }),
-    },
+    message,
+    ...(!config.IN_PROD && { stack: error.stack }),
   });
 };
 

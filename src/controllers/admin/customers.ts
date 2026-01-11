@@ -154,7 +154,7 @@ export const createCustomer = asyncHandler(async (req, res) => {
   const customer = await UserRepo.save(newCustomer);
 
   auditLogger.info("Admin created customer", {
-    adminId: (req.user as { id: string })?.id,
+    adminId: (req.user as { userId: string })?.userId,
     customerId: customer.id,
     email: customer.email,
   });
@@ -212,7 +212,7 @@ export const updateCustomer = asyncHandler(async (req, res) => {
   await UserRepo.save(customer);
 
   auditLogger.info("Admin updated customer", {
-    adminId: (req.user as { id: string })?.id,
+    adminId: (req.user as { userId: string })?.userId,
     customerId: customer.id,
   });
 
@@ -254,7 +254,7 @@ export const deleteCustomer = asyncHandler(async (req, res) => {
   await UserRepo.remove(customer);
 
   auditLogger.info("Admin deleted customer", {
-    adminId: (req.user as { id: string })?.id,
+    adminId: (req.user as { userId: string })?.userId,
     customerId: id,
   });
 
@@ -281,7 +281,7 @@ export const toggleCustomerStatus = asyncHandler(async (req, res) => {
   await UserRepo.save(customer);
 
   auditLogger.info(`Admin ${customer.isActive ? "activated" : "deactivated"} customer`, {
-    adminId: (req.user as { id: string })?.id,
+    adminId: (req.user as { userId: string })?.userId,
     customerId: customer.id,
     status: customer.isActive,
   });

@@ -1,29 +1,28 @@
 import { Router } from "express";
 import * as authController from "@/controllers/auth";
-import { authenticate } from "@/middleware/auth";
+import { validateLoginSession, optionalLoginSession } from "@/middleware/validateLoginSession";
 import { loginRateLimiter, passwordResetRateLimiter, otpRateLimiter } from "@/middleware/rateLimiter";
 import { validate } from "@/middleware/validate";
 import { userSchemas } from "@/models/user";
 
 const router = Router();
 
+// Public routes
 router.post("/register", validate(userSchemas.create), authController.registerCustomer);
 router.post("/verify-email", otpRateLimiter, validate(userSchemas.verifyEmail), authController.verifyEmail);
 router.post("/login", loginRateLimiter, validate(userSchemas.login), authController.loginCustomer);
-router.post(
-  "/forgot-password",
-  passwordResetRateLimiter,
-  authController.forgotPassword,
-);
-router.post("/reset-password", authController.resetPassword);
-router.post("/verify-otp", otpRateLimiter, authController.verifyUserOTP);
-router.post("/send-otp", otpRateLimiter, authController.sendUserOTP);
+router.post("/forgot-password", passwordResetRateLimiter, authController.forgotPassword);
+router.post("/reset-password", passwordResetRateLimiter, authController.resetPassword);
+router.post("/send-otp", otpRateLimiter, authController.sendOTP);
 
-// Token refresh
-router.post("/refresh", authController.refreshTokens);
+// Validate session (check if session is still valid)
+router.get("/validate", authController.validateSession);
+
+// Refresh session (extend expiry)
+router.post("/refresh", authController.refreshSession);
 
 // Protected routes (authentication required)
-router.post("/logout", authenticate, authController.logout);
-router.get("/profile", authenticate, authController.readUser);
+router.post("/logout", optionalLoginSession, authController.logout);
+router.get("/profile", validateLoginSession, authController.readUser);
 
 export default router;

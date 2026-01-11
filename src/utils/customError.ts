@@ -36,27 +36,27 @@ export const AuthErrors = {
   INVALID_CREDENTIALS:
     "Invalid email or password. Please check your credentials and try again.",
   USER_NOT_FOUND:
-    "No account found with this email. Please check your email or register.",
+    "No account found with this email. Please check your email or create a new account.",
   EMAIL_NOT_VERIFIED:
-    "Please verify your email address. Check your inbox for a verification link.",
+    "Please verify your email to complete your account setup. Check your inbox for a verification link.",
   ACCOUNT_INACTIVE:
-    "Your account has been deactivated. Please contact our support team for assistance.",
+    "Your account is currently inactive. Please contact our customer support team for assistance.",
   ACCOUNT_NOT_APPROVED:
-    "Your account is pending approval. You will be notified once approved.",
-  INVALID_TOKEN: "Your session has expired. Please log in again.",
-  TOKEN_REQUIRED: "Please log in to access this feature.",
+    "Your account is being reviewed. You'll receive an email notification once approved.",
+  INVALID_TOKEN: "Your session has expired. Please log in again to continue shopping.",
+  TOKEN_REQUIRED: "Please log in to complete this action.",
   INSUFFICIENT_PERMISSIONS:
-    "You don't have permission to perform this action. Please contact your administrator.",
+    "You don't have permission to access this area. If you think this is an error, please contact support.",
   RATE_LIMIT_EXCEEDED:
-    "Too many attempts. Please wait a few minutes and try again.",
+    "Too many login attempts. Please wait a few minutes and try again.",
   INVALID_OTP:
-    "Invalid or expired verification code. Please request a new one.",
+    "The verification code is invalid or expired. Please request a new code.",
   PASSWORD_TOO_WEAK:
-    "Password must be at least 8 characters with letters, numbers, and symbols.",
+    "Your password must be at least 8 characters and include letters, numbers, and symbols.",
   EMAIL_ALREADY_EXISTS:
-    "An account with this email already exists. Please log in or use a different email.",
+    "An account with this email already exists. Please log in or use a different email address.",
   INVALID_RESET_SESSION:
-    "Password reset link has expired. Please request a new one.",
+    "Your password reset link has expired. Please request a new one to continue.",
 } as const;
 
 export default customError;

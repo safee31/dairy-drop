@@ -46,10 +46,8 @@ const baseConfig: DataSourceOptions = {
   subscribers: [],
   // Performance optimizations
   cache: getCacheConfig(),
-  // Logging: only errors and warnings in production, queries in development
-  logging: config.IN_PROD 
-    ? ["error", "warn"] 
-    : ["error", "warn", "query", "schema"],
+  // Logging: include queries and schema in development for visibility
+  logging: config.IN_PROD ? ["error", "warn"] : ["error", "warn", "query", "schema"],
   logger: config.IN_PROD ? "file" : "advanced-console",
   maxQueryExecutionTime: 1000, // Log queries taking longer than 1 second
 };

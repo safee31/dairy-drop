@@ -1,5 +1,6 @@
 import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
+import { securityAuditService } from "@/utils/security";
 import {
   OrderRepo,
   OrderLineItemRepo,
@@ -145,6 +146,13 @@ export const createOrder = asyncHandler(async (req, res) => {
     relations: ["lineItems"],
   });
 
+  // Audit log: order creation
+  securityAuditService.logOrderOperation("create", userId, savedOrder.id, {
+    totalAmount: createdOrder!.totalAmount,
+    itemCount: createdOrder!.lineItems.length,
+    paymentMethod: PaymentMethod.COD,
+  });
+
   return responseHandler.success(
     res,
     {
@@ -182,6 +190,12 @@ export const cancelOrder = asyncHandler(async (req, res) => {
   order.cancellationReason = payload.reason;
 
   await OrderRepo.save(order);
+
+  // Audit log: order cancellation
+  securityAuditService.logOrderOperation("cancel", userId, id, {
+    reason: payload.reason,
+    cancelledBy: payload.cancelledBy,
+  });
 
   return responseHandler.success(
     res,

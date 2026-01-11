@@ -1,12 +1,12 @@
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import config from "@/config/env";
-import { customError, AuthErrors } from "@/utils/customError";
 import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
 import { UserRepo, AddressRepo } from "@/models/repositories";
+import customError, { AuthErrors } from "./customError";
 
 export const parseExpiryToSeconds = (val?: string): number => {
-  if (!val) return 300; // Default 5 minutes
+  if (!val) return 300;
   const match = /^([0-9]+)([smhd])?$/.exec(val.trim());
   if (!match) return 300; // Invalid format, use default
   const n = parseInt(match[1], 10);
@@ -81,10 +81,22 @@ export const generateTokenPair = async (
   const refreshTtlSeconds = parseExpiryToSeconds(config.JWT_REFRESH_EXPIRES_IN);
   await setKey(`refresh:${tokenHash}`, payload.userId, refreshTtlSeconds);
 
+  // Also keep an index of refresh token hash by user email so we can quickly revoke by email
+  if (payload.email) {
+    await setKey(`refresh:${payload.email}`, tokenHash, refreshTtlSeconds);
+  }
+
+  // Also store access token hash keyed by user email so we can revoke/validate sessions
+  const accessTokenHash = await hashToken(accessToken);
+  const accessTtlSeconds = parseExpiryToSeconds(config.JWT_ACCESS_EXPIRES_IN);
+  if (payload.email) {
+    await setKey(`session:${payload.email}`, accessTokenHash, accessTtlSeconds);
+  }
+
   return { accessToken, refreshToken };
 };
 
-export const verifyToken = (token: string, secret: string): JWTPayload => {
+export const verifyToken = (token: string, secret: string | undefined): JWTPayload => {
   if (!secret) {
     throw new Error("JWT secret is not configured");
   }
@@ -152,6 +164,17 @@ export const verifyAccessToken = async (token: string) => {
     userData.address = primaryAddress || null;
   }
 
+  // Ensure the access token presented matches the latest session stored in Redis
+  try {
+    const tokenHash = await hashToken(token);
+    const stored = await getKey(`session:${decoded.email}`);
+    if (!stored || stored !== tokenHash) {
+      throw customError(AuthErrors.INVALID_TOKEN, 401);
+    }
+  } catch (err) {
+    throw customError(AuthErrors.INVALID_TOKEN, 401);
+  }
+
   return {
     user: userData,
   };
@@ -163,8 +186,14 @@ export const verifyRefreshToken = async (token: string) => {
   }
 
   const decoded = verifyToken(token, config.JWT_REFRESH_SECRET) as JWTPayload;
-
   const tokenHash = await hashToken(token);
+
+  // Check if token has already been retired (used) to prevent replay
+  const isRetired = await getKey(`retired:${tokenHash}`);
+  if (isRetired) {
+    throw customError(AuthErrors.INVALID_TOKEN, 401);
+  }
+
   const stored = await getKey(`refresh:${tokenHash}`);
   if (!stored || stored !== decoded.userId) {
     throw customError(AuthErrors.INVALID_TOKEN, 401);
@@ -174,8 +203,40 @@ export const verifyRefreshToken = async (token: string) => {
 };
 
 export const revokeRefreshToken = async (token: string): Promise<void> => {
-  const tokenHash = await hashToken(token);
-  await delKey(`refresh:${tokenHash}`);
+  try {
+    const decoded = verifyToken(token, config.JWT_REFRESH_SECRET) as JWTPayload;
+    const tokenHash = await hashToken(token);
+    await delKey(`refresh:${tokenHash}`);
+    if (decoded?.email) {
+      await delKey(`refresh:${decoded.email}`);
+    }
+  } catch {
+    // best-effort: attempt to delete by hash only
+    const tokenHash = await hashToken(token);
+    await delKey(`refresh:${tokenHash}`).catch(() => { });
+  }
+};
+
+// Mark refresh token as retired (used) to prevent replay attacks
+export const retireRefreshToken = async (token: string): Promise<void> => {
+  try {
+    const tokenHash = await hashToken(token);
+    const refreshTtlSeconds = parseExpiryToSeconds(config.JWT_REFRESH_EXPIRES_IN);
+    await setKey(`retired:${tokenHash}`, "1", refreshTtlSeconds);
+  } catch {
+    // ignore: best-effort to mark token as retired
+  }
+};
+
+export const revokeAccessToken = async (token: string): Promise<void> => {
+  try {
+    const decoded = verifyToken(token, config.JWT_ACCESS_SECRET) as JWTPayload;
+    if (decoded?.email) {
+      await delKey(`session:${decoded.email}`);
+    }
+  } catch {
+    // ignore errors during revoke
+  }
 };
 
 export const setCookie = (
@@ -190,8 +251,7 @@ export const setCookie = (
   } = {},
 ) => {
   const isProduction = config.IN_PROD;
-
-  // Calculate default maxAge based on token type
+  // Default maxAge based on token type
   let defaultMaxAgeMs: number;
   if (name === "dd_session") {
     // Access token: use JWT_ACCESS_EXPIRES_IN
@@ -210,21 +270,19 @@ export const setCookie = (
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: options.maxAge !== undefined ? options.maxAge : defaultMaxAgeMs,
     path: "/",
-    domain: config.COOKIE_DOMAIN,
+    domain: isProduction ? config.COOKIE_DOMAIN : undefined,
     ...options,
   });
 };
 
 export const clearCookie = (res: Response, name: string) => {
   const isProduction = config.IN_PROD;
-  const sameSiteValue = isProduction ? ("none" as const) : ("lax" as const);
-
   res.clearCookie(name, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: sameSiteValue,
+    sameSite: isProduction ? 'none' : 'lax',
     path: "/",
-    domain: config.COOKIE_DOMAIN,
+    domain: isProduction ? config.COOKIE_DOMAIN : undefined,
   });
 };
 

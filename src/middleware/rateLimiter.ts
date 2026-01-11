@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { customError, AuthErrors } from "../utils/customError";
-import config from "../config/env";
+import { AppError } from "@/middleware/errorHandler";
+import config from "@/config/env";
 
 // In-memory store for rate limiting (use Redis in production)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -35,7 +35,10 @@ export const rateLimiter = (config: RateLimitConfig) => {
 
     if (record.count >= config.maxRequests) {
       return next(
-        customError(config.message || AuthErrors.RATE_LIMIT_EXCEEDED, 429),
+        new AppError(
+          config.message || "Too many attempts. Please wait a few minutes and try again",
+          429,
+        ),
       );
     }
 

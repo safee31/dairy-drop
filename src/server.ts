@@ -9,6 +9,7 @@ import { logger } from "./utils/logger";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestIdMiddleware } from "./middleware/requestId";
 import { httpLoggerMiddleware } from "./middleware/httpLogger";
+import { csrfTokenMiddleware, validateSessionMetadata } from "./middleware/csrf";
 import { connectDatabase, disconnectDatabase } from "./config/database";
 import config from "./config/env";
 import path from "path";
@@ -47,7 +48,8 @@ app.use(
     origin: config.ORIGIN_URL,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token"],
+    exposedHeaders: ["X-CSRF-Token"],
   })
 );
 
@@ -58,6 +60,10 @@ app.use(httpLoggerMiddleware); // Log HTTP requests
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(config.COOKIE_SECRET));
+
+// Security middleware: CSRF token attachment + session metadata validation
+app.use(csrfTokenMiddleware); // Attach CSRF token to responses
+app.use(validateSessionMetadata); // Validate session metadata (IP/UA)
 
 // Security headers
 Object.entries(config.SECURITY_HEADERS).forEach(([key, value]) => {
@@ -103,6 +109,17 @@ app.use(errorHandler);
 // Start server
 const startServer = async () => {
   try {
+    // In production ensure critical config values are present
+    if (config.IN_PROD) {
+      if (!config.COOKIE_DOMAIN) {
+        logger.error("COOKIE_DOMAIN is required in production but is not set");
+        process.exit(1);
+      }
+      if (!config.ORIGIN_URL) {
+        logger.error("ORIGIN_URL is required in production but is not set");
+        process.exit(1);
+      }
+    }
     // Initialize Redis (optional - graceful degradation)
     if (!config.IN_PROD) console.log("Initializing Redis...");
     try {

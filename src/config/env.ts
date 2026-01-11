@@ -11,7 +11,16 @@ const config = {
   // Database Configuration
   DATABASE_URL: process.env.DATABASE_URL,
 
-  // JWT Configuration
+  // Session Configuration (Redis-based)
+  SESSION_EXPIRY: process.env.SESSION_EXPIRY ? parseInt(process.env.SESSION_EXPIRY) : 86400, // 24h
+  STORAGE_TTL_SECONDS: process.env.STORAGE_TTL_SECONDS ? parseInt(process.env.STORAGE_TTL_SECONDS) : 86400, // 24h Redis storage lifetime
+  REFRESH_EXPIRY: process.env.REFRESH_EXPIRY ? parseInt(process.env.REFRESH_EXPIRY) : 604800, // 7 days
+  MAX_SESSIONS_PER_USER: process.env.MAX_SESSIONS_PER_USER ? parseInt(process.env.MAX_SESSIONS_PER_USER) : 5,
+  LOGIN_ATTEMPT_WINDOW: process.env.LOGIN_ATTEMPT_WINDOW ? parseInt(process.env.LOGIN_ATTEMPT_WINDOW) : 900, // 15 min
+  MAX_LOGIN_ATTEMPTS: process.env.MAX_LOGIN_ATTEMPTS ? parseInt(process.env.MAX_LOGIN_ATTEMPTS) : 5,
+  COOKIE_MAX_AGE: process.env.COOKIE_MAX_AGE ? parseInt(process.env.COOKIE_MAX_AGE) : 86400000, // 24h in ms
+
+  // JWT Configuration (deprecated - kept for backward compatibility)
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,

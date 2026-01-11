@@ -1,20 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken, extractToken, verifyRefreshToken } from "@/utils/jwt";
-import { customError, AuthErrors } from "@/utils/customError";
+import { AppError } from "@/middleware/errorHandler";
 import { auditLogger } from "@/utils/logger";
+import { AuthErrors } from "@/utils/customError";
 
-// Extend Request interface to include user and account
-declare global {
-  namespace Express {
-    interface Request {
-      user?: Record<string, unknown>;
-    }
-  }
-}
+// Request user shape is declared in validateLoginSession middleware
 
-/**
- * Authentication middleware - verifies JWT token and loads user data
- */
+// Authentication middleware: verify JWT and load user
 export const authenticate = async (
   req: Request,
   _res: Response,
@@ -24,63 +16,54 @@ export const authenticate = async (
     const token = extractToken(req);
 
     if (!token) {
-      auditLogger.warn("Auth: missing token", { ip: req.ip });
-      return next(customError(AuthErrors.TOKEN_REQUIRED, 401));
+      return next(new AppError(AuthErrors.TOKEN_REQUIRED, 401));
     }
 
     const { user } = await verifyAccessToken(token);
 
     if (!user) {
-      return next(customError(AuthErrors.USER_NOT_FOUND, 401));
+      return next(new AppError(AuthErrors.INVALID_TOKEN, 401));
     }
 
     if (!user.isVerified) {
       auditLogger.info("Auth: unverified email", { userId: user.id });
-      return next(customError(AuthErrors.EMAIL_NOT_VERIFIED, 401));
+      return next(new AppError(AuthErrors.EMAIL_NOT_VERIFIED, 401));
     }
 
     if (!user.isActive) {
       auditLogger.warn("Auth: inactive account", { userId: user.id });
-      return next(customError(AuthErrors.ACCOUNT_INACTIVE, 401));
+      return next(new AppError(AuthErrors.ACCOUNT_INACTIVE, 401));
     }
 
     req.user = user;
 
     next();
   } catch {
-    auditLogger.warn("Auth: invalid token", { ip: req.ip });
-    return next(customError(AuthErrors.INVALID_TOKEN, 401));
+    return next(new AppError(AuthErrors.INVALID_TOKEN, 401));
   }
 };
 
-/**
- * Role-based access control middleware
- */
+// Role-based access control
 export const requireRole = (allowedRoles: string[]) => {
   return (req: Request, _res: Response, next: NextFunction) => {
-    if (!req.user || !req.user.role) {
-      return next(customError(AuthErrors.INSUFFICIENT_PERMISSIONS, 403));
+    const user = req.user as any;
+    if (!user || !user.role) {
+      return next(new AppError(AuthErrors.INSUFFICIENT_PERMISSIONS, 403));
     }
 
-    const userRole = (req.user?.role as { type: number })?.type;
+    const userRole = (user?.role as { type: number })?.type;
 
     if (!allowedRoles.includes(userRole.toString())) {
-      return next(customError(AuthErrors.INSUFFICIENT_PERMISSIONS, 403));
+      return next(new AppError(AuthErrors.INSUFFICIENT_PERMISSIONS, 403));
     }
 
     next();
   };
 };
 
-/**
- * Specific role middleware functions
- */
 export const requireAdmin = requireRole(["1"]);
 export const requireCustomer = requireRole(["2"]);
-
-/**
- * Optional authentication - doesn't fail if no token
- */
+// Optional authentication middleware
 export const optionalAuth = async (
   req: Request,
   _res: Response,
@@ -101,9 +84,7 @@ export const optionalAuth = async (
   }
 };
 
-/**
- * Refresh token middleware
- */
+// Refresh token middleware
 export const authenticateRefresh = async (
   req: Request,
   _res: Response,
@@ -113,15 +94,15 @@ export const authenticateRefresh = async (
     const refreshToken = req.cookies?.dd_refresh;
 
     if (!refreshToken) {
-      return next(customError(AuthErrors.TOKEN_REQUIRED, 401));
+      return next(new AppError(AuthErrors.TOKEN_REQUIRED, 401));
     }
 
     const decoded = await verifyRefreshToken(refreshToken);
 
-    req.user = { id: decoded.userId };
+    req.user = { userId: decoded.userId, email: "", sessionId: "" };
     next();
   } catch {
-    return next(customError(AuthErrors.INVALID_TOKEN, 401));
+    return next(new AppError(AuthErrors.INVALID_TOKEN, 401));
   }
 };
 

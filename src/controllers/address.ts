@@ -1,11 +1,11 @@
 import asyncHandler from "../utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
-import { auditLogger } from "../utils/logger";
+import { securityAuditService } from "@/utils/security";
 import { AddressRepo } from "@/models/repositories";
 import { Address } from "@/models/address";
 
 export const getUserAddresses = asyncHandler(async (req, res) => {
-  const userId = req.user?.id;
+  const userId = req.user?.userId;
   const { page = 1, limit = 10, isPrimary, isActive, sortBy = "createdAt", sortOrder = "desc" } = req.query;
 
   const skip = (Number(page) - 1) * Number(limit);
@@ -44,7 +44,7 @@ export const getUserAddresses = asyncHandler(async (req, res) => {
 
 export const getAddressById = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
-  const userId = req.user?.id as string;
+  const userId = req.user?.userId as string;
 
   const address = await AddressRepo.findOneBy({ id, userId });
 
@@ -56,7 +56,7 @@ export const getAddressById = asyncHandler(async (req, res) => {
 });
 
 export const createAddress = asyncHandler(async (req, res) => {
-  const userId = req.user?.id as string;
+  const userId = req.user?.userId as string;
   const { isPrimary, ...addressData } = req.body;
 
 
@@ -76,9 +76,8 @@ export const createAddress = asyncHandler(async (req, res) => {
   const address = AddressRepo.create(addressDataToSave);
   const savedAddress = await AddressRepo.save(address);
 
-  auditLogger.info("Address created", {
-    userId,
-    addressId: savedAddress.id,
+  // Audit log: address creation
+  securityAuditService.logAddressOperation("create", userId, savedAddress.id, {
     label: savedAddress.label,
   });
 
@@ -92,7 +91,7 @@ export const createAddress = asyncHandler(async (req, res) => {
 
 export const updateAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
-  const userId = req.user?.id as string;
+  const userId = req.user?.userId as string;
   const { isPrimary, ...addressData } = req.body;
 
   const address = await AddressRepo.findOneBy({ id, userId });
@@ -114,9 +113,9 @@ export const updateAddress = asyncHandler(async (req, res) => {
   }
   await AddressRepo.save(address);
 
-  auditLogger.info("Address updated", {
-    userId,
-    addressId: id,
+  // Audit log: address update
+  securityAuditService.logAddressOperation("update", userId, id, {
+    label: address.label,
   });
 
   return responseHandler.success(
@@ -128,7 +127,7 @@ export const updateAddress = asyncHandler(async (req, res) => {
 
 export const deleteAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
-  const userId = req.user?.id as string;
+  const userId = req.user?.userId as string;
 
   const address = await AddressRepo.findOneBy({ id, userId });
 
@@ -160,9 +159,9 @@ export const deleteAddress = asyncHandler(async (req, res) => {
     }
   }
 
-  auditLogger.info("Address deleted", {
-    userId,
-    addressId: id,
+  // Audit log: address deletion
+  securityAuditService.logAddressOperation("delete", userId, id, {
+    label: address.label,
   });
 
   return responseHandler.success(res, {}, "Address deleted successfully");
@@ -170,7 +169,7 @@ export const deleteAddress = asyncHandler(async (req, res) => {
 
 export const setPrimaryAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
-  const userId = req.user?.id as string;
+  const userId = req.user?.userId as string;
 
   const address = await AddressRepo.findOneBy({ id, userId });
 
@@ -190,9 +189,10 @@ export const setPrimaryAddress = asyncHandler(async (req, res) => {
   address.isPrimary = true;
   await AddressRepo.save(address);
 
-  auditLogger.info("Primary address updated", {
-    userId,
-    addressId: id,
+  // Audit log: set primary address
+  securityAuditService.logAddressOperation("update", userId, id, {
+    label: address.label,
+    action: "set_primary",
   });
 
   return responseHandler.success(

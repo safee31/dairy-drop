@@ -1,30 +1,31 @@
 import asyncHandler from "@/utils/asyncHandler";
-import { generateTokenPair, setCookie, clearCookie, verifyRefreshToken, revokeRefreshToken } from "@/utils/jwt";
-import { generateResetToken, hashResetToken } from "@/utils/otp";
+import { loginSessionService } from "@/utils/redis/loginSession";
 import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } from "@/utils/emailService";
 import { logger, auditLogger } from "@/utils/logger";
 import { responseHandler } from "@/middleware/responseHandler";
+import { AuthErrors } from "@/utils/customError";
+import { verifyRefreshToken, generateTokenPair, setCookie, clearCookie, revokeRefreshToken } from "@/utils/jwt";
 import config from "@/config/env";
-import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
 import { authUtils } from "@/models/user/utils";
 import { UserRepo, RoleRepo } from "@/models/repositories";
 import { generateOTP, storeOTP, verifyOTP } from "@/utils/redis";
-import { normalizeEmail } from "@/utils/helpers";
+import { normalizeEmail, generateId } from "@/utils/helpers";
 
 export const registerCustomer = asyncHandler(async (req, res) => {
   const { email, password, fullName, phoneNumber, profileImage } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  const existingUser = await UserRepo.findOneBy({ email: normalizeEmail(email) });
+  const existingUser = await UserRepo.findOneBy({ email: normalizedEmail });
 
   if (existingUser) {
-    return responseHandler.error(res, "User already exists!", 400);
+    return responseHandler.error(res, AuthErrors.EMAIL_ALREADY_EXISTS, 400);
   }
 
   let customerRole = await RoleRepo.findOneBy({ name: "Customer", type: 2 });
 
   if (!customerRole) {
     customerRole = RoleRepo.create({
-      id: Math.random().toString(36).substring(2, 15),
+      id: generateId(),
       name: "Customer",
       type: 2,
       description: "Default customer role",
@@ -39,8 +40,8 @@ export const registerCustomer = asyncHandler(async (req, res) => {
   );
 
   const newUser = UserRepo.create({
-    id: Math.random().toString(36).substring(2, 15),
-    email: normalizeEmail(email),
+    id: generateId(),
+    email: normalizedEmail,
     fullName,
     password: hashedPassword,
     roleId: customerRole.id,
@@ -52,9 +53,10 @@ export const registerCustomer = asyncHandler(async (req, res) => {
 
   const user = await UserRepo.save(newUser);
 
+  // Send verification email
   if (!config.ALLOW_UNVERIFIED_LOGIN) {
     const verificationOTP = generateOTP();
-    await storeOTP(normalizeEmail(email), verificationOTP, "verify");
+    await storeOTP(normalizedEmail, verificationOTP, "verify");
 
     try {
       await sendVerificationEmail(email, verificationOTP, fullName);
@@ -71,10 +73,74 @@ export const registerCustomer = asyncHandler(async (req, res) => {
     ip: req.ip,
   });
 
+  // If email verification is not required, automatically create session and log them in
+  if (config.ALLOW_UNVERIFIED_LOGIN) {
+    const ip = req.ip || "unknown";
+    const userAgent = req.headers["user-agent"] || "";
+
+    try {
+      const session = await loginSessionService.login(normalizedEmail, user.id, ip, userAgent);
+
+      // Set session cookie using helper
+      setCookie(res as any, "sessionId", session.sessionId, {
+        maxAge: config.COOKIE_MAX_AGE,
+      } as any);
+
+      return responseHandler.success(
+        res,
+        {
+          user: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            profileImage: user.profileImage,
+            isVerified: user.isVerified,
+            isActive: user.isActive,
+            role: { id: customerRole.id, name: customerRole.name, type: customerRole.type },
+          },
+        },
+        "Customer registered and logged in successfully!",
+        201,
+      );
+    } catch (error) {
+      logger.error("Failed to create session after registration", {
+        error: error instanceof Error ? error.message : String(error),
+        userId: user.id,
+      });
+      // Return success for registration despite session failure
+      return responseHandler.success(
+        res,
+        {
+          user: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            profileImage: user.profileImage,
+            isVerified: user.isVerified,
+            isActive: user.isActive,
+            role: { id: customerRole.id, name: customerRole.name, type: customerRole.type },
+          },
+        },
+        "Customer registered successfully! Please log in to start shopping.",
+        201,
+      );
+    }
+  }
+
   return responseHandler.success(
     res,
-    {},
-    "Customer registered successfully!",
+    {
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        profileImage: user.profileImage,
+        isVerified: user.isVerified,
+        isActive: user.isActive,
+        role: { id: customerRole.id, name: customerRole.name, type: customerRole.type },
+      },
+    },
+    "Customer registered successfully! Please verify your email to log in.",
     201,
   );
 });
@@ -122,20 +188,21 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 
 export const loginCustomer = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
   const user = await UserRepo.findOne({
-    where: { email: normalizeEmail(email) },
+    where: { email: normalizedEmail },
     relations: ["role"],
   });
 
   if (!user || !(await authUtils.comparePassword(password, user.password))) {
-    return responseHandler.unauthorized(res, "Incorrect email or password!");
+    return responseHandler.unauthorized(res, AuthErrors.INVALID_CREDENTIALS);
   }
 
   if (!config.ALLOW_UNVERIFIED_LOGIN && !user.isVerified) {
     return responseHandler.error(
       res,
-      "Your email is not verified. Please check your email for verification link.",
+      AuthErrors.EMAIL_NOT_VERIFIED,
       400,
     );
   }
@@ -143,137 +210,185 @@ export const loginCustomer = asyncHandler(async (req, res) => {
   if (!user.isActive) {
     return responseHandler.error(
       res,
-      "Your account is inactive. Please contact support for assistance.",
+      AuthErrors.ACCOUNT_INACTIVE,
       400,
     );
   }
 
-  const tokenPayload = {
-    userId: user.id,
-    email: user.email,
-    roleId: user.roleId || "",
-  };
+  const ip = req.ip || "unknown";
+  const userAgent = req.headers["user-agent"] || "";
 
-  const { accessToken, refreshToken } = await generateTokenPair(tokenPayload);
+  try {
+    // Create session in Redis
+    const session = await loginSessionService.login(normalizedEmail, user.id, ip, userAgent);
 
-  // setCookie handles maxAge automatically based on token type
-  setCookie(res, "dd_session", accessToken);
-  setCookie(res, "dd_refresh", refreshToken);
+    // Set session cookie using helper
+    setCookie(res as any, "sessionId", session.sessionId, {
+      maxAge: config.COOKIE_MAX_AGE,
+    } as any);
 
-  user.lastLoginAt = new Date();
-  await UserRepo.save(user);
+    // Update last login
+    user.lastLoginAt = new Date();
+    await UserRepo.save(user);
 
-  // Log successful login (only userId, email, IP - no User-Agent)
-  auditLogger.info("Login successful", {
-    userId: user.id,
-    ip: req.ip,
-  });
+    auditLogger.info("Login successful", {
+      userId: user.id,
+      email: user.email,
+      ip: req.ip,
+    });
 
-  return responseHandler.success(
-    res,
-    {
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        phoneNumber: user.phoneNumber,
-        profileImage: user.profileImage,
-        isVerified: user.isVerified,
-        isActive: user.isActive,
-        lastLoginAt: user.lastLoginAt,
-        role: user.role,
+    return responseHandler.success(
+      res,
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          profileImage: user.profileImage,
+          isVerified: user.isVerified,
+          isActive: user.isActive,
+          role: user.role,
+        },
       },
-    },
-    "Login successful!",
-  );
+      "Login successful!",
+    );
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    return responseHandler.error(res, errorMsg, 400);
+  }
 });
 
 /**
- * Refresh tokens (rotate): accepts `dd_refresh` cookie, validates it, issues new tokens
+ * Validate Session
+ * Check if current session is valid (for SPA on page load)
  */
-export const refreshTokens = asyncHandler(async (req, res) => {
-  const oldRefresh = req.cookies?.dd_refresh;
-  if (!oldRefresh) return responseHandler.unauthorized(res, "Refresh token required");
+export const validateSession = asyncHandler(async (req, res) => {
+  try {
+    const sessionId = req.cookies.sessionId as string | undefined;
 
-  // Validate old refresh token
-  const decoded = await verifyRefreshToken(oldRefresh).catch(() => null);
-  if (!decoded) return responseHandler.unauthorized(res, "Invalid refresh token");
+    if (!sessionId) {
+      return res.status(200).json({ valid: false });
+    }
 
-  // Revoke old refresh token (delete from Redis)
-  await revokeRefreshToken(oldRefresh).catch(() => { });
+    const ip = (req.ip || "unknown") as string;
+    const validation = await loginSessionService.validateSession(sessionId, ip);
 
-  // Issue new token pair
-  const payload = { 
-    userId: decoded.userId, 
-    email: decoded.email, 
-    roleId: decoded.roleId 
-  };
-  const { accessToken, refreshToken } = await generateTokenPair(payload);
+    if (validation.isValid) {
+      return res.json({
+        valid: true,
+        email: validation.email,
+        id: validation.userId,
+        userId: validation.userId,
+        expiresAt: validation.session?.expiresAt,
+      });
+    } else {
+      clearCookie(res, "sessionId");
+      return res.json({ valid: false });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: "Validation failed" });
+  }
+});
+// Validate session: returns { valid: boolean, ... }
+export const refreshSession = asyncHandler(async (req, res) => {
+  try {
+    const sessionId = req.cookies.sessionId as string | undefined;
+    const ip = (req.ip || "unknown") as string;
 
-  // setCookie handles maxAge automatically based on token type
-  setCookie(res, "dd_session", accessToken);
-  setCookie(res, "dd_refresh", refreshToken);
+    if (sessionId) {
+      try {
+        const refreshed = await loginSessionService.refreshSession(sessionId, ip);
 
-  return responseHandler.success(res, { accessToken }, "Tokens refreshed");
+        setCookie(res as any, "sessionId", sessionId, {
+          maxAge: config.COOKIE_MAX_AGE,
+        } as any);
+
+        return responseHandler.success(res, { expiresAt: refreshed.expiresAt }, "Session refreshed");
+      } catch (err) {
+        try { clearCookie(res, "sessionId"); } catch {}
+      }
+    }
+
+    const refreshToken = req.cookies?.dd_refresh as string | undefined;
+    if (refreshToken) {
+      try {
+        const decoded = await verifyRefreshToken(refreshToken);
+        const tokens = await generateTokenPair({ userId: decoded.userId, email: decoded.email, roleId: decoded.roleId });
+
+        // Retire the old refresh token to prevent replay attacks
+        await revokeRefreshToken(refreshToken);
+
+        setCookie(res, "dd_session", tokens.accessToken);
+        setCookie(res, "dd_refresh", tokens.refreshToken);
+        return responseHandler.success(res, {}, "Tokens refreshed");
+      } catch (err) {
+        try { clearCookie(res, "dd_session"); clearCookie(res, "dd_refresh"); } catch {}
+        return responseHandler.unauthorized(res, AuthErrors.INVALID_TOKEN);
+      }
+    }
+
+    return responseHandler.unauthorized(res, AuthErrors.TOKEN_REQUIRED);
+  } catch (error) {
+    try { clearCookie(res, "sessionId"); } catch {}
+    try { clearCookie(res, "dd_session"); clearCookie(res, "dd_refresh"); } catch {}
+    return responseHandler.unauthorized(res, AuthErrors.INVALID_TOKEN);
+  }
 });
 
-/**
- * Forgot password - send OTP
- */
+
+// Logout: revoke session and clear session cookie
+export const logout = asyncHandler(async (req, res) => {
+  try {
+    const sessionId = req.cookies?.sessionId;
+    const email = (req.user as any)?.email;
+
+    if (sessionId && email) {
+      await loginSessionService.logout(sessionId, email);
+    }
+
+    clearCookie(res, "sessionId");
+
+    return responseHandler.success(res, {}, "Logged out successfully!");
+  } catch (error) {
+    clearCookie(res, "sessionId");
+    return responseHandler.success(res, {}, "Logged out successfully!");
+  }
+});
+
+// Forgot password: send OTP for reset
 export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
   if (!email?.trim()) {
     return responseHandler.error(res, "Email is required", 400);
   }
 
-  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
+  const user = await UserRepo.findOneBy({ email: normalizedEmail });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
   }
 
-  const e = normalizeEmail(email);
-
-  // Invalidate any existing reset sessions for this email so resend works
-  try {
-    const existing = await getKey(`reset_by_email:${e}`);
-    if (existing) {
-      await delKey(`reset:${e}:${existing}`, `reset_by_email:${e}`).catch(() => { });
-    }
-  } catch (err) {
-    logger.error("Failed to clear existing reset session", { error: err instanceof Error ? err.message : String(err) });
-  }
-
-  // Generate OTP and store in Redis (not DB)
   const resetOTP = generateOTP();
-  await storeOTP(e, resetOTP, "reset");
+  await storeOTP(normalizedEmail, resetOTP, "reset");
 
-  // Send OTP via email
   await sendPasswordResetEmail(email, resetOTP, user.fullName);
 
-  // Clear any existing session cookies
-  clearCookie(res, "dd_session");
-  clearCookie(res, "dd_refresh");
-  clearCookie(res, "resetSession");
+  clearCookie(res, "sessionId");
 
-  return responseHandler.success(
-    res,
-    {},
-    "OTP sent to email for password reset.",
-  );
+  auditLogger.info("Password reset requested", {
+    userId: user.id,
+    email: user.email,
+    ip: req.ip,
+  });
+
+  return responseHandler.success(res, {}, "OTP sent to email for password reset.");
 });
 
-/**
- * Reset password
- */
 export const resetPassword = asyncHandler(async (req, res) => {
-  const { email = "", otp = "", newPassword = "" } = req.body;
-
-  const resetSession = req?.cookies?.resetSession;
-  if (!resetSession) {
-    return responseHandler.error(res, "Invalid reset session", 400);
-  }
+  const { email, otp, newPassword } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
   if (!email?.trim()) {
     return responseHandler.error(res, "Email is required", 400);
@@ -287,17 +402,15 @@ export const resetPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "OTP is required", 400);
   }
 
-  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
+  const user = await UserRepo.findOneBy({ email: normalizedEmail });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
   }
 
-  const hashedResetToken = hashResetToken(resetSession);
-  const e = normalizeEmail(user.email);
-  const stored = await getKey(`reset:${e}:${hashedResetToken}`);
-  if (!stored) {
-    return responseHandler.error(res, "Invalid or expired reset session", 400);
+  const isValidOTP = await verifyOTP(normalizedEmail, otp, "reset");
+  if (!isValidOTP) {
+    return responseHandler.error(res, "Invalid or expired OTP", 400);
   }
 
   const hashedPassword = await authUtils.hashPassword(
@@ -308,15 +421,10 @@ export const resetPassword = asyncHandler(async (req, res) => {
   user.password = hashedPassword;
   await UserRepo.save(user);
 
-  // Remove reset session from Redis
-  await delKey(`reset:${e}:${hashedResetToken}`, `reset_by_email:${e}`).catch(() => { });
+  await loginSessionService.logoutAll(normalizedEmail);
 
-  // Clear cookies
-  clearCookie(res, "resetSession");
-  clearCookie(res, "dd_session");
-  clearCookie(res, "dd_refresh");
+  clearCookie(res, "sessionId");
 
-  // Log password reset
   auditLogger.info("Password reset successful", {
     userId: user.id,
     email: user.email,
@@ -326,108 +434,41 @@ export const resetPassword = asyncHandler(async (req, res) => {
   return responseHandler.success(res, {}, "Password reset successfully!");
 });
 
-/**
- * Read user profile
- */
+// Read user profile
 export const readUser = asyncHandler(async (req, res) => {
-  // Ensure user is authenticated
-  const user = req?.user;
+  const sessionUser = (req.user as any);
 
-  // Return the user data
+  if (!sessionUser || !sessionUser.userId) {
+    return responseHandler.unauthorized(res, AuthErrors.TOKEN_REQUIRED);
+  }
+
+  const dbUser = await UserRepo.findOne({ where: { id: sessionUser.userId }, relations: ["role"] });
+
+  if (!dbUser) {
+    return responseHandler.unauthorized(res, AuthErrors.USER_NOT_FOUND);
+  }
+
   return responseHandler.success(
     res,
     {
       user: {
-        id: user?.id,
-        email: user?.email,
-        fullName: user?.fullName,
-        phoneNumber: user?.phoneNumber,
-        profileImage: user?.profileImage,
-        isVerified: user?.isVerified,
-        isActive: user?.isActive,
-        lastLoginAt: user?.lastLoginAt,
-        role: user?.role,
-        addresses: user?.addresses || [],
-        createdAt: user?.createdAt,
+        id: dbUser.id,
+        email: dbUser.email,
+        fullName: dbUser.fullName,
+        profileImage: dbUser.profileImage,
+        isVerified: dbUser.isVerified,
+        isActive: dbUser.isActive,
+        role: dbUser.role,
       },
     },
     "User authenticated successfully!",
   );
 });
 
-// Profile update endpoint removed for now; storage utilities remain available for future use.
-
-/**
- * Logout (following your exact pattern)
- */
-export const logout = asyncHandler(async (req, res) => {
-  // Clear the authentication and reset session cookies
-  clearCookie(res, "resetSession");
-  clearCookie(res, "dd_session");
-  clearCookie(res, "dd_refresh");
-
-  // Log logout
-  auditLogger.info("User logout", {
-    userId: req.user?.id,
-    email: req.user?.email,
-    ip: req.ip,
-  });
-
-  return responseHandler.success(res, {}, "Logged out successfully!");
-});
-
-/**
- * Verify user OTP
- */
-export const verifyUserOTP = asyncHandler(async (req, res) => {
-  const { email, otp, otpType } = req.body;
-
-  if (!email || !otp || !otpType) {
-    return responseHandler.error(
-      res,
-      "Email, OTP, and OTP type are required!",
-      400,
-    );
-  }
-
-  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
-
-  if (!user) {
-    return responseHandler.error(res, "User not found!", 404);
-  }
-
-  if (!["verify", "reset"].includes(otpType)) {
-    return responseHandler.error(res, "Invalid OTP type!", 400);
-  }
-
-  // Verify OTP from Redis
-  const isValidOTP = await verifyOTP(normalizeEmail(email), otp, otpType);
-  if (!isValidOTP) {
-    return responseHandler.error(res, "Invalid or expired OTP!", 400);
-  }
-
-  if (otpType === "verify") {
-    user.isVerified = true;
-    await UserRepo.save(user);
-  } else if (otpType === "reset") {
-    const resetSession = generateResetToken();
-    const hashed = hashResetToken(resetSession);
-    const e = normalizeEmail(user.email);
-    await setKey(`reset:${e}:${hashed}`, "1", config.RESET_TOKEN_EXPIRY_MINUTES * 60);
-    await setKey(`reset_by_email:${e}`, hashed, config.RESET_TOKEN_EXPIRY_MINUTES * 60);
-    setCookie(res, "resetSession", resetSession, {
-      maxAge: config.RESET_TOKEN_EXPIRY_MINUTES * 60 * 1000,
-    });
-  }
-
-  return responseHandler.success(res, {}, "OTP verified successfully!");
-});
-
-/**
- * Send user OTP
- */
-export const sendUserOTP = asyncHandler(async (req, res) => {
+// Send OTP for verification or reset
+export const sendOTP = asyncHandler(async (req, res) => {
   const { email, otpType } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
   if (!email || !otpType) {
     return responseHandler.error(res, "Email and OTP type are required!", 400);
@@ -437,7 +478,7 @@ export const sendUserOTP = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Invalid OTP type!", 400);
   }
 
-  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
+  const user = await UserRepo.findOneBy({ email: normalizedEmail });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
@@ -445,31 +486,13 @@ export const sendUserOTP = asyncHandler(async (req, res) => {
 
   // Generate OTP and store in Redis
   const otp = generateOTP();
-  const e = normalizeEmail(email);
-
-  // If there is an existing reset token index for this email, invalidate it
-  if (otpType === "reset") {
-    try {
-      const existing = await getKey(`reset_by_email:${e}`);
-      if (existing) {
-        await delKey(`reset:${e}:${existing}`, `reset_by_email:${e}`).catch(() => { });
-      }
-    } catch (err) {
-      logger.error("Failed to clear existing reset session before sending OTP", { error: err instanceof Error ? err.message : String(err) });
-    }
-  }
-
-  await storeOTP(e, otp, otpType);
+  await storeOTP(normalizedEmail, otp, otpType);
 
   if (otpType === "verify") {
     await sendVerificationEmail(email, otp, user.fullName);
-  } else if (otpType === "reset") {
+    } else if (otpType === "reset") {
     await sendPasswordResetEmail(email, otp, user.fullName);
-
-    // Don't create reset session here — session is created only after OTP verification.
-    // Clear session cookies to prevent accidental reuse of existing auth.
-    clearCookie(res, "dd_session");
-    clearCookie(res, "dd_refresh");
+    clearCookie(res, "sessionId");
   }
 
   return responseHandler.success(res, {}, "OTP sent to email.");
@@ -479,11 +502,11 @@ export default {
   registerCustomer,
   verifyEmail,
   loginCustomer,
+  validateSession,
+  refreshSession,
+  logout,
+  readUser,
   forgotPassword,
   resetPassword,
-  readUser,
-  logout,
-  verifyUserOTP,
-  sendUserOTP,
-  refreshTokens,
+  sendOTP,
 };

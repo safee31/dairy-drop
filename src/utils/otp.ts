@@ -20,9 +20,7 @@ export const parseExpiryToSeconds = (val?: string): number => {
   }
 };
 
-/**
- * Generate a secure OTP code
- */
+// Generate a secure numeric OTP
 export const generateOTP = (length: number = config.OTP_LENGTH): string => {
   const digits = "0123456789";
   let otp = "";
@@ -34,9 +32,7 @@ export const generateOTP = (length: number = config.OTP_LENGTH): string => {
   return otp;
 };
 
-/**
- * Generate OTP with expiry
- */
+// Generate OTP with expiry metadata
 export const generateOTPWithExpiry = (
   length: number = config.OTP_LENGTH,
   expiryMinutes: number = config.OTP_EXPIRY_MINUTES,
@@ -51,9 +47,7 @@ export const generateOTPWithExpiry = (
   };
 };
 
-/**
- * Verify OTP code
- */
+// Verify OTP validity against stored value and expiry
 export const verifyOTP = (
   inputOTP: string,
   storedOTP: string,
@@ -66,16 +60,12 @@ export const verifyOTP = (
   return inputOTP === storedOTP;
 };
 
-/**
- * Generate secure reset token
- */
+// Generate secure reset token
 export const generateResetToken = (): string => {
   return crypto.randomBytes(32).toString("hex");
 };
 
-/**
- * Hash reset token for storage
- */
+// Hash reset token for storage
 export const hashResetToken = (token: string): string => {
   return crypto.createHash("sha256").update(token).digest("hex");
 };
