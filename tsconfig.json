@@ -4,7 +4,7 @@
       "module": "commonjs",
       "lib": ["ES2022"],
       "outDir": "./dist",
-      "rootDir": ".",
+      "rootDir": "./src",
       "strict": true,
       "noUnusedLocals": true,
       "noUnusedParameters": true,
@@ -22,7 +22,7 @@
       "emitDecoratorMetadata": true,
       "baseUrl": "./src",
       "paths": {
-        "@/*": ["./*"],
+        "@/*": ["./src/*"],
         "@/controllers/*": ["./controllers/*"],
         "@/models/*": ["./models/*"],
         "@/services/*": ["./services/*"],

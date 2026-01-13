@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { clearCookie } from "@/utils/jwt";
 import { loginSessionService } from "@/utils/redis/loginSession";
-import { /* auditLogger */ } from "@/utils/logger";
 import { AuthErrors } from "@/utils/customError";
 import { responseHandler } from "@/middleware/responseHandler";
+import { UserRepo } from "@/models/repositories";
 
 declare global {
   namespace Express {
@@ -12,6 +12,14 @@ declare global {
         email: string;
         userId: string;
         sessionId: string;
+        role?: {
+          id: string;
+          type: number;
+          name: string;
+          description: string | null;
+          permissions: Record<string, boolean>;
+          isActive: boolean;
+        };
         sessionMetadata?: {
           ip: string;
           userAgent: string;
@@ -49,10 +57,26 @@ const validateLoginSession = async (
       return responseHandler.unauthorized(res, AuthErrors.INVALID_TOKEN);
     }
 
+    // Fetch user with role information
+    const user = await UserRepo.findOne({
+      where: { id: validation.userId! },
+      relations: ["role"],
+    });
+
     req.user = {
       email: validation.email!,
       userId: validation.userId!,
       sessionId: sessionId,
+      ...(user?.role && {
+        role: {
+          id: user.role.id,
+          type: user.role.type,
+          name: user.role.name,
+          description: user.role.description,
+          permissions: user.role.permissions,
+          isActive: user.role.isActive,
+        },
+      }),
       sessionMetadata: {
         ip: clientIp,
         userAgent: (req.headers["user-agent"] || "unknown") as string,
@@ -79,10 +103,26 @@ const optionalLoginSession = async (
     const validation = await loginSessionService.validateSession(sessionId, clientIp);
 
     if (validation.isValid) {
+      // Fetch user with role information
+      const user = await UserRepo.findOne({
+        where: { id: validation.userId! },
+        relations: ["role"],
+      });
+
       req.user = {
         email: validation.email!,
         userId: validation.userId!,
         sessionId: sessionId,
+        ...(user?.role && {
+          role: {
+            id: user.role.id,
+            type: user.role.type,
+            name: user.role.name,
+            description: user.role.description,
+            permissions: user.role.permissions,
+            isActive: user.role.isActive,
+          },
+        }),
         sessionMetadata: {
           ip: clientIp,
           userAgent: (req.headers["user-agent"] || "unknown") as string,

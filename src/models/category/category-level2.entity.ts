@@ -29,15 +29,15 @@ export class CategoryLevel2 {
   @Column("varchar", { length: 255, nullable: true })
   description!: string | null;
 
+  @Column("uuid")
+  categoryLevel1Id!: string;
+
   @ManyToOne(() => CategoryLevel1, (level1) => level1.children, {
     nullable: false,
     eager: false,
   })
-  @JoinColumn({ name: "category_level1_id" })
+  @JoinColumn({ name: "categoryLevel1Id" })
   categoryLevel1!: Relation<CategoryLevel1>;
-
-  @Column("uuid")
-  categoryLevel1Id!: string;
 
   @Column("uuid")
   categoryId!: string;

@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -13,7 +13,7 @@ import { User } from "../user/entity";
 @Index(["type"])
 @Index(["isActive"])
 export class Role {
-  @PrimaryColumn("varchar", { length: 50 })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
   @Column("integer", { unique: true })

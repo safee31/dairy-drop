@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { authenticate, requireCustomer } from "@/middleware/auth";
+import { validateLoginSession } from "@/middleware/validateLoginSession";
+import { requireCustomer } from "@/middleware/roles-auth";
 import { validate } from "@/middleware/validate";
 import { validateCsrfToken } from "@/middleware/csrf";
 import { orderSchemas } from "@/models/order";
@@ -7,7 +8,7 @@ import * as orderController from "@/controllers/customer/orders";
 
 const router = Router();
 
-router.use(authenticate);
+router.use(validateLoginSession);
 router.use(requireCustomer);
 
 router.get("/", orderController.listOrders);

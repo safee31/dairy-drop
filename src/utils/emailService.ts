@@ -24,7 +24,7 @@ export const sendEmail = async (
     const transporter = createTransporter();
 
     const mailOptions = {
-      from: `"Training Platform" <${config.EMAIL_USER}>`,
+      from: `"Dairy Drop" <${config.EMAIL_USER}>`,
       to,
       subject,
       html: htmlContent,
@@ -46,6 +46,7 @@ export const sendVerificationEmail = async (
   userName: string,
 ) => {
   const subject = "Verify Your Email - Dairy Drop";
+  const otpExpiryMinutes = config.OTP_EXPIRY_MINUTES || 60;
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333;">Welcome to Dairy Drop!</h2>
@@ -57,7 +58,7 @@ export const sendVerificationEmail = async (
         <div style="font-size: 32px; font-weight: bold; color: #333; margin: 10px 0; letter-spacing: 5px;">
           ${otp}
         </div>
-        <p style="color: #666; font-size: 14px;">This code will expire in 1 hour</p>
+        <p style="color: #666; font-size: 14px;">This code will expire in ${otpExpiryMinutes} minute${otpExpiryMinutes !== 1 ? 's' : ''}</p>
       </div>
 
       <p>If you didn't create an account, please ignore this email.</p>
@@ -74,6 +75,7 @@ export const sendPasswordResetEmail = async (
   userName: string,
 ) => {
   const subject = "Password Reset Request - Dairy Drop";
+  const resetTokenExpiryMinutes = config.RESET_TOKEN_EXPIRY_MINUTES || 5;
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333;">Password Reset Request</h2>
@@ -85,7 +87,7 @@ export const sendPasswordResetEmail = async (
         <div style="font-size: 32px; font-weight: bold; color: #333; margin: 10px 0; letter-spacing: 5px;">
           ${otp}
         </div>
-        <p style="color: #666; font-size: 14px;">This code will expire in 1 hour</p>
+        <p style="color: #666; font-size: 14px;">This code will expire in ${resetTokenExpiryMinutes} minute${resetTokenExpiryMinutes !== 1 ? 's' : ''}</p>
       </div>
 
       <p><strong>Security Tip:</strong> Never share this code with anyone. Our team will never ask for it.</p>

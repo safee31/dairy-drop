@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -15,10 +15,10 @@ import { User } from "../user/entity";
 @Index(["userId", "isActive"])
 @Index(["userId", "isPrimary"])
 export class Address {
-  @PrimaryColumn("varchar", { length: 50 })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column("varchar", { length: 50 })
+  @Column("uuid")
   userId!: string;
 
   @Column("varchar", { length: 50, nullable: true })

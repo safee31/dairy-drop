@@ -2,6 +2,7 @@ import { AppDataSource } from "@/config/database";
 import { UserRepo, RoleRepo } from "@/models/repositories";
 import { authUtils } from "@/models/user/utils";
 import config from "@/config/env";
+import { generateId } from "@/utils/helpers";
 
 const seedAdmin = async () => {
   try {
@@ -13,7 +14,7 @@ const seedAdmin = async () => {
 
     if (!adminRole) {
       adminRole = RoleRepo.create({
-        id: Math.random().toString(36).substring(2, 15),
+        id: generateId(),
         name: "Admin",
         type: 1,
         description: "Administrator role",
@@ -38,7 +39,7 @@ const seedAdmin = async () => {
     );
 
     const adminUser = UserRepo.create({
-      id: Math.random().toString(36).substring(2, 15),
+      id: generateId(),
       email: adminEmail,
       password: hashedPassword,
       fullName: "Admin User",

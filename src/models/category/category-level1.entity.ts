@@ -34,7 +34,7 @@ export class CategoryLevel1 {
     nullable: false,
     eager: false,
   })
-  @JoinColumn({ name: "category_id" })
+  @JoinColumn({ name: "categoryId" })
   category!: Relation<Category>;
 
   @Column("uuid")

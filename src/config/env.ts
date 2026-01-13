@@ -73,10 +73,15 @@ const config = {
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
   AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
 
-  // Redis Configuration
+  // Redis Configuration (Security-hardened for e-commerce)
   REDIS_URL: process.env.REDIS_URL,
   REDIS_HOST: process.env.REDIS_HOST,
   REDIS_PORT: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : undefined,
+  REDIS_PASSWORD: process.env.REDIS_PASSWORD, // Required: strong password for ACL
+  REDIS_DB: process.env.REDIS_DB ? parseInt(process.env.REDIS_DB) : 11, // Isolated DB for Dairy Drop
+  REDIS_MAX_RETRIES: process.env.REDIS_MAX_RETRIES ? parseInt(process.env.REDIS_MAX_RETRIES) : 3,
+  REDIS_RETRY_DELAY: process.env.REDIS_RETRY_DELAY ? parseInt(process.env.REDIS_RETRY_DELAY) : 1000, // ms
+  REDIS_CONNECTION_TIMEOUT: process.env.REDIS_CONNECTION_TIMEOUT ? parseInt(process.env.REDIS_CONNECTION_TIMEOUT) : 5000, // ms
 
   // OTP Configuration
   OTP_LENGTH: process.env.OTP_LENGTH ? parseInt(process.env.OTP_LENGTH) : 4,

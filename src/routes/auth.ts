@@ -14,6 +14,7 @@ router.post("/login", loginRateLimiter, validate(userSchemas.login), authControl
 router.post("/forgot-password", passwordResetRateLimiter, authController.forgotPassword);
 router.post("/reset-password", passwordResetRateLimiter, authController.resetPassword);
 router.post("/send-otp", otpRateLimiter, authController.sendOTP);
+router.post("/verify-otp", otpRateLimiter, authController.verifyResetOTP);
 
 // Validate session (check if session is still valid)
 router.get("/validate", authController.validateSession);

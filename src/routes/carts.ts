@@ -1,12 +1,13 @@
 import { Router } from "express";
-import { authenticate, requireCustomer } from "@/middleware/auth";
+import { validateLoginSession } from "@/middleware/validateLoginSession";
+import { requireCustomer } from "@/middleware/roles-auth";
 import { validate } from "@/middleware/validate";
 import { cartItemSchemas, cartSchemas } from "@/models/cart";
 import * as cartController from "@/controllers/customer/carts";
 
 const router = Router();
 
-router.use(authenticate);
+router.use(validateLoginSession);
 router.use(requireCustomer);
 
 router.get("/", cartController.getCart);

@@ -2,7 +2,7 @@ import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { auditLogger } from "@/utils/logger";
 import { UserRepo, RoleRepo } from "@/models/repositories";
-import { normalizeEmail } from "@/utils/helpers";
+import { normalizeEmail, generateId } from "@/utils/helpers";
 import { saveImage, updateImage, deleteImage } from "@/utils/image";
 import { authUtils } from "@/models/user/utils";
 import config from "@/config/env";
@@ -140,7 +140,7 @@ export const createCustomer = asyncHandler(async (req, res) => {
   }
 
   const newCustomer = UserRepo.create({
-    id: Math.random().toString(36).substring(2, 15),
+    id: generateId(),
     email: normalizeEmail(email),
     password: hashedPassword,
     fullName,

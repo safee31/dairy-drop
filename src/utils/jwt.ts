@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Request, Response } from "express";
+import { Response } from "express";
 import config from "@/config/env";
 import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
 import { UserRepo, AddressRepo } from "@/models/repositories";
@@ -286,7 +286,4 @@ export const clearCookie = (res: Response, name: string) => {
   });
 };
 
-export const extractToken = (req: Request): string | null => {
-  const token = req.cookies?.dd_session;
-  return token || null;
-};
+

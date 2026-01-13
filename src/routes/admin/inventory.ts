@@ -1,29 +1,30 @@
 import { Router } from "express";
-import { authenticate, requireAdmin } from "@/middleware/auth";
+import { validateLoginSession } from "@/middleware/validateLoginSession";
+import { requireAdmin } from "@/middleware/roles-auth";
 import { validate } from "@/middleware/validate";
 import { inventoryHistorySchemas } from "@/models/inventoryHistory";
 import * as inventoryController from "@/controllers/admin/inventory";
 
 const router = Router();
 
-router.use(authenticate);
+router.use(validateLoginSession);
 router.use(requireAdmin);
 
 // ============================================
 // INVENTORY CRUD ROUTES
 // ============================================
 
-router.get("/inventory", inventoryController.getAllInventory);
-router.get("/inventory/summary", inventoryController.getInventorySummary);
-router.get("/inventory/low-stock", inventoryController.getLowStockProducts);
-router.get("/inventory/:id", inventoryController.getInventoryById);
+router.get("/", inventoryController.getAllInventory);
+router.get("/summary", inventoryController.getInventorySummary);
+router.get("/low-stock", inventoryController.getLowStockProducts);
+router.get("/:id", inventoryController.getInventoryById);
 router.put(
-  "/inventory/:id/update-stock",
+  "/:id/update-stock",
   validate(inventoryHistorySchemas.update),
   inventoryController.updateInventoryStock,
 );
 router.post(
-  "/inventory/:id/adjust-stock",
+  "/:id/adjust-stock",
   validate(inventoryHistorySchemas.create),
   inventoryController.adjustInventoryStock,
 );
@@ -32,6 +33,6 @@ router.post(
 // INVENTORY HISTORY ROUTES
 // ============================================
 
-router.get("/inventory/:inventoryId/history", inventoryController.getInventoryHistory);
+router.get("/:inventoryId/history", inventoryController.getInventoryHistory);
 
 export default router;

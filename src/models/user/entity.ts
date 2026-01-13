@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -20,7 +20,7 @@ import { Order } from "../order/entity";
 @Index(["isActive", "isVerified"])
 @Index(["roleId"])
 export class User {
-  @PrimaryColumn("varchar", { length: 50 })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
   @Column("varchar", { length: 255, unique: true })
@@ -47,7 +47,7 @@ export class User {
   @Column("timestamp", { nullable: true })
   lastLoginAt!: Date | null;
 
-  @Column("varchar", { length: 50, nullable: true })
+  @Column("uuid", { nullable: true })
   roleId!: string | null;
 
   @CreateDateColumn()

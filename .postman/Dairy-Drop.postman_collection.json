@@ -2,13 +2,13 @@
   "info": {
     "name": "Dairy Drop API",
     "_postman_id": "dairy-drop-api-v1",
-    "description": "Complete Postman collection for Dairy Drop API. Import and set variables: baseUrl (http://localhost:8000) and token (after login).",
+    "description": "Complete Postman collection for Dairy Drop E-commerce API v1. Base URL: http://localhost:8000/api/v1. Import and set variables: baseUrl and token (after login).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8000",
+      "value": "http://localhost:8000/api/v1",
       "type": "string"
     },
     {
@@ -28,6 +28,36 @@
       "value": "",
       "type": "string",
       "description": "Address ID for address operations"
+    },
+    {
+      "key": "product_id",
+      "value": "",
+      "type": "string",
+      "description": "Product ID for product operations"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "type": "string",
+      "description": "Category ID for category operations"
+    },
+    {
+      "key": "image_id",
+      "value": "",
+      "type": "string",
+      "description": "Image ID for product image operations"
+    },
+    {
+      "key": "inventory_id",
+      "value": "",
+      "type": "string",
+      "description": "Inventory ID for inventory operations"
+    },
+    {
+      "key": "order_id",
+      "value": "",
+      "type": "string",
+      "description": "Order ID for order operations"
     }
   ],
   "item": [

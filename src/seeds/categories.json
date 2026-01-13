@@ -1,0 +1,477 @@
+{
+  "categories": [
+    {
+      "name": "Milk & Milk Products",
+      "description": "Fresh and processed milk products including milk, cream, butter, and traditional beverages",
+      "slug": "milk-products",
+      "displayOrder": 1,
+      "level1": [
+        {
+          "name": "Fresh Milk",
+          "description": "Various types of fresh liquid milk",
+          "slug": "fresh-milk",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "Whole Milk", "description": "Full-fat milk with all natural cream", "slug": "whole-milk", "displayOrder": 1 },
+            { "name": "Skimmed Milk", "description": "Fat-free milk with cream removed", "slug": "skimmed-milk", "displayOrder": 2 },
+            { "name": "Low-fat Milk", "description": "Milk with reduced fat content", "slug": "low-fat-milk", "displayOrder": 3 },
+            { "name": "Flavored Milk", "description": "Milk with added flavors like chocolate, strawberry", "slug": "flavored-milk", "displayOrder": 4 },
+            { "name": "Organic Milk", "description": "Milk from organically raised cows", "slug": "organic-milk", "displayOrder": 5 }
+          ]
+        },
+        {
+          "name": "Cream",
+          "description": "Dairy cream products for cooking and desserts",
+          "slug": "cream",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Whipping Cream", "description": "High-fat cream for whipping", "slug": "whipping-cream", "displayOrder": 1 },
+            { "name": "Cooking Cream", "description": "Cream specifically for cooking", "slug": "cooking-cream", "displayOrder": 2 },
+            { "name": "Sour Cream", "description": "Cultured cream with tangy flavor", "slug": "sour-cream", "displayOrder": 3 },
+            { "name": "Clotted Cream", "description": "Thick, rich cream for desserts", "slug": "clotted-cream", "displayOrder": 4 }
+          ]
+        },
+        {
+          "name": "Butter & Ghee",
+          "description": "Dairy fats including butter and clarified butter",
+          "slug": "butter-ghee",
+          "displayOrder": 3,
+          "level2": [
+            { "name": "Salted Butter", "description": "Butter with added salt", "slug": "salted-butter", "displayOrder": 1 },
+            { "name": "Unsalted Butter", "description": "Pure butter without added salt", "slug": "unsalted-butter", "displayOrder": 2 },
+            { "name": "Clarified Butter (Ghee)", "description": "Pure butterfat with milk solids removed", "slug": "ghee", "displayOrder": 3 },
+            { "name": "Spreadable Butter", "description": "Butter that spreads easily", "slug": "spreadable-butter", "displayOrder": 4 },
+            { "name": "Plant-based Butter Alternatives", "description": "Non-dairy butter substitutes", "slug": "plant-based-butter", "displayOrder": 5 }
+          ]
+        },
+        {
+          "name": "Buttermilk & Lassi",
+          "description": "Traditional fermented milk beverages",
+          "slug": "buttermilk-lassi",
+          "displayOrder": 4,
+          "level2": [
+            { "name": "Traditional Buttermilk", "description": "Fermented dairy beverage", "slug": "traditional-buttermilk", "displayOrder": 1 },
+            { "name": "Cultured Buttermilk", "description": "Commercially cultured buttermilk", "slug": "cultured-buttermilk", "displayOrder": 2 },
+            { "name": "Sweet Lassi", "description": "Sweetened yogurt-based drink", "slug": "sweet-lassi", "displayOrder": 3 },
+            { "name": "Salted Lassi", "description": "Savory yogurt-based drink", "slug": "salted-lassi", "displayOrder": 4 },
+            { "name": "Flavored Lassi", "description": "Lassi with fruit or other flavors", "slug": "flavored-lassi", "displayOrder": 5 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cheese",
+      "description": "Various types of cheese from soft to hard varieties",
+      "slug": "cheese",
+      "displayOrder": 2,
+      "level1": [
+        {
+          "name": "Soft Cheese",
+          "description": "Cheeses with high moisture content",
+          "slug": "soft-cheese",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "Mozzarella", "description": "Italian pasta filata cheese", "slug": "mozzarella", "displayOrder": 1 },
+            { "name": "Ricotta", "description": "Italian whey cheese", "slug": "ricotta", "displayOrder": 2 },
+            { "name": "Feta", "description": "Greek brined cheese", "slug": "feta", "displayOrder": 3 },
+            { "name": "Cottage Cheese", "description": "Fresh cheese curds", "slug": "cottage-cheese", "displayOrder": 4 },
+            { "name": "Cream Cheese", "description": "Soft, spreadable cheese", "slug": "cream-cheese", "displayOrder": 5 }
+          ]
+        },
+        {
+          "name": "Hard Cheese",
+          "description": "Aged cheeses with low moisture content",
+          "slug": "hard-cheese",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Cheddar", "description": "English hard cheese", "slug": "cheddar", "displayOrder": 1 },
+            { "name": "Parmesan", "description": "Italian hard grating cheese", "slug": "parmesan", "displayOrder": 2 },
+            { "name": "Gouda", "description": "Dutch semi-hard cheese", "slug": "gouda", "displayOrder": 3 },
+            { "name": "Swiss Cheese", "description": "Cheese with characteristic holes", "slug": "swiss-cheese", "displayOrder": 4 },
+            { "name": "Manchego", "description": "Spanish sheep's milk cheese", "slug": "manchego", "displayOrder": 5 }
+          ]
+        },
+        {
+          "name": "Blue Cheese",
+          "description": "Cheeses with blue mold veins",
+          "slug": "blue-cheese",
+          "displayOrder": 3,
+          "level2": [
+            { "name": "Roquefort", "description": "French sheep's milk blue cheese", "slug": "roquefort", "displayOrder": 1 },
+            { "name": "Gorgonzola", "description": "Italian blue cheese", "slug": "gorgonzola", "displayOrder": 2 },
+            { "name": "Stilton", "description": "English blue cheese", "slug": "stilton", "displayOrder": 3 },
+            { "name": "Danish Blue", "description": "Danish blue-veined cheese", "slug": "danish-blue", "displayOrder": 4 }
+          ]
+        },
+        {
+          "name": "Processed Cheese",
+          "description": "Industrial cheese products",
+          "slug": "processed-cheese",
+          "displayOrder": 4,
+          "level2": [
+            { "name": "Cheese Slices", "description": "Pre-sliced processed cheese", "slug": "cheese-slices", "displayOrder": 1 },
+            { "name": "Cheese Spreads", "description": "Spreadable cheese products", "slug": "cheese-spreads", "displayOrder": 2 },
+            { "name": "Cheese Cubes", "description": "Pre-cut cheese cubes", "slug": "cheese-cubes", "displayOrder": 3 },
+            { "name": "String Cheese", "description": "Cheese that pulls into strings", "slug": "string-cheese", "displayOrder": 4 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Yogurt & Curd",
+      "description": "Fermented dairy products including yogurt and regional varieties",
+      "slug": "yogurt-curd",
+      "displayOrder": 3,
+      "level1": [
+        {
+          "name": "Plain Yogurt",
+          "description": "Unflavored yogurt varieties",
+          "slug": "plain-yogurt",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "Greek Yogurt", "description": "Strained yogurt with thick texture", "slug": "greek-yogurt", "displayOrder": 1 },
+            { "name": "Regular Yogurt", "description": "Standard cultured yogurt", "slug": "regular-yogurt", "displayOrder": 2 },
+            { "name": "Low-fat Yogurt", "description": "Yogurt with reduced fat content", "slug": "low-fat-yogurt", "displayOrder": 3 },
+            { "name": "Full-fat Yogurt", "description": "Yogurt with natural fat content", "slug": "full-fat-yogurt", "displayOrder": 4 }
+          ]
+        },
+        {
+          "name": "Flavored Yogurt",
+          "description": "Yogurt with added flavors and sweeteners",
+          "slug": "flavored-yogurt",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Fruit Yogurt", "description": "Yogurt with fruit pieces or puree", "slug": "fruit-yogurt", "displayOrder": 1 },
+            { "name": "Vanilla Yogurt", "description": "Vanilla flavored yogurt", "slug": "vanilla-yogurt", "displayOrder": 2 },
+            { "name": "Honey Yogurt", "description": "Yogurt sweetened with honey", "slug": "honey-yogurt", "displayOrder": 3 },
+            { "name": "Dessert Yogurt", "description": "Creamy dessert-style yogurt", "slug": "dessert-yogurt", "displayOrder": 4 }
+          ]
+        },
+        {
+          "name": "Drinking Yogurt",
+          "description": "Liquid yogurt beverages",
+          "slug": "drinking-yogurt",
+          "displayOrder": 3,
+          "level2": [
+            { "name": "Sweetened Drinkable Yogurt", "description": "Sweet liquid yogurt drink", "slug": "sweetened-drinking-yogurt", "displayOrder": 1 },
+            { "name": "Probiotic Yogurt Drinks", "description": "Yogurt drinks with added probiotics", "slug": "probiotic-yogurt-drinks", "displayOrder": 2 },
+            { "name": "Kefir", "description": "Fermented milk drink", "slug": "kefir", "displayOrder": 3 }
+          ]
+        },
+        {
+          "name": "Regional Varieties",
+          "description": "Traditional yogurt varieties from different regions",
+          "slug": "regional-yogurt",
+          "displayOrder": 4,
+          "level2": [
+            { "name": "Dahi (Indian Curd)", "description": "Traditional Indian yogurt", "slug": "dahi", "displayOrder": 1 },
+            { "name": "Skyr", "description": "Icelandic cultured dairy product", "slug": "skyr", "displayOrder": 2 },
+            { "name": "Labneh", "description": "Middle Eastern strained yogurt", "slug": "labneh", "displayOrder": 3 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Frozen Dairy",
+      "description": "Frozen dairy treats and desserts",
+      "slug": "frozen-dairy",
+      "displayOrder": 4,
+      "level1": [
+        {
+          "name": "Ice Cream",
+          "description": "Various types of ice cream",
+          "slug": "ice-cream",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "Vanilla Ice Cream", "description": "Classic vanilla flavored ice cream", "slug": "vanilla-ice-cream", "displayOrder": 1 },
+            { "name": "Chocolate Ice Cream", "description": "Rich chocolate ice cream", "slug": "chocolate-ice-cream", "displayOrder": 2 },
+            { "name": "Fruit Ice Cream", "description": "Ice cream with fruit flavors", "slug": "fruit-ice-cream", "displayOrder": 3 },
+            { "name": "Gelato", "description": "Italian-style ice cream", "slug": "gelato", "displayOrder": 4 },
+            { "name": "Sorbet", "description": "Dairy-free fruit ice", "slug": "sorbet", "displayOrder": 5 }
+          ]
+        },
+        {
+          "name": "Frozen Yogurt",
+          "description": "Frozen yogurt products",
+          "slug": "frozen-yogurt",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Plain Frozen Yogurt", "description": "Unflavored frozen yogurt", "slug": "plain-frozen-yogurt", "displayOrder": 1 },
+            { "name": "Flavored Frozen Yogurt", "description": "Frozen yogurt with various flavors", "slug": "flavored-frozen-yogurt", "displayOrder": 2 }
+          ]
+        },
+        {
+          "name": "Other Frozen Treats",
+          "description": "Other frozen dairy products",
+          "slug": "other-frozen-treats",
+          "displayOrder": 3,
+          "level2": [
+            { "name": "Ice Cream Bars", "description": "Ice cream on sticks", "slug": "ice-cream-bars", "displayOrder": 1 },
+            { "name": "Popsicles", "description": "Frozen flavored ice treats", "slug": "popsicles", "displayOrder": 2 },
+            { "name": "Frozen Novelties", "description": "Various frozen dessert items", "slug": "frozen-novelties", "displayOrder": 3 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dairy-based Sweets & Desserts",
+      "description": "Traditional and modern dairy-based sweets",
+      "slug": "dairy-sweets-desserts",
+      "displayOrder": 5,
+      "level1": [
+        {
+          "name": "Indian Sweets",
+          "description": "Traditional Indian dairy sweets",
+          "slug": "indian-sweets",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "Rasgulla", "description": "Syrup-soaked cheese balls", "slug": "rasgulla", "displayOrder": 1 },
+            { "name": "Rasmalai", "description": "Cheese patties in sweetened milk", "slug": "rasmalai", "displayOrder": 2 },
+            { "name": "Gulab Jamun", "description": "Milk-solid based sweet", "slug": "gulab-jamun", "displayOrder": 3 },
+            { "name": "Sandesh", "description": "Bengali sweet made from cheese", "slug": "sandesh", "displayOrder": 4 },
+            { "name": "Peda", "description": "Sweet made from khoya", "slug": "peda", "displayOrder": 5 }
+          ]
+        },
+        {
+          "name": "Western Desserts",
+          "description": "Western-style dairy desserts",
+          "slug": "western-desserts",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Cheesecake", "description": "Cream cheese-based dessert", "slug": "cheesecake", "displayOrder": 1 },
+            { "name": "Custard", "description": "Egg and milk-based dessert", "slug": "custard", "displayOrder": 2 },
+            { "name": "Panna Cotta", "description": "Italian cooked cream dessert", "slug": "panna-cotta", "displayOrder": 3 },
+            { "name": "Mousse", "description": "Light and airy dessert", "slug": "mousse", "displayOrder": 4 },
+            { "name": "Pudding", "description": "Creamy milk-based dessert", "slug": "pudding", "displayOrder": 5 }
+          ]
+        },
+        {
+          "name": "Traditional Desserts",
+          "description": "Traditional milk-based desserts",
+          "slug": "traditional-desserts",
+          "displayOrder": 3,
+          "level2": [
+            { "name": "Kheer/Rice Pudding", "description": "Rice cooked in sweetened milk", "slug": "kheer", "displayOrder": 1 },
+            { "name": "Shrikhand", "description": "Sweet strained yogurt dessert", "slug": "shrikhand", "displayOrder": 2 },
+            { "name": "Mishti Doi", "description": "Bengali sweetened yogurt", "slug": "mishti-doi", "displayOrder": 3 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dairy-based Beverages",
+      "description": "Beverages made from or with dairy",
+      "slug": "dairy-beverages",
+      "displayOrder": 6,
+      "level1": [
+        {
+          "name": "Milkshakes",
+          "description": "Blended milk and flavor drinks",
+          "slug": "milkshakes",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "Chocolate Milkshake", "description": "Chocolate flavored milkshake", "slug": "chocolate-milkshake", "displayOrder": 1 },
+            { "name": "Strawberry Milkshake", "description": "Strawberry flavored milkshake", "slug": "strawberry-milkshake", "displayOrder": 2 },
+            { "name": "Vanilla Milkshake", "description": "Vanilla flavored milkshake", "slug": "vanilla-milkshake", "displayOrder": 3 },
+            { "name": "Banana Milkshake", "description": "Banana flavored milkshake", "slug": "banana-milkshake", "displayOrder": 4 }
+          ]
+        },
+        {
+          "name": "Hot Beverages",
+          "description": "Warm dairy-based drinks",
+          "slug": "hot-dairy-beverages",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Hot Chocolate", "description": "Warm chocolate milk drink", "slug": "hot-chocolate", "displayOrder": 1 },
+            { "name": "Milk Tea Additives", "description": "Milk and cream for tea", "slug": "milk-tea-additives", "displayOrder": 2 },
+            { "name": "Coffee Creamers", "description": "Dairy for coffee", "slug": "coffee-creamers", "displayOrder": 3 },
+            { "name": "Turmeric Milk (Haldi Doodh)", "description": "Traditional turmeric milk", "slug": "turmeric-milk", "displayOrder": 4 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dairy Alternatives",
+      "description": "Plant-based dairy substitutes",
+      "slug": "dairy-alternatives",
+      "displayOrder": 7,
+      "level1": [
+        {
+          "name": "Plant-based Milk",
+          "description": "Non-dairy milk alternatives",
+          "slug": "plant-based-milk",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "Soy Milk", "description": "Milk made from soybeans", "slug": "soy-milk", "displayOrder": 1 },
+            { "name": "Almond Milk", "description": "Milk made from almonds", "slug": "almond-milk", "displayOrder": 2 },
+            { "name": "Oat Milk", "description": "Milk made from oats", "slug": "oat-milk", "displayOrder": 3 },
+            { "name": "Coconut Milk", "description": "Milk made from coconut", "slug": "coconut-milk", "displayOrder": 4 }
+          ]
+        },
+        {
+          "name": "Vegan Cheese",
+          "description": "Plant-based cheese alternatives",
+          "slug": "vegan-cheese",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Vegan Cheese Slices", "description": "Plant-based cheese slices", "slug": "vegan-cheese-slices", "displayOrder": 1 },
+            { "name": "Vegan Cheese Blocks", "description": "Plant-based cheese blocks", "slug": "vegan-cheese-blocks", "displayOrder": 2 },
+            { "name": "Vegan Cream Cheese", "description": "Plant-based cream cheese", "slug": "vegan-cream-cheese", "displayOrder": 3 }
+          ]
+        },
+        {
+          "name": "Vegan Yogurt",
+          "description": "Plant-based yogurt alternatives",
+          "slug": "vegan-yogurt",
+          "displayOrder": 3,
+          "level2": [
+            { "name": "Coconut Milk Yogurt", "description": "Yogurt made from coconut milk", "slug": "coconut-yogurt", "displayOrder": 1 },
+            { "name": "Almond Milk Yogurt", "description": "Yogurt made from almond milk", "slug": "almond-yogurt", "displayOrder": 2 },
+            { "name": "Soy Yogurt", "description": "Yogurt made from soy milk", "slug": "soy-yogurt", "displayOrder": 3 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dairy Ingredients & Specialty",
+      "description": "Specialized dairy products and ingredients",
+      "slug": "dairy-ingredients",
+      "displayOrder": 8,
+      "level1": [
+        {
+          "name": "Powdered Dairy",
+          "description": "Dehydrated dairy products",
+          "slug": "powdered-dairy",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "Milk Powder", "description": "Dehydrated milk", "slug": "milk-powder", "displayOrder": 1 },
+            { "name": "Whey Protein", "description": "Protein powder from milk", "slug": "whey-protein", "displayOrder": 2 },
+            { "name": "Cheese Powder", "description": "Dehydrated cheese", "slug": "cheese-powder", "displayOrder": 3 },
+            { "name": "Buttermilk Powder", "description": "Dehydrated buttermilk", "slug": "buttermilk-powder", "displayOrder": 4 }
+          ]
+        },
+        {
+          "name": "Condensed & Evaporated",
+          "description": "Concentrated milk products",
+          "slug": "condensed-milk",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Sweetened Condensed Milk", "description": "Sweetened concentrated milk", "slug": "sweetened-condensed-milk", "displayOrder": 1 },
+            { "name": "Evaporated Milk", "description": "Unsweetened concentrated milk", "slug": "evaporated-milk", "displayOrder": 2 },
+            { "name": "Dulce de Leche", "description": "Caramelized sweetened milk", "slug": "dulce-de-leche", "displayOrder": 3 }
+          ]
+        },
+        {
+          "name": "Specialty Dairy",
+          "description": "Specialized dairy products",
+          "slug": "specialty-dairy",
+          "displayOrder": 3,
+          "level2": [
+            { "name": "Colostrum Supplements", "description": "First milk supplements", "slug": "colostrum-supplements", "displayOrder": 1 },
+            { "name": "Lactose-free Products", "description": "Dairy without lactose", "slug": "lactose-free-products", "displayOrder": 2 },
+            { "name": "Fortified Dairy Products", "description": "Nutritionally enhanced dairy", "slug": "fortified-dairy", "displayOrder": 3 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dairy for Cooking",
+      "description": "Dairy products specifically for culinary use",
+      "slug": "cooking-dairy",
+      "displayOrder": 9,
+      "level1": [
+        {
+          "name": "Cooking Creams",
+          "description": "Creams used in cooking",
+          "slug": "cooking-creams",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "Heavy Cream for Cooking", "description": "High-fat cream for cooking", "slug": "heavy-cooking-cream", "displayOrder": 1 },
+            { "name": "Light Cream", "description": "Lower fat cream for cooking", "slug": "light-cream", "displayOrder": 2 },
+            { "name": "Table Cream", "description": "All-purpose cooking cream", "slug": "table-cream", "displayOrder": 3 }
+          ]
+        },
+        {
+          "name": "Cheese for Cooking",
+          "description": "Cheeses used in cooking and baking",
+          "slug": "cooking-cheese",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Pizza Cheese", "description": "Cheese blend for pizza", "slug": "pizza-cheese", "displayOrder": 1 },
+            { "name": "Baking Cheese", "description": "Cheese for baking applications", "slug": "baking-cheese", "displayOrder": 2 },
+            { "name": "Grating Cheese", "description": "Cheese for grating over dishes", "slug": "grating-cheese", "displayOrder": 3 }
+          ]
+        },
+        {
+          "name": "Cooking Milk",
+          "description": "Milk for culinary applications",
+          "slug": "cooking-milk",
+          "displayOrder": 3,
+          "level2": [
+            { "name": "UHT Milk for Cooking", "description": "Long-life milk for cooking", "slug": "uht-cooking-milk", "displayOrder": 1 },
+            { "name": "Reduced-fat Milk for Cooking", "description": "Lower fat milk for cooking", "slug": "reduced-fat-cooking-milk", "displayOrder": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dairy by Animal Source",
+      "description": "Dairy products categorized by source animal",
+      "slug": "animal-source-dairy",
+      "displayOrder": 10,
+      "level1": [
+        {
+          "name": "Cow Milk Products",
+          "description": "Products from cow's milk",
+          "slug": "cow-milk-products",
+          "displayOrder": 1,
+          "level2": [
+            { "name": "A2 Milk Products", "description": "Products from A2 protein milk", "slug": "a2-milk-products", "displayOrder": 1 },
+            { "name": "Organic Cow Dairy", "description": "Organic cow milk products", "slug": "organic-cow-dairy", "displayOrder": 2 },
+            { "name": "Conventional Cow Dairy", "description": "Regular cow milk products", "slug": "conventional-cow-dairy", "displayOrder": 3 }
+          ]
+        },
+        {
+          "name": "Goat Milk Products",
+          "description": "Products from goat's milk",
+          "slug": "goat-milk-products",
+          "displayOrder": 2,
+          "level2": [
+            { "name": "Goat Cheese", "description": "Cheese made from goat milk", "slug": "goat-cheese", "displayOrder": 1 },
+            { "name": "Goat Milk", "description": "Fresh goat milk", "slug": "goat-milk", "displayOrder": 2 },
+            { "name": "Goat Yogurt", "description": "Yogurt made from goat milk", "slug": "goat-yogurt", "displayOrder": 3 }
+          ]
+        },
+        {
+          "name": "Buffalo Milk Products",
+          "description": "Products from buffalo milk",
+          "slug": "buffalo-milk-products",
+          "displayOrder": 3,
+          "level2": [
+            { "name": "Buffalo Mozzarella", "description": "Mozzarella from buffalo milk", "slug": "buffalo-mozzarella", "displayOrder": 1 },
+            { "name": "Buffalo Milk", "description": "Fresh buffalo milk", "slug": "buffalo-milk", "displayOrder": 2 },
+            { "name": "Buffalo Cream", "description": "Cream from buffalo milk", "slug": "buffalo-cream", "displayOrder": 3 }
+          ]
+        },
+        {
+          "name": "Sheep Milk Products",
+          "description": "Products from sheep milk",
+          "slug": "sheep-milk-products",
+          "displayOrder": 4,
+          "level2": [
+            { "name": "Sheep Cheese", "description": "Cheese made from sheep milk", "slug": "sheep-cheese", "displayOrder": 1 },
+            { "name": "Sheep Milk Yogurt", "description": "Yogurt made from sheep milk", "slug": "sheep-yogurt", "displayOrder": 2 }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "total_categories": 10,
+    "total_level1": 33,
+    "total_level2": 121,
+    "structure_type": "hierarchical",
+    "levels": 3,
+    "generated_at": "2024-01-13T00:00:00Z"
+  }
+}

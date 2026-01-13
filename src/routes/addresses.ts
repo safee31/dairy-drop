@@ -1,12 +1,12 @@
 import { Router } from "express";
 import * as addressController from "../controllers/address";
-import { authenticate } from "../middleware/auth";
+import { validateLoginSession } from "../middleware/validateLoginSession";
 import { validateCsrfToken } from "../middleware/csrf";
 import { apiRateLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
 
-router.use(authenticate);
+router.use(validateLoginSession);
 router.use(apiRateLimiter);
 
 router.get("/", addressController.getUserAddresses);

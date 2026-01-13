@@ -44,7 +44,7 @@ export const getUserAddresses = asyncHandler(async (req, res) => {
 
 export const getAddressById = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
-  const userId = req.user?.userId as string;
+  const userId = req.user?.userId;
 
   const address = await AddressRepo.findOneBy({ id, userId });
 
@@ -56,7 +56,7 @@ export const getAddressById = asyncHandler(async (req, res) => {
 });
 
 export const createAddress = asyncHandler(async (req, res) => {
-  const userId = req.user?.userId as string;
+  const userId = req.user?.userId;
   const { isPrimary, ...addressData } = req.body;
 
 
@@ -91,7 +91,7 @@ export const createAddress = asyncHandler(async (req, res) => {
 
 export const updateAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
-  const userId = req.user?.userId as string;
+  const userId = req.user?.userId;
   const { isPrimary, ...addressData } = req.body;
 
   const address = await AddressRepo.findOneBy({ id, userId });
@@ -127,7 +127,7 @@ export const updateAddress = asyncHandler(async (req, res) => {
 
 export const deleteAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
-  const userId = req.user?.userId as string;
+  const userId = req.user?.userId;
 
   const address = await AddressRepo.findOneBy({ id, userId });
 
@@ -169,7 +169,7 @@ export const deleteAddress = asyncHandler(async (req, res) => {
 
 export const setPrimaryAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
-  const userId = req.user?.userId as string;
+  const userId = req.user?.userId;
 
   const address = await AddressRepo.findOneBy({ id, userId });
 

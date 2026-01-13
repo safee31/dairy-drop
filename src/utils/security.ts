@@ -109,7 +109,7 @@ export const securityAuditService = {
   // Log address changes
   logAddressOperation: (
     operation: "create" | "update" | "delete",
-    userId: string,
+    userId: string | undefined | null,
     addressId: string,
     metadata: Record<string, unknown> = {},
   ) => {

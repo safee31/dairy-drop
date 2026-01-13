@@ -8,8 +8,10 @@ import { verifyRefreshToken, generateTokenPair, setCookie, clearCookie, revokeRe
 import config from "@/config/env";
 import { authUtils } from "@/models/user/utils";
 import { UserRepo, RoleRepo } from "@/models/repositories";
-import { generateOTP, storeOTP, verifyOTP } from "@/utils/redis";
+import { generateOTP, storeOTP, verifyOTP as verifyOTPCode } from "@/utils/redis";
+import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
 import { normalizeEmail, generateId } from "@/utils/helpers";
+import { csrfService } from "@/utils/security";
 
 export const registerCustomer = asyncHandler(async (req, res) => {
   const { email, password, fullName, phoneNumber, profileImage } = req.body;
@@ -86,6 +88,10 @@ export const registerCustomer = asyncHandler(async (req, res) => {
         maxAge: config.COOKIE_MAX_AGE,
       } as any);
 
+      // Generate CSRF token for this session immediately after login
+      const csrfToken = await csrfService.generate(session.sessionId);
+      res.setHeader("x-csrf-token", csrfToken);
+
       return responseHandler.success(
         res,
         {
@@ -159,7 +165,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   }
 
   // Verify OTP from Redis
-  const isValidOTP = await verifyOTP(normalizeEmail(email), otp, "verify");
+  const isValidOTP = await verifyOTPCode(normalizeEmail(email), otp, "verify");
   if (!isValidOTP) {
     return responseHandler.error(res, "Invalid or expired OTP", 400);
   }
@@ -196,7 +202,7 @@ export const loginCustomer = asyncHandler(async (req, res) => {
   });
 
   if (!user || !(await authUtils.comparePassword(password, user.password))) {
-    return responseHandler.unauthorized(res, AuthErrors.INVALID_CREDENTIALS);
+    return responseHandler.error(res, AuthErrors.INVALID_CREDENTIALS, 400);
   }
 
   if (!config.ALLOW_UNVERIFIED_LOGIN && !user.isVerified) {
@@ -226,6 +232,10 @@ export const loginCustomer = asyncHandler(async (req, res) => {
     setCookie(res as any, "sessionId", session.sessionId, {
       maxAge: config.COOKIE_MAX_AGE,
     } as any);
+
+    // Generate CSRF token for this session immediately after login
+    const csrfToken = await csrfService.generate(session.sessionId);
+    res.setHeader("x-csrf-token", csrfToken);
 
     // Update last login
     user.lastLoginAt = new Date();
@@ -305,7 +315,7 @@ export const refreshSession = asyncHandler(async (req, res) => {
 
         return responseHandler.success(res, { expiresAt: refreshed.expiresAt }, "Session refreshed");
       } catch (err) {
-        try { clearCookie(res, "sessionId"); } catch {}
+        try { clearCookie(res, "sessionId"); } catch { }
       }
     }
 
@@ -322,15 +332,15 @@ export const refreshSession = asyncHandler(async (req, res) => {
         setCookie(res, "dd_refresh", tokens.refreshToken);
         return responseHandler.success(res, {}, "Tokens refreshed");
       } catch (err) {
-        try { clearCookie(res, "dd_session"); clearCookie(res, "dd_refresh"); } catch {}
+        try { clearCookie(res, "dd_session"); clearCookie(res, "dd_refresh"); } catch { }
         return responseHandler.unauthorized(res, AuthErrors.INVALID_TOKEN);
       }
     }
 
     return responseHandler.unauthorized(res, AuthErrors.TOKEN_REQUIRED);
   } catch (error) {
-    try { clearCookie(res, "sessionId"); } catch {}
-    try { clearCookie(res, "dd_session"); clearCookie(res, "dd_refresh"); } catch {}
+    try { clearCookie(res, "sessionId"); } catch { }
+    try { clearCookie(res, "dd_session"); clearCookie(res, "dd_refresh"); } catch { }
     return responseHandler.unauthorized(res, AuthErrors.INVALID_TOKEN);
   }
 });
@@ -373,7 +383,15 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const resetOTP = generateOTP();
   await storeOTP(normalizedEmail, resetOTP, "reset");
 
-  await sendPasswordResetEmail(email, resetOTP, user.fullName);
+  // Send email but don't fail the API if email sending fails
+  try {
+    await sendPasswordResetEmail(email, resetOTP, user.fullName);
+  } catch (emailError) {
+    logger.error("Failed to send password reset email", {
+      error: emailError instanceof Error ? emailError.message : String(emailError),
+    });
+    // Continue anyway - OTP was stored successfully
+  }
 
   clearCookie(res, "sessionId");
 
@@ -387,7 +405,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 });
 
 export const resetPassword = asyncHandler(async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+  const { email, newPassword } = req.body;
   const normalizedEmail = normalizeEmail(email);
 
   if (!email?.trim()) {
@@ -398,8 +416,10 @@ export const resetPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "New password is required", 400);
   }
 
-  if (!otp?.trim()) {
-    return responseHandler.error(res, "OTP is required", 400);
+  // Require a short-lived reset session cookie set by verify-OTP (reset)
+  const resetSessionId = req.cookies?.resetSessionId as string | undefined;
+  if (!resetSessionId) {
+    return responseHandler.error(res, "Reset session is required. Verify OTP first.", 400);
   }
 
   const user = await UserRepo.findOneBy({ email: normalizedEmail });
@@ -408,9 +428,27 @@ export const resetPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "User not found!", 404);
   }
 
-  const isValidOTP = await verifyOTP(normalizedEmail, otp, "reset");
-  if (!isValidOTP) {
-    return responseHandler.error(res, "Invalid or expired OTP", 400);
+  // Validate and consume reset session (email-specific)
+  const storedEmail = await getKey(`reset_session:${resetSessionId}`);
+  if (!storedEmail) {
+    return responseHandler.error(res, "Invalid or expired reset session", 400);
+  }
+
+  // Validate email matches
+  if (storedEmail !== normalizedEmail) {
+    logger.error("Reset session validation failed", {
+      storedEmail,
+      normalizedEmail,
+    });
+    return responseHandler.error(res, "Reset session invalid for this email", 400);
+  }
+
+  // consume reset session
+  try {
+    await delKey(`reset_session:${resetSessionId}`);
+    try { clearCookie(res, "resetSessionId"); } catch { }
+  } catch (err) {
+    // ignore cleanup errors
   }
 
   const hashedPassword = await authUtils.hashPassword(
@@ -490,12 +528,58 @@ export const sendOTP = asyncHandler(async (req, res) => {
 
   if (otpType === "verify") {
     await sendVerificationEmail(email, otp, user.fullName);
-    } else if (otpType === "reset") {
+  } else if (otpType === "reset") {
     await sendPasswordResetEmail(email, otp, user.fullName);
     clearCookie(res, "sessionId");
   }
 
   return responseHandler.success(res, {}, "OTP sent to email.");
+});
+
+export const verifyResetOTP = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!email || !otp) {
+    return responseHandler.error(res, "Email and OTP are required!", 400);
+  }
+
+  const user = await UserRepo.findOneBy({ email: normalizedEmail });
+  if (!user) {
+    return responseHandler.error(res, "User not found!", 404);
+  }
+
+  // Verify OTP from Redis
+  const isValidOTP = await verifyOTPCode(normalizedEmail, otp, "reset");
+  if (!isValidOTP) {
+    return responseHandler.error(res, "Invalid or expired OTP", 400);
+  }
+
+  // Clear OTP storage
+  try {
+    await delKey(`otp:reset:${normalizedEmail}`, `otp:reset:${normalizedEmail}:attempts`);
+  } catch (err) {
+    // ignore
+  }
+
+  // Create reset session (email-specific only, no IP restriction)
+  try {
+    const resetId = generateId();
+    const ttlSeconds = (config.RESET_TOKEN_EXPIRY_MINUTES || 5) * 60;
+    // Store only email, not IP-specific
+    await setKey(`reset_session:${resetId}`, normalizedEmail, ttlSeconds);
+    setCookie(res as any, "resetSessionId", resetId, { maxAge: ttlSeconds * 1000 });
+  } catch (err) {
+    logger.error("Failed to create reset session", { error: err instanceof Error ? err.message : String(err) });
+  }
+
+  auditLogger.info("Reset OTP verified", {
+    userId: user.id,
+    email: user.email,
+    ip: req.ip,
+  });
+
+  return responseHandler.success(res, {}, "OTP verified. Proceed to reset password.");
 });
 
 export default {
@@ -509,4 +593,5 @@ export default {
   forgotPassword,
   resetPassword,
   sendOTP,
+  verifyResetOTP,
 };
