@@ -13,6 +13,7 @@ router.use(requireAdmin);
 router.get("/", orderController.listAllOrders);
 router.get("/:id", orderController.getOrderDetails);
 router.patch("/:id/status", validate(orderSchemas.updateStatus), orderController.updateOrderStatus);
+router.patch("/:id/delivery-status", orderController.updateDeliveryStatus);
 router.patch("/:id/payment", validate(orderSchemas.updatePayment), orderController.updatePaymentStatus);
 router.post("/:id/cancel", orderController.cancelOrderAdmin);
 router.get("/:id/delivery-history", orderController.getDeliveryHistory);

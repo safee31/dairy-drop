@@ -1,10 +1,11 @@
 import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { auditLogger } from "@/utils/logger";
-import { ProductRepo, CategoryLevel2Repo } from "@/models/repositories";
+import { ProductRepo, InventoryRepo } from "@/models/repositories";
 import { Product, CreateProduct, UpdateProduct, productUtils } from "@/models/product";
+import { Not } from "typeorm";
 
-export const getAllProducts = asyncHandler(async (req, res) => {
+const getAllProducts = asyncHandler(async (req, res) => {
     const {
         page = 1,
         limit = 10,
@@ -16,36 +17,57 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     } = req.query;
 
     const skip = (Number(page) - 1) * Number(limit);
-    const queryBuilder = ProductRepo.createQueryBuilder("product")
-        .leftJoinAndSelect("product.categoryLevel2", "level2")
-        .leftJoinAndSelect("level2.categoryLevel1", "level1")
-        .leftJoinAndSelect("level1.category", "category")
-        .leftJoinAndSelect("product.images", "images");
+
+    const baseQuery = ProductRepo.createQueryBuilder("product")
+        .leftJoinAndSelect("product.category", "category")
+        .leftJoinAndSelect(
+            "product.images",
+            "images",
+            "images.isPrimary = :isPrimary",
+            { isPrimary: true }
+        );
 
     if (search) {
-        queryBuilder.andWhere(
+        baseQuery.andWhere(
             "(product.name ILIKE :search OR product.sku ILIKE :search OR product.brand ILIKE :search)",
             { search: `%${search}%` },
         );
     }
 
     if (categoryId) {
-        queryBuilder.andWhere("product.categoryId = :categoryId", { categoryId });
+        baseQuery.andWhere("product.categoryId = :categoryId", { categoryId });
     }
 
     if (isActive !== undefined) {
-        queryBuilder.andWhere("product.isActive = :isActive", {
+        baseQuery.andWhere("product.isActive = :isActive", {
             isActive: isActive === "true",
         });
     }
 
-    const total = await queryBuilder.getCount();
-
-    const products = await queryBuilder
-        .orderBy(`product.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC")
-        .skip(skip)
-        .take(Number(limit))
-        .getMany();
+    const [products, total] = await Promise.all([
+        baseQuery
+            .select([
+                "product.id",
+                "product.name",
+                "product.brand",
+                "product.price",
+                "product.salePrice",
+                "product.isActive",
+                "product.isDeleted",
+                "product.createdAt",
+                "category.id",
+                "category.name",
+                "images.id",
+                "images.imageUrl",
+                "images.isPrimary",
+                "images.displayOrder",
+            ])
+            .orderBy(`product.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC")
+            .skip(skip)
+            .take(Number(limit))
+            .getMany(),
+        baseQuery.getCount(),
+    ]);
 
     return responseHandler.success(
         res,
@@ -62,16 +84,17 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     );
 });
 
-export const getProductById = asyncHandler(async (req, res) => {
+const getProductById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     const product = await ProductRepo.findOne({
-        where: { id },
+        where: { id, isDeleted: false },
         relations: [
             "categoryLevel2",
             "categoryLevel2.categoryLevel1",
             "categoryLevel2.categoryLevel1.category",
             "images",
+            "inventory",
         ],
     });
 
@@ -82,22 +105,12 @@ export const getProductById = asyncHandler(async (req, res) => {
     return responseHandler.success(res, product, "Product retrieved successfully");
 });
 
-export const createProduct = asyncHandler(async (req, res) => {
+const createProduct = asyncHandler(async (req, res) => {
     const createDto = req.body as CreateProduct;
-
-    // Validate category exists
-    const categoryLevel2 = await CategoryLevel2Repo.findOne({
-        where: { id: createDto.categoryLevel2Id, isActive: true },
-        relations: ["categoryLevel1"],
-    });
-
-    if (!categoryLevel2) {
-        return responseHandler.error(res, "Selected category not found or inactive", 404);
-    }
 
     // Check SKU uniqueness
     const existingSku = await ProductRepo.findOne({
-        where: { sku: createDto.sku },
+        where: { sku: createDto.sku, isDeleted: false },
     });
 
     if (existingSku) {
@@ -110,8 +123,8 @@ export const createProduct = asyncHandler(async (req, res) => {
         description: createDto.description,
         sku: createDto.sku,
         categoryLevel2Id: createDto.categoryLevel2Id,
-        categoryLevel1Id: categoryLevel2.categoryLevel1Id,
-        categoryId: categoryLevel2.categoryId,
+        categoryLevel1Id: createDto.categoryLevel1Id,
+        categoryId: createDto.categoryId,
         price: createDto.price,
         salePrice: productUtils.calculateSalePrice(createDto.price, createDto.discount || null),
         discount: createDto.discount || null,
@@ -123,6 +136,17 @@ export const createProduct = asyncHandler(async (req, res) => {
     });
 
     const savedProduct = await ProductRepo.save(product);
+
+    // Create inventory if provided
+    if (createDto.inventory) {
+        const inventory = InventoryRepo.create({
+            productId: savedProduct.id,
+            stockQuantity: createDto.inventory.stockQuantity || 0,
+            reorderLevel: createDto.inventory.reorderLevel || 10,
+            inStock: (createDto.inventory.stockQuantity || 0) > 0,
+        });
+        await InventoryRepo.save(inventory);
+    }
 
     auditLogger.info("Product created", {
         productId: savedProduct.id,
@@ -138,36 +162,26 @@ export const createProduct = asyncHandler(async (req, res) => {
     );
 });
 
-export const updateProduct = asyncHandler(async (req, res) => {
+const updateProduct = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const updateDto = req.body as UpdateProduct;
 
-    const product = await ProductRepo.findOne({ where: { id } });
+    const product = await ProductRepo.findOne({ where: { id, isDeleted: false } });
 
     if (!product) {
         return responseHandler.error(res, "Product not found", 404);
     }
 
-    // Validate category if updating
-    if (updateDto.categoryLevel2Id) {
-        const categoryLevel2 = await CategoryLevel2Repo.findOne({
-            where: { id: updateDto.categoryLevel2Id, isActive: true },
-            relations: ["categoryLevel1"],
-        });
+    // Update category IDs if provided (allows direct updates of all 3 IDs)
+    if (updateDto.categoryId) product.categoryId = updateDto.categoryId;
+    if (updateDto.categoryLevel1Id) product.categoryLevel1Id = updateDto.categoryLevel1Id;
+    if (updateDto.categoryLevel2Id) product.categoryLevel2Id = updateDto.categoryLevel2Id;
 
-        if (!categoryLevel2) {
-            return responseHandler.error(res, "Selected category not found or inactive", 404);
-        }
-
-        product.categoryLevel2Id = updateDto.categoryLevel2Id;
-        product.categoryLevel1Id = categoryLevel2.categoryLevel1Id;
-        product.categoryId = categoryLevel2.categoryId;
-    }
 
     // Check SKU uniqueness if updating
     if (updateDto.sku && updateDto.sku !== product.sku) {
         const existingSku = await ProductRepo.findOne({
-            where: { sku: updateDto.sku },
+            where: { sku: updateDto.sku, id: Not(id), isDeleted: false },
         });
 
         if (existingSku) {
@@ -184,13 +198,12 @@ export const updateProduct = asyncHandler(async (req, res) => {
     if (updateDto.fatContent) product.fatContent = updateDto.fatContent;
     if (updateDto.weight) product.weight = updateDto.weight;
     if (updateDto.shelfLife) product.shelfLife = updateDto.shelfLife;
-    if (updateDto.isActive !== undefined) product.isActive = updateDto.isActive;
 
-    if (updateDto.price || updateDto.discount !== undefined) {
-      const newPrice = updateDto.price || product.price;
-      const newDiscount = updateDto.discount !== undefined ? updateDto.discount : product.discount;
-      product.discount = newDiscount;
-      product.salePrice = productUtils.calculateSalePrice(newPrice, newDiscount);
+    if (updateDto.price || updateDto.discount) {
+        const newPrice = updateDto.price || product.price;
+        const newDiscount = updateDto.discount ? updateDto.discount : product.discount;
+        product.discount = newDiscount;
+        product.salePrice = productUtils.calculateSalePrice(newPrice, newDiscount);
     }
 
     await ProductRepo.save(product);
@@ -203,18 +216,22 @@ export const updateProduct = asyncHandler(async (req, res) => {
     return responseHandler.success(res, await getProductDetails(id), "Product updated successfully");
 });
 
-export const deleteProduct = asyncHandler(async (req, res) => {
+const deleteProduct = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const product = await ProductRepo.findOne({ where: { id } });
+    const product = await ProductRepo.findOne({
+        where: { id, isDeleted: false },
+    });
 
     if (!product) {
         return responseHandler.error(res, "Product not found", 404);
     }
 
-    await ProductRepo.remove(product);
+    // Soft delete - mark as deleted without removing from database
+    product.isDeleted = true;
+    await ProductRepo.save(product);
 
-    auditLogger.info("Product deleted", {
+    auditLogger.info("Product soft deleted", {
         productId: product.id,
         productName: product.name,
     });
@@ -222,10 +239,10 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     return responseHandler.success(res, null, "Product deleted successfully");
 });
 
-export const toggleProductStatus = asyncHandler(async (req, res) => {
+const toggleProductStatus = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const product = await ProductRepo.findOne({ where: { id } });
+    const product = await ProductRepo.findOne({ where: { id, isDeleted: false } });
 
     if (!product) {
         return responseHandler.error(res, "Product not found", 404);
@@ -244,18 +261,25 @@ export const toggleProductStatus = asyncHandler(async (req, res) => {
 
 async function getProductDetails(productId: string): Promise<Product | null> {
     const product = await ProductRepo.findOne({
-        where: { id: productId },
-        relations: ["categoryLevel2", "categoryLevel2.categoryLevel1", "categoryLevel2.categoryLevel1.category", "images"],
+        where: { id: productId, isDeleted: false },
+        relations: [
+            "categoryLevel2",
+            "categoryLevel2.categoryLevel1",
+            "categoryLevel2.categoryLevel1.category",
+            "category",
+            "images",
+            "inventory",
+        ],
     });
 
     return product;
 }
 
 export default {
-  getAllProducts,
-  getProductById,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  toggleProductStatus,
+    getAllProducts,
+    getProductById,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    toggleProductStatus,
 };

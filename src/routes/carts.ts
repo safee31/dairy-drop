@@ -3,7 +3,7 @@ import { validateLoginSession } from "@/middleware/validateLoginSession";
 import { requireCustomer } from "@/middleware/roles-auth";
 import { validate } from "@/middleware/validate";
 import { cartItemSchemas, cartSchemas } from "@/models/cart";
-import * as cartController from "@/controllers/customer/carts";
+import cartController from "@/controllers/customer/carts";
 
 const router = Router();
 

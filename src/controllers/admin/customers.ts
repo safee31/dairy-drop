@@ -1,10 +1,11 @@
 import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
-import { auditLogger } from "@/utils/logger";
+import { auditLogger, logger } from "@/utils/logger";
 import { UserRepo, RoleRepo } from "@/models/repositories";
 import { normalizeEmail, generateId } from "@/utils/helpers";
-import { saveImage, updateImage, deleteImage } from "@/utils/image";
+import { saveImage, updateImage, } from "@/utils/image";
 import { authUtils } from "@/models/user/utils";
+import { sendNewCustomerCredentialsEmail } from "@/utils/emailService";
 import config from "@/config/env";
 
 export const getAllCustomers = asyncHandler(async (req, res) => {
@@ -50,23 +51,10 @@ export const getAllCustomers = asyncHandler(async (req, res) => {
     .take(Number(limit))
     .getMany();
 
-  const customersData = customers.map((customer) => ({
-    id: customer.id,
-    email: customer.email,
-    fullName: customer.fullName,
-    phoneNumber: customer.phoneNumber,
-    profileImage: customer.profileImage,
-    isActive: customer.isActive,
-    isVerified: customer.isVerified,
-    lastLoginAt: customer.lastLoginAt,
-    createdAt: customer.createdAt,
-    updatedAt: customer.updatedAt,
-  }));
-
   return responseHandler.success(
     res,
     {
-      customers: customersData,
+      customers,
       pagination: {
         page: Number(page),
         limit: Number(limit),
@@ -103,11 +91,11 @@ export const getCustomerById = asyncHandler(async (req, res) => {
         fullName: customer.fullName,
         phoneNumber: customer.phoneNumber,
         profileImage: customer.profileImage,
-        isActive: customer.isActive,
-        isVerified: customer.isVerified,
-        lastLoginAt: customer.lastLoginAt,
+        dateOfBirth: customer.dateOfBirth,
         createdAt: customer.createdAt,
-        updatedAt: customer.updatedAt,
+        isVerified: customer.isVerified,
+        isActive: customer.isActive,
+        role: customer.role,
       },
     },
     "Customer retrieved successfully",
@@ -124,9 +112,7 @@ export const createCustomer = asyncHandler(async (req, res) => {
   }
 
   let profileImage = null;
-  if (req.file) {
-    profileImage = await saveImage(req.file, "profiles");
-  }
+
 
   const hashedPassword = await authUtils.hashPassword(
     password,
@@ -138,23 +124,35 @@ export const createCustomer = asyncHandler(async (req, res) => {
   if (!customerRole) {
     return responseHandler.error(res, "Customer role not found", 500);
   }
-
+  if (req.file) {
+    profileImage = await saveImage(req.file, "profiles");
+  }
+ 
   const newCustomer = UserRepo.create({
     id: generateId(),
     email: normalizeEmail(email),
     password: hashedPassword,
     fullName,
-    phoneNumber: phoneNumber || null,
+    phoneNumber: phoneNumber || "",
     profileImage,
     roleId: customerRole.id,
-    isVerified: true,
+    isVerified: false,
     isActive: true,
   });
 
   const customer = await UserRepo.save(newCustomer);
 
+  // Send credentials email to newly created customer
+  try {
+    sendNewCustomerCredentialsEmail(email, password, fullName);
+  } catch (emailError) {
+    logger.error("Failed to send customer credentials email", {
+      error: emailError instanceof Error ? emailError.message : String(emailError),
+    });
+  }
+
   auditLogger.info("Admin created customer", {
-    adminId: (req.user as { userId: string })?.userId,
+    adminId: req.user?.userId,
     customerId: customer.id,
     email: customer.email,
   });
@@ -182,7 +180,7 @@ export const updateCustomer = asyncHandler(async (req, res) => {
   const { fullName, phoneNumber, password, isActive } = req.body;
 
   const customer = await UserRepo.findOne({
-    where: { id },
+    where: { id, isActive: true },
     relations: ["role"],
   });
 
@@ -212,7 +210,7 @@ export const updateCustomer = asyncHandler(async (req, res) => {
   await UserRepo.save(customer);
 
   auditLogger.info("Admin updated customer", {
-    adminId: (req.user as { userId: string })?.userId,
+    adminId: req.user?.userId,
     customerId: customer.id,
   });
 
@@ -237,7 +235,7 @@ export const deleteCustomer = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const customer = await UserRepo.findOne({
-    where: { id },
+    where: { id, isActive: true },
     relations: ["role"],
   });
 
@@ -249,12 +247,12 @@ export const deleteCustomer = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "User is not a customer", 400);
   }
 
-  await deleteImage(customer.profileImage);
+  // Soft delete: set isActive = false instead of hard delete
+  customer.isActive = false;
+  await UserRepo.save(customer);
 
-  await UserRepo.remove(customer);
-
-  auditLogger.info("Admin deleted customer", {
-    adminId: (req.user as { userId: string })?.userId,
+  auditLogger.info("Admin soft-deleted customer", {
+    adminId: req.user?.userId,
     customerId: id,
   });
 
@@ -265,7 +263,7 @@ export const toggleCustomerStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const customer = await UserRepo.findOne({
-    where: { id },
+    where: { id, isActive: true },
     relations: ["role"],
   });
 
@@ -281,7 +279,7 @@ export const toggleCustomerStatus = asyncHandler(async (req, res) => {
   await UserRepo.save(customer);
 
   auditLogger.info(`Admin ${customer.isActive ? "activated" : "deactivated"} customer`, {
-    adminId: (req.user as { userId: string })?.userId,
+    adminId: req.user?.userId,
     customerId: customer.id,
     status: customer.isActive,
   });

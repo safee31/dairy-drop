@@ -8,8 +8,7 @@ import {
   Index,
   Relation,
 } from "typeorm";
-import { Order } from "./entity";
-import { OrderStatus } from "./entity";
+import { Order, DeliveryStatus } from "./entity";
 
 @Entity("order_delivery_history")
 @Index(["orderId"])
@@ -22,17 +21,17 @@ export class OrderDeliveryHistory {
   @ManyToOne(() => Order, (order) => order.deliveryHistory, {
     onDelete: "CASCADE",
   })
-  @JoinColumn({ name: "order_id" })
+  @JoinColumn({ name: "orderId" })
   order!: Relation<Order>;
 
-  @Column("uuid", { name: "order_id" })
+  @Column("uuid", { name: "orderId" })
   orderId!: string;
 
   @Column({
     type: "enum",
-    enum: OrderStatus,
+    enum: DeliveryStatus,
   })
-  status!: OrderStatus;
+  status!: DeliveryStatus;
 
   @Column("varchar", { length: 100, nullable: true })
   deliveryPersonName?: string;

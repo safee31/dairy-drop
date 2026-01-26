@@ -59,7 +59,7 @@ const validateLoginSession = async (
 
     // Fetch user with role information
     const user = await UserRepo.findOne({
-      where: { id: validation.userId! },
+      where: { id: validation.userId!, isActive: true },
       relations: ["role"],
     });
 
@@ -105,7 +105,7 @@ const optionalLoginSession = async (
     if (validation.isValid) {
       // Fetch user with role information
       const user = await UserRepo.findOne({
-        where: { id: validation.userId! },
+        where: { id: validation.userId!, isActive: true },
         relations: ["role"],
       });
 

@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   JoinColumn,
   Index,
   Relation,
@@ -14,6 +15,8 @@ import { CategoryLevel2 } from "../category/category-level2.entity";
 import { CategoryLevel1 } from "../category/category-level1.entity";
 import { Category } from "../category/category.entity";
 import { ProductImage } from "@/models/productImage";
+import { Inventory } from "@/models/inventory";
+import { CartItem } from "@/models/cart";
 
 @Entity("products")
 @Index(["sku"])
@@ -87,6 +90,9 @@ export class Product {
   @Column("boolean", { default: true })
   isActive!: boolean;
 
+  @Column("boolean", { default: false })
+  isDeleted!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
 
@@ -95,6 +101,18 @@ export class Product {
 
   @OneToMany(() => ProductImage, (image) => image.product, {
     cascade: true,
+    onDelete: "CASCADE",
   })
   images!: Relation<ProductImage[]>;
+
+  @OneToOne(() => Inventory, (inv) => inv.product, {
+    onDelete: "CASCADE",
+  })
+  inventory!: Relation<Inventory>;
+
+  @OneToMany(() => CartItem, (item) => item.product, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  cartItems!: Relation<CartItem[]>;
 }

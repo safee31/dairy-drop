@@ -16,14 +16,14 @@ import { Cart } from "../cart/entity";
 import { Order } from "../order/entity";
 
 @Entity("users")
-@Index(["email"])
+@Index(["email", "isActive"], { unique: true })
 @Index(["isActive", "isVerified"])
 @Index(["roleId"])
 export class User {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column("varchar", { length: 255, unique: true })
+  @Column("varchar", { length: 255 })
   email!: string;
 
   @Column("varchar", { length: 255 })
@@ -37,6 +37,9 @@ export class User {
 
   @Column("varchar", { length: 20, nullable: true })
   phoneNumber!: string | null;
+
+  @Column("date", { nullable: true })
+  dateOfBirth!: Date | null;
 
   @Column("boolean", { default: true })
   isActive!: boolean;

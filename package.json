@@ -14,7 +14,8 @@
     "db:generate": "tsx ./node_modules/typeorm/cli migration:generate src/migrations/migration --dataSource src/config/orm-cli.ts",
     "seed:admin": "tsx src/seeds/admin.seed.ts",
     "seed:categories": "tsx src/seeds/categories.seed.ts",
-    "seed:roles": "tsx src/seeds/roles.seed.ts"
+    "seed:roles": "tsx src/seeds/roles.seed.ts",
+    "seed:products": "tsx src/seeds/products.seed.ts"
   },
   "keywords": [],
   "author": "",

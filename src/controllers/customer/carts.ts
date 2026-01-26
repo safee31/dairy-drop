@@ -4,12 +4,12 @@ import { CartRepo, CartItemRepo, ProductRepo } from "@/models/repositories";
 import { cartItemSchemas, cartSchemas } from "@/models/cart";
 import { calculateCartTotals } from "@/models/cart/utils";
 
-export const getCart = asyncHandler(async (req, res) => {
-  const userId = (req.user as any).id as string;
+const getCart = asyncHandler(async (req, res) => {
+  const userId = req.user?.userId;
 
   const cart = await CartRepo.findOne({
     where: { userId },
-    relations: ["items", "items.product"],
+    relations: ["items", "items.product", "items.product.inventory", "items.product.images"],
   });
 
   if (!cart) return responseHandler.success(res, { items: [] }, "Cart is empty");
@@ -17,8 +17,8 @@ export const getCart = asyncHandler(async (req, res) => {
   return responseHandler.success(res, cart, "Cart retrieved");
 });
 
-export const addToCart = asyncHandler(async (req, res) => {
-  const userId = (req.user as any).id as string;
+const addToCart = asyncHandler(async (req, res) => {
+  const userId = req.user?.userId;
   const payload = req.body as any;
 
   await cartItemSchemas.addToCart.validateAsync(payload);
@@ -30,7 +30,7 @@ export const addToCart = asyncHandler(async (req, res) => {
     await CartRepo.save(cart);
   }
 
-  const product = await ProductRepo.findOne({ where: { id: payload.productId, isActive: true } });
+  const product = await ProductRepo.findOne({ where: { id: payload.productId, isActive: true, isDeleted: false } });
   if (!product) return responseHandler.error(res, "Product not found", 404);
 
   const unitPrice = Number(product.salePrice);
@@ -54,20 +54,25 @@ export const addToCart = asyncHandler(async (req, res) => {
   }
 
   const totals = calculateCartTotals(cart.items);
-  cart.subtotal = totals.subtotal;
-  cart.deliveryCharge = totals.deliveryCharge;
-  cart.taxAmount = totals.taxAmount;
-  cart.totalAmount = totals.totalAmount;
+  cart.subtotal = Number(totals.subtotal);
+  cart.deliveryCharge = Number(totals.deliveryCharge);
+  cart.taxAmount = Number(totals.taxAmount);
+  cart.totalAmount = Number(totals.totalAmount);
   cart.totalItems = totals.totalItems;
   cart.totalQuantity = totals.totalQuantity;
 
   await CartRepo.save(cart);
 
-  return responseHandler.success(res, cart, "Item added to cart");
+  const cartWithRelations = await CartRepo.findOne({
+    where: { id: cart.id },
+    relations: ["items", "items.product", "items.product.inventory", "items.product.images"],
+  });
+
+  return responseHandler.success(res, cartWithRelations, "Item added to cart");
 });
 
-export const updateCartItem = asyncHandler(async (req, res) => {
-  const userId = (req.user as any).id as string;
+const updateCartItem = asyncHandler(async (req, res) => {
+  const userId = req.user?.userId;
   const { itemId } = req.params;
   const payload = req.body as any;
 
@@ -91,19 +96,24 @@ export const updateCartItem = asyncHandler(async (req, res) => {
   if (!updatedCart) return responseHandler.error(res, "Cart not found", 404);
 
   const totals = calculateCartTotals(updatedCart.items);
-  updatedCart.subtotal = totals.subtotal;
-  updatedCart.deliveryCharge = totals.deliveryCharge;
-  updatedCart.taxAmount = totals.taxAmount;
-  updatedCart.totalAmount = totals.totalAmount;
+  updatedCart.subtotal = Number(totals.subtotal);
+  updatedCart.deliveryCharge = Number(totals.deliveryCharge);
+  updatedCart.taxAmount = Number(totals.taxAmount);
+  updatedCart.totalAmount = Number(totals.totalAmount);
   updatedCart.totalItems = totals.totalItems;
   updatedCart.totalQuantity = totals.totalQuantity;
   await CartRepo.save(updatedCart);
 
-  return responseHandler.success(res, updatedCart, "Cart updated");
+  const cartWithRelations = await CartRepo.findOne({
+    where: { id: updatedCart.id },
+    relations: ["items", "items.product", "items.product.inventory", "items.product.images"],
+  });
+
+  return responseHandler.success(res, cartWithRelations, "Cart updated");
 });
 
-export const removeCartItem = asyncHandler(async (req, res) => {
-  const userId = (req.user as any).id as string;
+const removeCartItem = asyncHandler(async (req, res) => {
+  const userId = req.user?.userId;
   const { itemId } = req.params;
 
   const cart = await CartRepo.findOne({ where: { userId }, relations: ["items"] });
@@ -118,19 +128,24 @@ export const removeCartItem = asyncHandler(async (req, res) => {
   if (!updatedCart) return responseHandler.error(res, "Cart not found", 404);
 
   const totals = calculateCartTotals(updatedCart.items);
-  updatedCart.subtotal = totals.subtotal;
-  updatedCart.deliveryCharge = totals.deliveryCharge;
-  updatedCart.taxAmount = totals.taxAmount;
-  updatedCart.totalAmount = totals.totalAmount;
+  updatedCart.subtotal = Number(totals.subtotal);
+  updatedCart.deliveryCharge = Number(totals.deliveryCharge);
+  updatedCart.taxAmount = Number(totals.taxAmount);
+  updatedCart.totalAmount = Number(totals.totalAmount);
   updatedCart.totalItems = totals.totalItems;
   updatedCart.totalQuantity = totals.totalQuantity;
   await CartRepo.save(updatedCart);
 
-  return responseHandler.success(res, updatedCart, "Item removed from cart");
+  const cartWithRelations = await CartRepo.findOne({
+    where: { id: updatedCart.id },
+    relations: ["items", "items.product", "items.product.inventory", "items.product.images"],
+  });
+
+  return responseHandler.success(res, cartWithRelations, "Item removed from cart");
 });
 
-export const selectDeliveryAddress = asyncHandler(async (req, res) => {
-  const userId = (req.user as any).id as string;
+const selectDeliveryAddress = asyncHandler(async (req, res) => {
+  const userId = req.user?.userId;
   const payload = req.body as any;
 
   await cartSchemas.selectAddress.validateAsync(payload);

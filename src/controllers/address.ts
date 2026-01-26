@@ -77,7 +77,8 @@ export const createAddress = asyncHandler(async (req, res) => {
   const savedAddress = await AddressRepo.save(address);
 
   // Audit log: address creation
-  securityAuditService.logAddressOperation("create", userId, savedAddress.id, {
+  securityAuditService.log("address:create", userId, {
+    addressId: savedAddress.id,
     label: savedAddress.label,
   });
 
@@ -114,7 +115,8 @@ export const updateAddress = asyncHandler(async (req, res) => {
   await AddressRepo.save(address);
 
   // Audit log: address update
-  securityAuditService.logAddressOperation("update", userId, id, {
+  securityAuditService.log("address:update", userId, {
+    addressId: id,
     label: address.label,
   });
 
@@ -160,7 +162,8 @@ export const deleteAddress = asyncHandler(async (req, res) => {
   }
 
   // Audit log: address deletion
-  securityAuditService.logAddressOperation("delete", userId, id, {
+  securityAuditService.log("address:delete", userId, {
+    addressId: id,
     label: address.label,
   });
 
@@ -190,9 +193,9 @@ export const setPrimaryAddress = asyncHandler(async (req, res) => {
   await AddressRepo.save(address);
 
   // Audit log: set primary address
-  securityAuditService.logAddressOperation("update", userId, id, {
+  securityAuditService.log("address:set_primary", userId, {
+    addressId: id,
     label: address.label,
-    action: "set_primary",
   });
 
   return responseHandler.success(

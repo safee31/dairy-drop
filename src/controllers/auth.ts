@@ -17,7 +17,7 @@ export const registerCustomer = asyncHandler(async (req, res) => {
   const { email, password, fullName, phoneNumber, profileImage } = req.body;
   const normalizedEmail = normalizeEmail(email);
 
-  const existingUser = await UserRepo.findOneBy({ email: normalizedEmail });
+  const existingUser = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
 
   if (existingUser) {
     return responseHandler.error(res, AuthErrors.EMAIL_ALREADY_EXISTS, 400);
@@ -154,7 +154,7 @@ export const registerCustomer = asyncHandler(async (req, res) => {
 export const verifyEmail = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
 
-  const user = await UserRepo.findOneBy({ email: normalizeEmail(email) });
+  const user = await UserRepo.findOneBy({ email: normalizeEmail(email), isActive: true });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
@@ -197,7 +197,7 @@ export const loginCustomer = asyncHandler(async (req, res) => {
   const normalizedEmail = normalizeEmail(email);
 
   const user = await UserRepo.findOne({
-    where: { email: normalizedEmail },
+    where: { email: normalizedEmail, isActive: true },
     relations: ["role"],
   });
 
@@ -374,7 +374,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Email is required", 400);
   }
 
-  const user = await UserRepo.findOneBy({ email: normalizedEmail });
+  const user = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
@@ -422,7 +422,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Reset session is required. Verify OTP first.", 400);
   }
 
-  const user = await UserRepo.findOneBy({ email: normalizedEmail });
+  const user = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
@@ -480,7 +480,7 @@ export const readUser = asyncHandler(async (req, res) => {
     return responseHandler.unauthorized(res, AuthErrors.TOKEN_REQUIRED);
   }
 
-  const dbUser = await UserRepo.findOne({ where: { id: sessionUser.userId }, relations: ["role"] });
+  const dbUser = await UserRepo.findOne({ where: { id: sessionUser.userId, isActive: true }, relations: ["role"] });
 
   if (!dbUser) {
     return responseHandler.unauthorized(res, AuthErrors.USER_NOT_FOUND);
@@ -493,7 +493,10 @@ export const readUser = asyncHandler(async (req, res) => {
         id: dbUser.id,
         email: dbUser.email,
         fullName: dbUser.fullName,
+        phoneNumber: dbUser.phoneNumber,
         profileImage: dbUser.profileImage,
+        dateOfBirth: dbUser.dateOfBirth,
+        createdAt: dbUser.createdAt,
         isVerified: dbUser.isVerified,
         isActive: dbUser.isActive,
         role: dbUser.role,
@@ -516,7 +519,7 @@ export const sendOTP = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Invalid OTP type!", 400);
   }
 
-  const user = await UserRepo.findOneBy({ email: normalizedEmail });
+  const user = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
 
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
@@ -544,7 +547,7 @@ export const verifyResetOTP = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Email and OTP are required!", 400);
   }
 
-  const user = await UserRepo.findOneBy({ email: normalizedEmail });
+  const user = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
   if (!user) {
     return responseHandler.error(res, "User not found!", 404);
   }

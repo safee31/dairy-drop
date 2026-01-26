@@ -5,27 +5,21 @@ import { CategoryRepo, CategoryLevel1Repo, CategoryLevel2Repo } from "@/models/r
 import { Category } from "@/models/category/category.entity";
 import { CategoryLevel1 } from "@/models/category/category-level1.entity";
 import { CategoryLevel2 } from "@/models/category/category-level2.entity";
-// using responseHandler for immediate errors
 
-// ============================================
-// ROOT CATEGORY MANAGEMENT
-// ============================================
 
-export const getAllCategories = asyncHandler(async (req, res) => {
+const getAllCategories = asyncHandler(async (req, res) => {
   const {
     page = 1,
-    limit = 10,
+    limit = 100,
     search = "",
-    isActive,
+    isActive = "true",
     sortBy = "displayOrder",
     order = "ASC",
+    isAll = "false",
   } = req.query;
 
   const skip = (Number(page) - 1) * Number(limit);
-  const queryBuilder = CategoryRepo.createQueryBuilder("category")
-    .leftJoinAndSelect("category.children", "level1", "level1.isActive = :childActive", {
-      childActive: true,
-    });
+  const queryBuilder = CategoryRepo.createQueryBuilder("category");
 
   if (search) {
     queryBuilder.andWhere("(category.name ILIKE :search OR category.slug ILIKE :search)", {
@@ -33,36 +27,43 @@ export const getAllCategories = asyncHandler(async (req, res) => {
     });
   }
 
-  if (isActive !== undefined) {
+  if (isActive !== undefined && isActive !== "") {
     queryBuilder.andWhere("category.isActive = :isActive", {
-      isActive: isActive === "true",
+      isActive: String(isActive) === "true",
     });
   }
 
   const total = await queryBuilder.getCount();
 
-  const categories = await queryBuilder
-    .orderBy(`category.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC")
-    .skip(skip)
-    .take(Number(limit))
-    .getMany();
+  let query = queryBuilder.orderBy(`category.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC");
+  
+  if (String(isAll) !== "true") {
+    query = query.skip(skip).take(Number(limit));
+  }
+
+  const categories = await query.getMany();
 
   return responseHandler.success(
     res,
     {
       categories,
-      pagination: {
+      pagination: String(isAll) !== "true" ? {
         page: Number(page),
         limit: Number(limit),
         total,
         totalPages: Math.ceil(total / Number(limit)),
+      } : {
+        page: 1,
+        limit: total,
+        total,
+        totalPages: 1,
       },
     },
     "Categories retrieved successfully",
   );
 });
 
-export const getCategoryById = asyncHandler(async (req, res) => {
+ const getCategoryById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const category = await CategoryRepo.createQueryBuilder("category")
@@ -77,7 +78,7 @@ export const getCategoryById = asyncHandler(async (req, res) => {
   return responseHandler.success(res, category, "Category retrieved successfully");
 });
 
-export const createCategory = asyncHandler(async (req, res) => {
+const createCategory = asyncHandler(async (req, res) => {
   const { name, slug, description, imageUrl, displayOrder, isActive } = req.body;
 
   const existingCategory = await CategoryRepo.findOne({
@@ -106,7 +107,7 @@ export const createCategory = asyncHandler(async (req, res) => {
   return responseHandler.success(res, category, "Category created successfully", 201);
 });
 
-export const updateCategory = asyncHandler(async (req, res) => {
+ const updateCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, slug, description, imageUrl, displayOrder, isActive } = req.body;
 
@@ -147,7 +148,7 @@ export const updateCategory = asyncHandler(async (req, res) => {
   return responseHandler.success(res, category, "Category updated successfully");
 });
 
-export const deleteCategory = asyncHandler(async (req, res) => {
+ const deleteCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const category = await CategoryRepo.findOne({
@@ -173,7 +174,7 @@ export const deleteCategory = asyncHandler(async (req, res) => {
   return responseHandler.success(res, null, "Category deleted successfully");
 });
 
-export const toggleCategoryStatus = asyncHandler(async (req, res) => {
+ const toggleCategoryStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const category = await CategoryRepo.findOne({ where: { id } });
@@ -197,23 +198,20 @@ export const toggleCategoryStatus = asyncHandler(async (req, res) => {
 // CATEGORY LEVEL 1 MANAGEMENT
 // ============================================
 
-export const getAllCategoryLevel1 = asyncHandler(async (req, res) => {
+ const getAllCategoryLevel1 = asyncHandler(async (req, res) => {
   const {
     page = 1,
-    limit = 10,
+    limit = 100,
     search = "",
     categoryId,
-    isActive,
+    isActive = "true",
     sortBy = "displayOrder",
     order = "ASC",
+    isAll = "false",
   } = req.query;
 
   const skip = (Number(page) - 1) * Number(limit);
-  const queryBuilder = CategoryLevel1Repo.createQueryBuilder("level1")
-    .leftJoinAndSelect("level1.category", "category")
-    .leftJoinAndSelect("level1.children", "level2", "level2.isActive = :childActive", {
-      childActive: true,
-    });
+  const queryBuilder = CategoryLevel1Repo.createQueryBuilder("level1");
 
   if (categoryId) {
     queryBuilder.andWhere("level1.categoryId = :categoryId", { categoryId });
@@ -225,36 +223,43 @@ export const getAllCategoryLevel1 = asyncHandler(async (req, res) => {
     });
   }
 
-  if (isActive !== undefined) {
+  if (isActive !== undefined && isActive !== "") {
     queryBuilder.andWhere("level1.isActive = :isActive", {
-      isActive: isActive === "true",
+      isActive: String(isActive) === "true",
     });
   }
 
   const total = await queryBuilder.getCount();
 
-  const items = await queryBuilder
-    .orderBy(`level1.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC")
-    .skip(skip)
-    .take(Number(limit))
-    .getMany();
+  let query = queryBuilder.orderBy(`level1.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC");
+  
+  if (String(isAll) !== "true") {
+    query = query.skip(skip).take(Number(limit));
+  }
+
+  const items = await query.getMany();
 
   return responseHandler.success(
     res,
     {
       items,
-      pagination: {
+      pagination: String(isAll) !== "true" ? {
         page: Number(page),
         limit: Number(limit),
         total,
         totalPages: Math.ceil(total / Number(limit)),
+      } : {
+        page: 1,
+        limit: total,
+        total,
+        totalPages: 1,
       },
     },
     "Category Level 1 items retrieved successfully",
   );
 });
 
-export const getCategoryLevel1ById = asyncHandler(async (req, res) => {
+ const getCategoryLevel1ById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const item = await CategoryLevel1Repo.createQueryBuilder("level1")
@@ -270,7 +275,7 @@ export const getCategoryLevel1ById = asyncHandler(async (req, res) => {
   return responseHandler.success(res, item, "Category Level 1 retrieved successfully");
 });
 
-export const createCategoryLevel1 = asyncHandler(async (req, res) => {
+ const createCategoryLevel1 = asyncHandler(async (req, res) => {
   const { categoryId, name, slug, description, displayOrder, isActive } = req.body;
 
   const parentCategory = await CategoryRepo.findOne({ where: { id: categoryId } });
@@ -309,7 +314,7 @@ export const createCategoryLevel1 = asyncHandler(async (req, res) => {
   return responseHandler.success(res, item, "Category Level 1 created successfully", 201);
 });
 
-export const updateCategoryLevel1 = asyncHandler(async (req, res) => {
+ const updateCategoryLevel1 = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, slug, description, displayOrder, isActive } = req.body;
 
@@ -353,7 +358,7 @@ export const updateCategoryLevel1 = asyncHandler(async (req, res) => {
   return responseHandler.success(res, item, "Category Level 1 updated successfully");
 });
 
-export const deleteCategoryLevel1 = asyncHandler(async (req, res) => {
+ const deleteCategoryLevel1 = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const item = await CategoryLevel1Repo.findOne({
@@ -379,7 +384,7 @@ export const deleteCategoryLevel1 = asyncHandler(async (req, res) => {
   return responseHandler.success(res, null, "Category Level 1 deleted successfully");
 });
 
-export const toggleCategoryLevel1Status = asyncHandler(async (req, res) => {
+ const toggleCategoryLevel1Status = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const item = await CategoryLevel1Repo.findOne({ where: { id } });
@@ -403,22 +408,21 @@ export const toggleCategoryLevel1Status = asyncHandler(async (req, res) => {
 // CATEGORY LEVEL 2 MANAGEMENT
 // ============================================
 
-export const getAllCategoryLevel2 = asyncHandler(async (req, res) => {
+ const getAllCategoryLevel2 = asyncHandler(async (req, res) => {
   const {
     page = 1,
-    limit = 10,
+    limit = 100,
     search = "",
     categoryId,
     categoryLevel1Id,
-    isActive,
+    isActive = "true",
     sortBy = "displayOrder",
     order = "ASC",
+    isAll = "false",
   } = req.query;
 
   const skip = (Number(page) - 1) * Number(limit);
-  const queryBuilder = CategoryLevel2Repo.createQueryBuilder("level2")
-    .leftJoinAndSelect("level2.categoryLevel1", "level1")
-    .leftJoinAndSelect("level1.category", "category");
+  const queryBuilder = CategoryLevel2Repo.createQueryBuilder("level2");
 
   if (categoryId) {
     queryBuilder.andWhere("level2.categoryId = :categoryId", { categoryId });
@@ -436,36 +440,43 @@ export const getAllCategoryLevel2 = asyncHandler(async (req, res) => {
     });
   }
 
-  if (isActive !== undefined) {
+  if (isActive !== undefined && isActive !== "") {
     queryBuilder.andWhere("level2.isActive = :isActive", {
-      isActive: isActive === "true",
+      isActive: String(isActive) === "true",
     });
   }
 
   const total = await queryBuilder.getCount();
 
-  const items = await queryBuilder
-    .orderBy(`level2.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC")
-    .skip(skip)
-    .take(Number(limit))
-    .getMany();
+  let query = queryBuilder.orderBy(`level2.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC");
+  
+  if (String(isAll) !== "true") {
+    query = query.skip(skip).take(Number(limit));
+  }
+
+  const items = await query.getMany();
 
   return responseHandler.success(
     res,
     {
       items,
-      pagination: {
+      pagination: String(isAll) !== "true" ? {
         page: Number(page),
         limit: Number(limit),
         total,
         totalPages: Math.ceil(total / Number(limit)),
+      } : {
+        page: 1,
+        limit: total,
+        total,
+        totalPages: 1,
       },
     },
     "Category Level 2 items retrieved successfully",
   );
 });
 
-export const getCategoryLevel2ById = asyncHandler(async (req, res) => {
+ const getCategoryLevel2ById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const item = await CategoryLevel2Repo.createQueryBuilder("level2")
@@ -481,7 +492,7 @@ export const getCategoryLevel2ById = asyncHandler(async (req, res) => {
   return responseHandler.success(res, item, "Category Level 2 retrieved successfully");
 });
 
-export const createCategoryLevel2 = asyncHandler(async (req, res) => {
+ const createCategoryLevel2 = asyncHandler(async (req, res) => {
   const { categoryId, categoryLevel1Id, name, slug, description, displayOrder, isActive } =
     req.body;
 
@@ -530,7 +541,7 @@ export const createCategoryLevel2 = asyncHandler(async (req, res) => {
   return responseHandler.success(res, item, "Category Level 2 created successfully", 201);
 });
 
-export const updateCategoryLevel2 = asyncHandler(async (req, res) => {
+ const updateCategoryLevel2 = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, slug, description, displayOrder, isActive } = req.body;
 
@@ -574,7 +585,7 @@ export const updateCategoryLevel2 = asyncHandler(async (req, res) => {
   return responseHandler.success(res, item, "Category Level 2 updated successfully");
 });
 
-export const deleteCategoryLevel2 = asyncHandler(async (req, res) => {
+ const deleteCategoryLevel2 = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const item = await CategoryLevel2Repo.findOne({ where: { id } });
@@ -593,7 +604,7 @@ export const deleteCategoryLevel2 = asyncHandler(async (req, res) => {
   return responseHandler.success(res, null, "Category Level 2 deleted successfully");
 });
 
-export const toggleCategoryLevel2Status = asyncHandler(async (req, res) => {
+ const toggleCategoryLevel2Status = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const item = await CategoryLevel2Repo.findOne({ where: { id } });
@@ -612,3 +623,23 @@ export const toggleCategoryLevel2Status = asyncHandler(async (req, res) => {
 
   return responseHandler.success(res, item, "Category Level 2 status toggled successfully");
 });
+export default {
+  getAllCategories,
+  getCategoryById,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  toggleCategoryStatus,
+  getAllCategoryLevel1,
+  getCategoryLevel1ById,
+  createCategoryLevel1,
+  updateCategoryLevel1,
+  deleteCategoryLevel1,
+  toggleCategoryLevel1Status,
+  getAllCategoryLevel2,
+  getCategoryLevel2ById,
+  createCategoryLevel2,
+  updateCategoryLevel2,
+  deleteCategoryLevel2,
+  toggleCategoryLevel2Status,
+};

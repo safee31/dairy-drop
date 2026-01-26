@@ -11,14 +11,26 @@ import {
   Relation,
 } from "typeorm";
 import { User } from "@/models/user";
+import type { OrderLineItem } from "./orderlineitem.entity";
+import type { OrderDeliveryHistory } from "./orderdeliveryhistory.entity";
 
 export enum OrderStatus {
-  PENDING = "pending",
-  CONFIRMED = "confirmed",
-  PACKED = "packed",
-  OUT_FOR_DELIVERY = "out_for_delivery",
-  DELIVERED = "delivered",
-  CANCELLED = "cancelled",
+  PENDING = "pending",           // Order placed, awaiting confirmation
+  CONFIRMED = "confirmed",       // ✅ ADMIN ACTION: Verified stock & accepted order
+  PROCESSING = "processing",     // ⚙️  SYSTEM/AUTO: Items being prepared (warehouse stage)
+  CANCELLED = "cancelled",       // Order was cancelled
+  COMPLETED = "completed",       // Final state: Delivered & Paid
+}
+
+export enum DeliveryStatus {
+  AWAITING_PROCESSING = "awaiting_processing", // After confirmation, before warehouse work
+  PROCESSING = "processing",                   // Items being gathered/pre-cooled
+  PACKING = "packing",                         // Actually being packed into boxes
+  PACKED = "packed",                           // Ready for courier pickup
+  HANDED_TO_COURIER = "handed_to_courier",     // Given to delivery partner
+  OUT_FOR_DELIVERY = "out_for_delivery",       // On the way to customer
+  DELIVERED = "delivered",                     // Successfully delivered
+  DELIVERY_FAILED = "delivery_failed",         // Delivery attempt failed
 }
 
 export enum PaymentStatus {
@@ -43,10 +55,10 @@ export class Order {
   orderNumber!: number;
 
   @ManyToOne(() => User, (user) => user.orders, { onDelete: "CASCADE" })
-  @JoinColumn({ name: "user_id" })
+  @JoinColumn({ name: "userId" })
   user!: Relation<User>;
 
-  @Column("uuid", { name: "user_id" })
+  @Column("uuid", { name: "userId" })
   userId!: string;
 
   @Column({
@@ -55,6 +67,14 @@ export class Order {
     default: OrderStatus.PENDING,
   })
   status!: OrderStatus;
+
+  @Column({
+    type: "enum",
+    enum: DeliveryStatus,
+    default: DeliveryStatus.AWAITING_PROCESSING,
+    nullable: true,
+  })
+  deliveryStatus?: DeliveryStatus;
 
   @Column("jsonb")
   deliveryAddress!: {
@@ -113,107 +133,13 @@ export class Order {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @OneToMany(() => OrderLineItem, (lineItem) => lineItem.order, {
+  @OneToMany("OrderLineItem", "order", {
     cascade: true,
   })
   lineItems!: Relation<OrderLineItem[]>;
 
-  @OneToMany(() => OrderDeliveryHistory, (history) => history.order)
+  @OneToMany("OrderDeliveryHistory", "order")
   deliveryHistory!: Relation<OrderDeliveryHistory[]>;
-}
-
-@Entity("order_line_items")
-@Index(["orderId"])
-@Index(["productId"])
-export class OrderLineItem {
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
-
-  @ManyToOne(() => Order, (order) => order.lineItems, {
-    onDelete: "CASCADE",
-  })
-  @JoinColumn({ name: "order_id" })
-  order!: Relation<Order>;
-
-  @Column("uuid", { name: "order_id" })
-  orderId!: string;
-
-  @Column("uuid", { name: "product_id" })
-  productId!: string;
-
-  @Column("jsonb")
-  productSnapshot!: {
-    name: string;
-    sku: string;
-    price: number;
-    discount?: {
-      type: "percentage" | "fixed";
-      value: number;
-    };
-    brand: string;
-    fatContent: string;
-    shelfLife: string;
-    weight: {
-      value: number;
-      unit: "g" | "kg" | "ml" | "L" | "piece";
-    };
-    categoryLevel2Id: string;
-    snapshotTimestamp: Date;
-  };
-
-  @Column("numeric", { precision: 10, scale: 2 })
-  unitPrice!: number;
-
-  @Column("int")
-  quantity!: number;
-
-  @Column("numeric", { precision: 10, scale: 2 })
-  totalPrice!: number;
-
-  @CreateDateColumn()
-  createdAt!: Date;
-}
-
-@Entity("order_delivery_history")
-@Index(["orderId"])
-@Index(["createdAt"])
-@Index(["status"])
-export class OrderDeliveryHistory {
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
-
-  @ManyToOne(() => Order, (order) => order.deliveryHistory, {
-    onDelete: "CASCADE",
-  })
-  @JoinColumn({ name: "order_id" })
-  order!: Relation<Order>;
-
-  @Column("uuid", { name: "order_id" })
-  orderId!: string;
-
-  @Column({
-    type: "enum",
-    enum: OrderStatus,
-  })
-  status!: OrderStatus;
-
-  @Column("varchar", { length: 100, nullable: true })
-  deliveryPersonName?: string;
-
-  @Column("varchar", { length: 20, nullable: true })
-  deliveryPersonPhone?: string;
-
-  @Column("varchar", { length: 100, nullable: true })
-  location?: string;
-
-  @Column("text", { nullable: true })
-  notes?: string;
-
-  @Column("varchar", { length: 100 })
-  updatedBy!: string;
-
-  @CreateDateColumn()
-  createdAt!: Date;
 }
 
 export default Order;

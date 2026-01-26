@@ -1,14 +1,17 @@
 import crypto from "crypto";
-import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
+import { setKey, getKey, } from "@/utils/redis/redisClient";
 import { auditLogger } from "@/utils/logger";
+import config from "@/config/env";
 
 const csrfTokenKey = (token: string) => `csrf:${token}`;
 const csrfSessionKey = (sessionId: string) => `csrf_session:${sessionId}`;
 export const csrfService = {
-  generate: async (sessionId: string, ttlSeconds: number = 3600): Promise<string> => {
+  generate: async (sessionId: string, ttlSeconds: number = config.SESSION_EXPIRY): Promise<string> => {
+    // Check if token already exists for this session (reuse it)
     const existingToken = await getKey(csrfSessionKey(sessionId));
     if (existingToken) return existingToken as string;
 
+    // Generate new token only if session doesn't have one
     const token = crypto.randomBytes(32).toString("hex");
     await setKey(csrfTokenKey(token), sessionId, ttlSeconds);
     await setKey(csrfSessionKey(sessionId), token, ttlSeconds);
@@ -19,8 +22,8 @@ export const csrfService = {
     if (!token) return false;
     const stored = await getKey(csrfTokenKey(token));
     if (!stored || stored !== sessionId) return false;
-    await delKey(csrfTokenKey(token));
-    await delKey(csrfSessionKey(sessionId));
+    // Don't delete token on validation - keep it alive for the session
+    // Token will expire naturally with session TTL
     return true;
   },
 };
@@ -91,58 +94,16 @@ export const sessionSecurityService = {
 };
 
 export const securityAuditService = {
-  // Log order creation/modification
-  logOrderOperation: (
-    operation: "create" | "update" | "cancel",
-    userId: string,
-    orderId: string,
-    metadata: Record<string, unknown> = {},
-  ) => {
-    auditLogger.info(`order_${operation}`, {
-      userId,
-      orderId,
-      operation,
-      ...metadata,
-    });
-  },
-
-  // Log address changes
-  logAddressOperation: (
-    operation: "create" | "update" | "delete",
-    userId: string | undefined | null,
-    addressId: string,
-    metadata: Record<string, unknown> = {},
-  ) => {
-    auditLogger.info(`address_${operation}`, {
-      userId,
-      addressId,
-      operation,
-      ...metadata,
-    });
-  },
-
-  // Log account changes
-  logAccountOperation: (
+  // General audit logging for all operations
+  log: (
     operation: string,
-    userId: string,
+    userId: string | undefined,
     metadata: Record<string, unknown> = {},
   ) => {
-    auditLogger.info(`account_${operation}`, {
+    auditLogger.info(`audit_${operation}`, {
       userId,
       operation,
-      ...metadata,
-    });
-  },
-
-  // Log security events
-  logSecurityEvent: (
-    event: string,
-    userId: string | null,
-    metadata: Record<string, unknown> = {},
-  ) => {
-    auditLogger.warn(`security_${event}`, {
-      userId: userId || "anonymous",
-      event,
+      timestamp: new Date().toISOString(),
       ...metadata,
     });
   },

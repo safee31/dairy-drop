@@ -20,13 +20,13 @@ export class OrderLineItem {
   @ManyToOne(() => Order, (order) => order.lineItems, {
     onDelete: "CASCADE",
   })
-  @JoinColumn({ name: "order_id" })
+  @JoinColumn({ name: "orderId" })
   order!: Relation<Order>;
 
-  @Column("uuid", { name: "order_id" })
+  @Column("uuid", { name: "orderId" })
   orderId!: string;
 
-  @Column("uuid", { name: "product_id" })
+  @Column("uuid", { name: "productId" })
   productId!: string;
 
   @Column("jsonb")
@@ -46,6 +46,11 @@ export class OrderLineItem {
       unit: "g" | "kg" | "ml" | "L" | "piece";
     };
     categoryLevel2Id: string;
+    image?: {
+      id: string;
+      imageUrl: string;
+      alt?: string;
+    };
     snapshotTimestamp: Date;
   };
 

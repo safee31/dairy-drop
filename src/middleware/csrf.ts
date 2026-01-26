@@ -4,7 +4,7 @@ import { csrfService, sessionSecurityService, SessionMetadata, securityAuditServ
 import { responseHandler } from "@/middleware/responseHandler";
 import { AuthErrors } from "@/utils/customError";
 
-// Attach CSRF token (reuse-until-consumed) in `x-csrf-token` header
+// Attach CSRF token (reuse per session) in `x-csrf-token` header
 export const csrfTokenMiddleware = async (
   req: Request,
   res: Response,
@@ -16,7 +16,8 @@ export const csrfTokenMiddleware = async (
       return next();
     }
 
-    // Get or generate CSRF token (reuses existing if available)
+    // Get or generate CSRF token (reuses existing token for the session)
+    // Token expires with session, preventing stale token issues
     const csrfToken = await csrfService.generate(sessionId);
     res.locals.csrfToken = csrfToken;
     
@@ -45,7 +46,7 @@ export const validateCsrfToken = async (
     // Extract CSRF token from request (header takes precedence, then body)
     const csrfToken = req.headers["x-csrf-token"] || req.body?.csrfToken;
     if (!csrfToken) {
-      securityAuditService.logSecurityEvent("csrf_missing", req.user?.["userId"] || null, {
+      securityAuditService.log("security:csrf_missing", req.user?.userId || "anonymous", {
         ip: req.ip,
         path: req.path,
       });
@@ -55,7 +56,7 @@ export const validateCsrfToken = async (
     // Validate token
     const isValid = await csrfService.validate(csrfToken as string, sessionId);
     if (!isValid) {
-      securityAuditService.logSecurityEvent("csrf_invalid", req.user?.["userId"] || null, {
+      securityAuditService.log("security:csrf_invalid", req.user?.userId || "anonymous", {
         ip: req.ip,
         path: req.path,
       });
@@ -95,7 +96,7 @@ export const validateSessionMetadata = async (
     });
 
     if (!validation.isValid) {
-      securityAuditService.logSecurityEvent("session_hijacking_attempt", user.userId, {
+      securityAuditService.log("security:session_hijacking_attempt", user.userId, {
         reason: validation.reason,
         currentIp: currentMetadata.ip,
         storedIp: storedMetadata.ip,

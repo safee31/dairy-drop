@@ -6,13 +6,6 @@ export class CreateInventory {
   reservedQuantity?: number;
   reorderLevel?: number;
   inStock?: boolean;
-  stockHistory?: Array<{
-    date: Date;
-    quantity: number;
-    type: 'purchase' | 'sale' | 'return' | 'adjustment';
-    referenceId?: string;
-    notes?: string;
-  }>;
 }
 
 export class UpdateInventory {
@@ -20,13 +13,6 @@ export class UpdateInventory {
   reservedQuantity?: number;
   reorderLevel?: number;
   inStock?: boolean;
-  stockHistory?: Array<{
-    date: Date;
-    quantity: number;
-    type: 'purchase' | 'sale' | 'return' | 'adjustment';
-    referenceId?: string;
-    notes?: string;
-  }>;
 }
 
 export interface AdjustInventory {
@@ -43,13 +29,6 @@ const inventorySchemas = {
     reservedQuantity: Joi.number().integer().min(0).optional(),
     reorderLevel: Joi.number().integer().min(0).optional(),
     inStock: Joi.boolean().optional(),
-    stockHistory: Joi.array().items(Joi.object({
-      date: Joi.date().required(),
-      quantity: Joi.number().integer().required(),
-      type: Joi.string().valid('purchase','sale','return','adjustment').required(),
-      referenceId: Joi.string().optional(),
-      notes: Joi.string().optional()
-    })).optional(),
   }),
 
   update: Joi.object({
@@ -57,13 +36,6 @@ const inventorySchemas = {
     reservedQuantity: Joi.number().integer().min(0).optional(),
     reorderLevel: Joi.number().integer().min(0).optional(),
     inStock: Joi.boolean().optional(),
-    stockHistory: Joi.array().items(Joi.object({
-      date: Joi.date().required(),
-      quantity: Joi.number().integer().required(),
-      type: Joi.string().valid('purchase','sale','return','adjustment').required(),
-      referenceId: Joi.string().optional(),
-      notes: Joi.string().optional()
-    })).optional(),
   }),
 
   adjust: Joi.object<AdjustInventory>({

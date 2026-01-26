@@ -12,6 +12,7 @@ export const getAllInventory = asyncHandler(async (req, res) => {
     const {
         page = 1,
         limit = 10,
+        search = "",
         productId,
         inStock,
         lowStock,
@@ -21,10 +22,17 @@ export const getAllInventory = asyncHandler(async (req, res) => {
 
     const skip = (Number(page) - 1) * Number(limit);
     const queryBuilder = InventoryRepo.createQueryBuilder("inventory")
-        .leftJoinAndSelect("inventory.product", "product")
-        .leftJoinAndSelect("product.categoryLevel2", "categoryLevel2")
-        .leftJoinAndSelect("categoryLevel2.categoryLevel1", "categoryLevel1")
-        .leftJoinAndSelect("categoryLevel1.category", "category");
+        .leftJoinAndSelect("inventory.product", "product", "product.id IS NOT NULL", {
+          select: ["product.id", "product.name", "product.sku", "product.brand"],
+        });
+
+    // Search by product name, SKU, or brand
+    if (search) {
+        queryBuilder.andWhere(
+            "(product.name ILIKE :search OR product.sku ILIKE :search OR product.brand ILIKE :search)",
+            { search: `%${search}%` }
+        );
+    }
 
     if (productId) {
         queryBuilder.andWhere("inventory.productId = :productId", { productId });

@@ -26,7 +26,7 @@ export class CartItem {
   @Column("uuid", { name: "cart_id" })
   cartId!: string;
 
-  @ManyToOne(() => Product, { nullable: false })
+  @ManyToOne(() => Product, { nullable: false, onDelete: "CASCADE" })
   @JoinColumn({ name: "product_id" })
   product!: Relation<Product>;
 
@@ -36,10 +36,10 @@ export class CartItem {
   @Column("int")
   quantity!: number;
 
-  @Column("numeric", { precision: 10, scale: 2 })
+  @Column("numeric", { precision: 10, scale: 2, transformer: { to: (v) => v, from: (v) => Number(v) } })
   unitPrice!: number;
 
-  @Column("numeric", { precision: 10, scale: 2 })
+  @Column("numeric", { precision: 10, scale: 2, transformer: { to: (v) => v, from: (v) => Number(v) } })
   totalPrice!: number;
 
   @CreateDateColumn()

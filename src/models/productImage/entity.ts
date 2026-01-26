@@ -31,10 +31,10 @@ export class ProductImage {
     nullable: false,
     onDelete: "CASCADE",
   })
-  @JoinColumn({ name: "product_id" })
+  @JoinColumn({ name: "productId" })
   product!: Relation<Product>;
 
-  @Column("uuid")
+  @Column("uuid", { name: "productId" })
   productId!: string;
 
   @CreateDateColumn()

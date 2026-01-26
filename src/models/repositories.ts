@@ -15,6 +15,7 @@ import { CartItem } from "./cart";
 import { Order } from "./order";
 import { OrderLineItem } from "./order";
 import { OrderDeliveryHistory } from "./order";
+import { HeroSection } from "./heroSection/entity";
 
 const repositoryCache = new Map<EntityTarget<ObjectLiteral>, Repository<ObjectLiteral>>();
 
@@ -57,6 +58,7 @@ const repos = {
   Order: createRepoProxy(Order),
   OrderLineItem: createRepoProxy(OrderLineItem),
   OrderDeliveryHistory: createRepoProxy(OrderDeliveryHistory),
+  HeroSection: createRepoProxy(HeroSection),
 };
 
 export const UserRepo = repos.User;
@@ -74,6 +76,7 @@ export const CartItemRepo = repos.CartItem;
 export const OrderRepo = repos.Order;
 export const OrderLineItemRepo = repos.OrderLineItem;
 export const OrderDeliveryHistoryRepo = repos.OrderDeliveryHistory;
+export const HeroSectionRepo = repos.HeroSection;
 
 export const getRepo = <T extends ObjectLiteral>(entity: EntityTarget<T>): Repository<T> => {
   return getRepository(entity);

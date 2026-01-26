@@ -26,16 +26,16 @@ export class Cart {
   @Column("uuid", { name: "user_id" })
   userId!: string;
 
-  @Column("numeric", { precision: 10, scale: 2, default: 0 })
+  @Column("numeric", { precision: 10, scale: 2, default: 0, transformer: { to: (v) => v, from: (v) => Number(v) } })
   subtotal!: number;
 
-  @Column("numeric", { precision: 10, scale: 2, default: 0 })
+  @Column("numeric", { precision: 10, scale: 2, default: 0, transformer: { to: (v) => v, from: (v) => Number(v) } })
   deliveryCharge!: number;
 
-  @Column("numeric", { precision: 10, scale: 2, default: 0 })
+  @Column("numeric", { precision: 10, scale: 2, default: 0, transformer: { to: (v) => v, from: (v) => Number(v) } })
   taxAmount!: number;
 
-  @Column("numeric", { precision: 10, scale: 2, default: 0 })
+  @Column("numeric", { precision: 10, scale: 2, default: 0, transformer: { to: (v) => v, from: (v) => Number(v) } })
   totalAmount!: number;
 
   @Column("int", { default: 0 })

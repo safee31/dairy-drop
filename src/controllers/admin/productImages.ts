@@ -18,7 +18,7 @@ export const listProductImages = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     // Verify product exists
-    const product = await ProductRepo.findOne({ where: { id } });
+    const product = await ProductRepo.findOne({ where: { id, isDeleted: false } });
     if (!product) {
         return responseHandler.error(res, "Product not found", 404);
     }
@@ -40,7 +40,7 @@ export const uploadProductImages = asyncHandler(async (req, res) => {
     }
 
     // Verify product exists
-    const product = await ProductRepo.findOne({ where: { id } });
+    const product = await ProductRepo.findOne({ where: { id, isDeleted: false } });
     if (!product) {
         return responseHandler.error(res, "Product not found", 404);
     }
@@ -61,12 +61,16 @@ export const uploadProductImages = asyncHandler(async (req, res) => {
 export const addProductImage = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
+    if (!id) {
+        return responseHandler.error(res, "Product ID is required", 400);
+    }
+
     if (!req.file) {
         return responseHandler.error(res, "No image provided", 400);
     }
 
     // Verify product exists
-    const product = await ProductRepo.findOne({ where: { id } });
+    const product = await ProductRepo.findOne({ where: { id, isDeleted: false } });
     if (!product) {
         return responseHandler.error(res, "Product not found", 404);
     }
@@ -93,7 +97,7 @@ export const updateProductImage = asyncHandler(async (req, res) => {
     }
 
     // Verify product exists
-    const product = await ProductRepo.findOne({ where: { id } });
+    const product = await ProductRepo.findOne({ where: { id, isDeleted: false } });
     if (!product) {
         return responseHandler.error(res, "Product not found", 404);
     }
@@ -115,7 +119,7 @@ export const deleteProductImage = asyncHandler(async (req, res) => {
     const { id, imageId } = req.params;
 
     // Verify product exists
-    const product = await ProductRepo.findOne({ where: { id } });
+    const product = await ProductRepo.findOne({ where: { id, isDeleted: false } });
     if (!product) {
         return responseHandler.error(res, "Product not found", 404);
     }
@@ -137,7 +141,7 @@ export const setProductPrimaryImage = asyncHandler(async (req, res) => {
     const { id, imageId } = req.params;
 
     // Verify product exists
-    const product = await ProductRepo.findOne({ where: { id } });
+    const product = await ProductRepo.findOne({ where: { id, isDeleted: false } });
     if (!product) {
         return responseHandler.error(res, "Product not found", 404);
     }

@@ -86,7 +86,20 @@ app.get("/health", (_req, res) => {
 // API routes
 app.use(`/api/${API_VERSION}`, routes);
 
-// Serve uploaded files
+// Serve uploaded files with CORS headers
+app.use("/uploads", (req, res, next) => {
+  const origin = req.headers.origin || config.ORIGIN_URL || "http://localhost:3000";
+  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(
   "/uploads",
   express.static(path.join(process.cwd(), "uploads"), {

@@ -11,6 +11,7 @@ export class CreateUser {
 export class UpdateUser {
   fullName?: string;
   phoneNumber?: string | null;
+  dateOfBirth?: Date | null;
   profileImage?: string | null;
   isActive?: boolean;
 }
@@ -54,11 +55,11 @@ const userSchemas = {
 
     phoneNumber: Joi.string()
       .trim()
-      .pattern(/^\+?[1-9]\d{1,14}$/)
+      .pattern(/^(\+92|0)?[3][0-9]{2}[0-9]{7}$/)
       .optional()
       .allow(null, "")
       .messages({
-        "string.pattern.base": "Please provide a valid phone number",
+        "string.pattern.base": "Please provide a valid Pakistan phone number (03XX-XXXXXXX or +923XX-XXXXXXX)",
       }),
 
     profileImage: Joi.string()
@@ -79,11 +80,26 @@ const userSchemas = {
 
     phoneNumber: Joi.string()
       .trim()
-      .pattern(/^\+?[1-9]\d{1,14}$/)
+      .pattern(/^(\+92|0)?[3][0-9]{2}[0-9]{7}$/)
       .optional()
       .allow(null, "")
       .messages({
-        "string.pattern.base": "Please provide a valid phone number",
+        "string.pattern.base": "Please provide a valid Pakistan phone number (03XX-XXXXXXX or +923XX-XXXXXXX)",
+      }),
+
+    dateOfBirth: Joi.date()
+      .iso()
+      .optional()
+      .allow(null, "")
+      .messages({
+        "date.base": "Date of birth must be a valid date",
+      }),
+
+    userId: Joi.string()
+      .uuid()
+      .optional()
+      .messages({
+        "string.guid": "Invalid user ID format",
       }),
 
     profileImage: Joi.string()
@@ -317,13 +333,13 @@ const adminCustomerSchemas = {
       "string.min": "Full name must be at least 1 character long",
       "string.max": "Full name cannot exceed 100 characters",
     }),
-    phoneNumber: Joi.string()
+   phoneNumber: Joi.string()
       .trim()
-      .pattern(/^\+?[1-9]\d{1,14}$/)
+      .pattern(/^(\+92|0)?[3][0-9]{2}[0-9]{7}$/)
       .optional()
       .allow(null, "")
       .messages({
-        "string.pattern.base": "Please provide a valid phone number",
+        "string.pattern.base": "Please provide a valid Pakistan phone number (03XX-XXXXXXX or +923XX-XXXXXXX)",
       }),
   }),
 
@@ -334,11 +350,11 @@ const adminCustomerSchemas = {
     }),
     phoneNumber: Joi.string()
       .trim()
-      .pattern(/^\+?[1-9]\d{1,14}$/)
+      .pattern(/^(\+92|0)?[3][0-9]{2}[0-9]{7}$/)
       .optional()
       .allow(null, "")
       .messages({
-        "string.pattern.base": "Please provide a valid phone number",
+        "string.pattern.base": "Please provide a valid Pakistan phone number (03XX-XXXXXXX or +923XX-XXXXXXX)",
       }),
     password: Joi.string()
       .min(8)

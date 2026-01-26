@@ -47,7 +47,7 @@ export const bulkInsertImages = async (
         imageUrl: imagePath,
         productId,
         isPrimary: index === 0, // First image is primary
-        displayOrder: index,
+        displayOrder: index + 1,
     }));
 
     // Bulk insert all at once
@@ -64,24 +64,27 @@ export const bulkInsertImages = async (
  * Add single image to product (separate API call)
  */
 export const addImage = async (productId: string, file: Express.Multer.File): Promise<any> => {
+    if (!productId) {
+        throw new CustomError("Product ID is required", 400);
+    }
+
     await validateImageCount(productId, 1);
 
-    // Get next display order
-    const maxOrder = await ProductImageRepo.createQueryBuilder("image")
-        .select("MAX(image.displayOrder)", "maxOrder")
-        .where("image.productId = :productId", { productId })
-        .getRawOne();
+    const existingImages = await ProductImageRepo.find({
+        where: { productId },
+        order: { displayOrder: "ASC" }
+    });
 
-    const nextOrder = (maxOrder?.maxOrder ?? -1) + 1;
+    const hasPrimary = existingImages.some(image => image.isPrimary);
+    const maxOrder = existingImages.length > 0 ? Math.max(...existingImages.map(img => img.displayOrder)) : 0;
+    const nextOrder = maxOrder + 1;
 
-    // Save file
     const imagePath = await saveImage(file, PRODUCT_IMAGE_FOLDER);
 
-    // Insert image
     const image = ProductImageRepo.create({
         imageUrl: imagePath,
         productId,
-        isPrimary: false,
+        isPrimary: !hasPrimary,
         displayOrder: nextOrder,
     });
 

@@ -18,6 +18,8 @@ export class CreateProduct {
   name!: string;
   description!: string;
   sku!: string;
+  categoryId!: string;
+  categoryLevel1Id!: string;
   categoryLevel2Id!: string;
   price!: number;
   brand!: string;
@@ -31,12 +33,20 @@ export class CreateProduct {
     type: "percentage" | "fixed";
     value: number;
   };
+  inventory?: {
+    stockQuantity: number;
+    reservedQuantity?: number;
+    reorderLevel?: number;
+    inStock?: boolean;
+  };
 }
 
 export class UpdateProduct {
   name?: string;
   description?: string;
   sku?: string;
+  categoryId?: string;
+  categoryLevel1Id?: string;
   categoryLevel2Id?: string;
   price?: number;
   brand?: string;
@@ -75,10 +85,20 @@ const productSchemas = {
         "string.empty": "SKU is required",
       }),
 
+    categoryId: Joi.string()
+      .uuid()
+      .required()
+      .messages({ "string.guid": "Invalid root category ID" }),
+
+    categoryLevel1Id: Joi.string()
+      .uuid()
+      .required()
+      .messages({ "string.guid": "Invalid category level 1 ID" }),
+
     categoryLevel2Id: Joi.string()
       .uuid()
       .required()
-      .messages({ "string.guid": "Invalid category ID" }),
+      .messages({ "string.guid": "Invalid category level 2 ID" }),
 
     price: Joi.number()
       .positive()
@@ -137,6 +157,13 @@ const productSchemas = {
       )
       .optional()
       .default([]),
+
+    inventory: Joi.object({
+      stockQuantity: Joi.number().integer().min(0).required().messages({ "number.base": "Stock quantity must be a number" }),
+      reservedQuantity: Joi.number().integer().min(0).optional(),
+      reorderLevel: Joi.number().integer().min(0).optional(),
+      inStock: Joi.boolean().optional(),
+    }).optional(),
   }),
 
   update: Joi.object({
@@ -151,6 +178,14 @@ const productSchemas = {
 
     sku: Joi.string()
       .pattern(/^[A-Z0-9-]+$/)
+      .optional(),
+
+    categoryId: Joi.string()
+      .uuid()
+      .optional(),
+
+    categoryLevel1Id: Joi.string()
+      .uuid()
       .optional(),
 
     categoryLevel2Id: Joi.string()

@@ -1,6 +1,7 @@
 import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { ProductRepo } from "@/models/repositories";
+import { CategoryLevel2Repo } from "@/models/repositories";
 
 // Public product listing for customers
 export const listProducts = asyncHandler(async (req, res) => {
@@ -8,9 +9,9 @@ export const listProducts = asyncHandler(async (req, res) => {
     page = 1,
     limit = 20,
     search = "",
-    categoryId,
-    categoryLevel1Id,
-    categoryLevel2Id,
+    categoryIds,
+    categoryLevel1Ids,
+    categoryLevel2Ids,
     brand,
     minPrice,
     maxPrice,
@@ -21,11 +22,13 @@ export const listProducts = asyncHandler(async (req, res) => {
   const skip = (Number(page) - 1) * Number(limit);
 
   const qb = ProductRepo.createQueryBuilder("product")
-    .leftJoinAndSelect("product.categoryLevel2", "level2")
-    .leftJoinAndSelect("level2.categoryLevel1", "level1")
-    .leftJoinAndSelect("level1.category", "category")
+    .leftJoinAndSelect("product.category", "category")
+    .leftJoinAndSelect("product.categoryLevel1", "categoryLevel1")
+    .leftJoinAndSelect("product.categoryLevel2", "categoryLevel2")
     .leftJoinAndSelect("product.images", "images")
-    .where("product.isActive = :isActive", { isActive: true });
+    .leftJoinAndSelect("product.inventory", "inventory")
+    .where("product.isActive = :isActive", { isActive: true })
+    .andWhere("product.isDeleted = :isDeleted", { isDeleted: false });
 
   if (search) {
     qb.andWhere(
@@ -34,9 +37,42 @@ export const listProducts = asyncHandler(async (req, res) => {
     );
   }
 
-  if (categoryLevel2Id) qb.andWhere("product.categoryLevel2Id = :categoryLevel2Id", { categoryLevel2Id });
-  if (categoryLevel1Id) qb.andWhere("product.categoryLevel1Id = :categoryLevel1Id", { categoryLevel1Id });
-  if (categoryId) qb.andWhere("product.categoryId = :categoryId", { categoryId });
+  // Handle array params - RTK sends arrays as comma-separated strings
+  // Convert to proper arrays
+  const parseCategoryIds = (ids: any): string[] => {
+    if (!ids) return [];
+    if (Array.isArray(ids)) return ids;
+    // If string (comma-separated), split it
+    return typeof ids === 'string' ? ids.split(',').map(id => id.trim()).filter(Boolean) : [ids];
+  };
+
+  const catIds = parseCategoryIds(categoryIds);
+  const catLevel1Ids = parseCategoryIds(categoryLevel1Ids);
+  const catLevel2Ids = parseCategoryIds(categoryLevel2Ids);
+
+  // Build OR conditions for categories
+  if (catIds.length > 0 || catLevel1Ids.length > 0 || catLevel2Ids.length > 0) {
+    const conditions: string[] = [];
+    const params: Record<string, any> = {};
+
+    if (catIds.length > 0) {
+      conditions.push(`product.categoryId IN (:...categoryIds)`);
+      params.categoryIds = catIds;
+    }
+    if (catLevel1Ids.length > 0) {
+      conditions.push(`product.categoryLevel1Id IN (:...categoryLevel1Ids)`);
+      params.categoryLevel1Ids = catLevel1Ids;
+    }
+    if (catLevel2Ids.length > 0) {
+      conditions.push(`product.categoryLevel2Id IN (:...categoryLevel2Ids)`);
+      params.categoryLevel2Ids = catLevel2Ids;
+    }
+
+    if (conditions.length > 0) {
+      qb.andWhere(`(${conditions.join(" OR ")})`, params);
+    }
+  }
+
   if (brand) qb.andWhere("product.brand ILIKE :brand", { brand: `%${brand}%` });
   if (minPrice) qb.andWhere("product.price >= :minPrice", { minPrice: Number(minPrice) });
   if (maxPrice) qb.andWhere("product.price <= :maxPrice", { maxPrice: Number(maxPrice) });
@@ -63,23 +99,67 @@ export const listProducts = asyncHandler(async (req, res) => {
     "Products retrieved",
   );
 });
+// Popular products for home page - Most used categories in daily life
+export const getPopularProducts = asyncHandler(async (req, res, next) => {
+  // Keywords for most commonly used dairy products in human life
+  const popularKeywords = [
+    "milk",
+    "paneer",
+    "yogurt",
+    "curd",
+    "cheese",
+    "ice cream",
+    "butter",
+    "ghee",
+    "cream",
+    "lassi",
+    "dahi",
+  ];
+
+  // Build regex pattern for popular categories
+  const regexPattern = popularKeywords.join("|");
+
+  // Find level 2 categories matching popular keywords
+  const popularCategories = await CategoryLevel2Repo.createQueryBuilder("cat")
+    .where(`cat.name ~* :pattern OR cat.description ~* :pattern`, {
+      pattern: regexPattern,
+    })
+    .orderBy("cat.displayOrder", "ASC")
+    .limit(20)
+    .getMany();
+
+  const popularCategoryIds = popularCategories.map((cat) => cat.id);
+
+  if (popularCategoryIds.length === 0) {
+    return responseHandler.success(res, [], "No popular products found");
+  }
+
+  // Set query params to reuse listProducts controller
+  req.query.categoryLevel2Ids = popularCategoryIds.join(",");
+  req.query.limit = "20";
+  req.query.page = "1";
+
+  // Call listProducts with the popular category filters
+  await listProducts(req, res, next);
+});
+
+
 
 export const getProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const product = await ProductRepo.findOne({
-    where: { id, isActive: true },
-    relations: [
-      "categoryLevel2",
-      "categoryLevel2.categoryLevel1",
-      "categoryLevel2.categoryLevel1.category",
-      "images",
-    ],
-  });
+  const product = await ProductRepo.createQueryBuilder("product")
+    .leftJoinAndSelect("product.category", "category")
+    .leftJoinAndSelect("product.categoryLevel1", "categoryLevel1")
+    .leftJoinAndSelect("product.categoryLevel2", "categoryLevel2")
+    .leftJoinAndSelect("product.images", "images")
+    .leftJoinAndSelect("product.inventory", "inventory")
+    .where("product.id = :id AND product.isActive = :isActive AND product.isDeleted = :isDeleted", { id, isActive: true, isDeleted: false })
+    .getOne();
 
   if (!product) return responseHandler.error(res, "Product not found", 404);
 
   return responseHandler.success(res, product, "Product retrieved");
 });
 
-export default { listProducts, getProduct };
+export default { listProducts, getProduct, getPopularProducts };

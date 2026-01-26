@@ -1,10 +1,15 @@
 import { CartItem } from "./cartitem.entity";
 
-export function generateSessionId(): string {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
-export function calculateCartTotals(items: CartItem[]): {
+/**
+ * Cart total calculations utility
+ * IMPORTANT: Must match frontend cartCalculations in dairy-drop-client/src/utils/cartCalculations.js
+ * Any changes here must be synchronized with the frontend!
+ */
+export function calculateCartTotals(
+  items: CartItem[],
+  deliveryCharge: number = 0,
+  taxAmount: number = 0
+): {
   subtotal: number;
   deliveryCharge: number;
   taxAmount: number;
@@ -12,18 +17,25 @@ export function calculateCartTotals(items: CartItem[]): {
   totalItems: number;
   totalQuantity: number;
 } {
-  const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
-  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalItems = items.length;
+  // Filter out deleted products from calculation
+  const activeItems = items.filter((item) => !item.product?.isDeleted);
 
-  const deliveryCharge = subtotal > 500 ? 0 : 50;
-  const taxAmount = Math.round(subtotal * 5) / 100;
+  // Use totalPrice (unitPrice * quantity) which already includes sale price/discounts
+  const subtotal = activeItems.reduce((sum, item) => {
+    return sum + Number(item.totalPrice || 0);
+  }, 0);
+
+  const totalQuantity = activeItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  const totalItems = activeItems.length;
+
+  const roundedSubtotal = Math.round(subtotal * 100) / 100;
+  const totalAmount = Math.round((roundedSubtotal + deliveryCharge + taxAmount) * 100) / 100;
 
   return {
-    subtotal,
+    subtotal: roundedSubtotal,
     deliveryCharge,
     taxAmount,
-    totalAmount: subtotal + deliveryCharge + taxAmount,
+    totalAmount,
     totalItems,
     totalQuantity,
   };
@@ -41,3 +53,4 @@ export function calculateFinalPrice(
     return Math.max(0, Math.round((basePrice - discount.value) * 100) / 100);
   }
 }
+

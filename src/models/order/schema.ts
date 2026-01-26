@@ -58,7 +58,7 @@ const orderSchemas = {
       instructions: Joi.string().max(500).optional(),
     }).required(),
 
-    customerNote: Joi.string().max(1000).optional(),
+    customerNote: Joi.string().max(1000).allow("").optional(),
 
     items: Joi.array()
       .items(

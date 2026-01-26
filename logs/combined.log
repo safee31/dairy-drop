@@ -158,3 +158,654 @@
 17:24:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
 17:24:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
 17:24:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:14:46 [[33mwarn[39m]: Redis: Reconnecting in 0ms (attempt 0/3)
+22:14:46 [[31merror[39m]: Redis connection error {"error":"ERR Client sent AUTH, but no password is set"}
+22:14:46 [[33mwarn[39m]: Redis: Reconnecting in 1000ms (attempt 1/3)
+22:14:46 [[31merror[39m]: Redis connection error {"error":"ERR Client sent AUTH, but no password is set"}
+22:14:47 [[33mwarn[39m]: Redis: Reconnecting in 2000ms (attempt 2/3)
+22:14:47 [[31merror[39m]: Redis connection error {"error":"ERR Client sent AUTH, but no password is set"}
+22:14:49 [[33mwarn[39m]: Redis: Reconnecting in 3000ms (attempt 3/3)
+22:14:49 [[31merror[39m]: Redis connection error {"error":"ERR Client sent AUTH, but no password is set"}
+22:14:51 [[31merror[39m]: ❌ Redis initialization failed {"error":"Redis connection timeout"}
+22:14:51 [[33mwarn[39m]: Redis unavailable, continuing without it:
+22:14:51 [[31merror[39m]: Database connection failed {"error":{"length":104,"name":"error","severity":"FATAL","code":"28P01","file":"auth.c","line":"320","routine":"auth_failed"}}
+22:18:46 [[33mwarn[39m]: Redis: Reconnecting in 0ms (attempt 0/3)
+22:18:46 [[31merror[39m]: Redis connection error {"error":"ERR Client sent AUTH, but no password is set"}
+22:18:46 [[33mwarn[39m]: Redis: Reconnecting in 1000ms (attempt 1/3)
+22:18:46 [[31merror[39m]: Redis connection error {"error":"ERR Client sent AUTH, but no password is set"}
+22:18:47 [[33mwarn[39m]: Redis: Reconnecting in 2000ms (attempt 2/3)
+22:18:47 [[31merror[39m]: Redis connection error {"error":"ERR Client sent AUTH, but no password is set"}
+22:18:49 [[33mwarn[39m]: Redis: Reconnecting in 3000ms (attempt 3/3)
+22:18:49 [[31merror[39m]: Redis connection error {"error":"ERR Client sent AUTH, but no password is set"}
+22:18:51 [[31merror[39m]: ❌ Redis initialization failed {"error":"Redis connection timeout"}
+22:18:51 [[33mwarn[39m]: Redis unavailable, continuing without it:
+22:18:51 [[31merror[39m]: Database connection failed {"error":{"length":104,"name":"error","severity":"FATAL","code":"28P01","file":"auth.c","line":"320","routine":"auth_failed"}}
+22:22:18 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:22:20 [[31merror[39m]: Database connection failed {"error":{"length":104,"name":"error","severity":"FATAL","code":"28P01","file":"auth.c","line":"320","routine":"auth_failed"}}
+22:24:17 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:24:18 [[31merror[39m]: Database connection failed {"error":{"length":104,"name":"error","severity":"FATAL","code":"28P01","file":"auth.c","line":"320","routine":"auth_failed"}}
+22:56:48 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:56:50 [[31merror[39m]: Database connection failed {"error":{"length":104,"name":"error","severity":"FATAL","code":"28P01","file":"auth.c","line":"320","routine":"auth_failed"}}
+23:00:21 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:12:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:20:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:24:42 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:24:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:27:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:29:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:29:27 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:29:35 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:31:33 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:33:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:33:42 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:33:50 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:38:41 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:38:49 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:38:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:40:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:40:58 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:42:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:47:18 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:56:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:56:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:57:43 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:58:36 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:00:42 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:07:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:10:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:11:08 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:41:27 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:41:44 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:42:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:43:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:43:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:44:44 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:45:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:47:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:36:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:13:22 [[31merror[39m]: API Error Please provide a valid phone number {"url":"/api/v1/profile","method":"PUT","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+23:13:31 [[31merror[39m]: API Error Please provide a valid phone number {"url":"/api/v1/profile","method":"PUT","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+23:16:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:16:28 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:16:52 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:20:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:20:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:51:35 [[31merror[39m]: API Error null value in column "fullName" of relation "addresses" violates not-null constraint {"url":"/api/v1/addresses","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+23:53:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:53:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:53:28 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:53:35 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:54:16 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:57:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:01:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:02:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:04:30 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:22:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:22:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:23:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:32:27 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:32:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:38:04 [[31merror[39m]: API Error invalid input syntax for type uuid: "fd41a665-8cfc-4c3f-bba6-33423bb37e25,b1bb7b06-4ec9-4bd4-8d83-07187ef16902" {"url":"/api/v1/products?page=1&limit=100&categoryLevel1Ids=fd41a665-8cfc-4c3f-bba6-33423bb37e25%2Cb1bb7b06-4ec9-4bd4-8d83-07187ef16902&sortBy=createdAt&order=DESC","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+01:39:25 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:39:57 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:42:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:42:34 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:43:40 [[31merror[39m]: API Error Expected categoryIds to be an array, got string {"url":"/api/v1/products?page=1&limit=100&categoryIds=8057c2e0-5b5e-4e64-8155-d8d62557cae3&sortBy=createdAt&order=DESC","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+01:44:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:45:13 [[31merror[39m]: API Error Expected categoryIds to be an array, got string: "8057c2e0-5b5e-4e64-8155-d8d62557cae3". Send as repeated query params: ?categoryIds=id1&categoryIds=id2 {"url":"/api/v1/products?page=1&limit=100&categoryIds=8057c2e0-5b5e-4e64-8155-d8d62557cae3&sortBy=createdAt&order=DESC","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+01:45:31 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:45:41 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:04:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:17:21 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:18:43 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:59:36 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:01:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:06:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:07:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:11:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:15:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:21:35 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:25:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:26:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:29:33 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:29:34 [[31merror[39m]: Database connection failed {"error":{}}
+13:30:28 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:45:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:58:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:58:53 [[31merror[39m]: Database connection failed {"error":{"query":"ALTER TABLE \"inventories\" ADD \"productId\" uuid NOT NULL","driverError":{"length":160,"name":"error","severity":"ERROR","code":"23502","schema":"public","table":"inventories","column":"productId","file":"tablecmds.c","line":"6451","routine":"ATRewriteTable"},"length":160,"severity":"ERROR","code":"23502","schema":"public","table":"inventories","column":"productId","file":"tablecmds.c","line":"6451","routine":"ATRewriteTable"}}
+14:02:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:03:25 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:04:47 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:05:16 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:30:51 [[31merror[39m]: API Error null value in column "user_id" of relation "carts" violates not-null constraint {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:30:52 [[31merror[39m]: API Error null value in column "user_id" of relation "carts" violates not-null constraint {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:32:16 [[31merror[39m]: API Error null value in column "user_id" of relation "carts" violates not-null constraint {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:32:16 [[31merror[39m]: API Error null value in column "user_id" of relation "carts" violates not-null constraint {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:32:17 [[31merror[39m]: API Error null value in column "user_id" of relation "carts" violates not-null constraint {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:32:17 [[31merror[39m]: API Error null value in column "user_id" of relation "carts" violates not-null constraint {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:36:21 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:36:36 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:36:50 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:37:46 [[31merror[39m]: API Error invalid input syntax for type numeric: "03286.441340.34" {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:37:46 [[31merror[39m]: API Error invalid input syntax for type numeric: "6572.881340.34" {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:37:47 [[31merror[39m]: API Error invalid input syntax for type numeric: "06572.882680.68" {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:40:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:40:24 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:40:33 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:42:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:42:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:43:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:09:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:14:57 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:15:16 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:16:17 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:44:32 [[31merror[39m]: API Error cartWithRelationsount is not defined {"url":"/api/v1/carts/items/4669472e-26b0-4416-b8af-d9312dc6363d","method":"DELETE","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+16:46:36 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:48:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:08:44 [[31merror[39m]: API Error Too many login attempts. Please try again later. {"url":"/api/v1/auth/login","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+17:08:54 [[31merror[39m]: API Error Too many login attempts. Please try again later. {"url":"/api/v1/auth/login","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+18:10:03 [[31merror[39m]: Email sending failed: {"error":{"code":"EAUTH","response":"535 5.7.0 Invalid credentials","responseCode":535,"command":"AUTH PLAIN"}}
+18:10:03 [[31merror[39m]: API Error Failed to send email {"url":"/api/v1/auth/send-otp","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+18:10:18 [[31merror[39m]: Email sending failed: {"error":{"code":"EAUTH","response":"535 5.7.0 Invalid credentials","responseCode":535,"command":"AUTH PLAIN"}}
+18:10:18 [[31merror[39m]: API Error Failed to send email {"url":"/api/v1/auth/send-otp","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+18:11:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:52:23 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:27:44 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:28:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:31:16 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:31:50 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:33:08 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:33:30 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:36:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:56:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:59:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:59:27 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:00:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:01:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:01:46 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:03:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:03:46 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:04:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:04:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:05:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:06:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:06:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:07:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:07:47 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:08:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:08:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:08:47 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:13:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:13:38 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:15:30 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:16:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:16:43 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:18:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:18:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:19:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:20:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:20:43 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:20:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:21:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:22:30 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:22:35 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:33:03 [[31merror[39m]: API Error "deliveryAddress" is required {"url":"/api/v1/orders","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+00:35:25 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:36:24 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:36:33 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:38:09 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:39:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:39:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:40:42 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:41:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:41:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:41:49 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:42:21 [[31merror[39m]: API Error "customerNote" is not allowed to be empty {"url":"/api/v1/orders","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+00:43:55 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:44:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:46:57 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:47:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:47:58 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:51:41 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:51:48 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:52:10 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:53:27 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:54:57 [[31merror[39m]: API Error "customerNote" must be a string {"url":"/api/v1/orders","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+00:55:50 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:55:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:56:09 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:56:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:14:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:14:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:15:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:15:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:15:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:16:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:20:09 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:20:17 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:20:44 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:21:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:22:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:24:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+06:25:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:19:57 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:38:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:38:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:40:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:41:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:45:30 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:46:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:46:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:46:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:47:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:48:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:50:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:50:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:51:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:53:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:53:29 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:55:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:55:18 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:56:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:58:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:58:57 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:59:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:59:05 [[31merror[39m]: Database connection failed {"error":{}}
+12:59:10 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:59:12 [[31merror[39m]: Database connection failed {"error":{}}
+12:59:17 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:59:20 [[31merror[39m]: Database connection failed {"error":{}}
+12:59:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+12:59:34 [[31merror[39m]: Database connection failed {"error":{}}
+13:00:09 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:02:50 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:04:31 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:04:33 [[31merror[39m]: Database connection failed {"error":{}}
+13:05:10 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:05:12 [[31merror[39m]: Database connection failed {"error":{}}
+13:06:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:06:22 [[31merror[39m]: Database connection failed {"error":{"query":"ALTER TABLE \"order_line_items\" ADD \"orderId\" uuid NOT NULL","driverError":{"length":166,"name":"error","severity":"ERROR","code":"23502","schema":"public","table":"order_line_items","column":"orderId","file":"tablecmds.c","line":"6451","routine":"ATRewriteTable"},"length":166,"severity":"ERROR","code":"23502","schema":"public","table":"order_line_items","column":"orderId","file":"tablecmds.c","line":"6451","routine":"ATRewriteTable"}}
+13:06:55 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:06:58 [[31merror[39m]: Database connection failed {"error":{"query":"ALTER TABLE \"order_line_items\" ADD \"orderId\" uuid NOT NULL","driverError":{"length":166,"name":"error","severity":"ERROR","code":"23502","schema":"public","table":"order_line_items","column":"orderId","file":"tablecmds.c","line":"6451","routine":"ATRewriteTable"},"length":166,"severity":"ERROR","code":"23502","schema":"public","table":"order_line_items","column":"orderId","file":"tablecmds.c","line":"6451","routine":"ATRewriteTable"}}
+13:09:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:09:14 [[31merror[39m]: Database connection failed {"error":{"query":"ALTER TABLE \"order_line_items\" ADD \"orderId\" uuid NOT NULL","driverError":{"length":166,"name":"error","severity":"ERROR","code":"23502","schema":"public","table":"order_line_items","column":"orderId","file":"tablecmds.c","line":"6451","routine":"ATRewriteTable"},"length":166,"severity":"ERROR","code":"23502","schema":"public","table":"order_line_items","column":"orderId","file":"tablecmds.c","line":"6451","routine":"ATRewriteTable"}}
+13:11:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:13:18 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:48:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:48:47 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:50:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:50:18 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:50:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:50:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:51:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:51:18 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:51:27 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:51:34 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:53:49 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+13:55:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:03:16 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:03:29 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:37:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:37:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:39:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:39:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:41:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:41:31 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:41:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:45:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:46:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:46:24 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:46:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:47:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:49:23 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:49:29 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+14:49:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:07:35 [[31merror[39m]: API Error column distinctAlias.product_createdAt does not exist {"url":"/api/v1/products?page=1&limit=20&sortBy=createdAt&order=DESC","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:08:38 [[31merror[39m]: API Error column distinctAlias.product_createdAt does not exist {"url":"/api/v1/products?page=1&limit=20&sortBy=createdAt&order=DESC","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:08:56 [[31merror[39m]: API Error column distinctAlias.product_createdAt does not exist {"url":"/api/v1/products?page=1&limit=20&sortBy=createdAt&order=DESC","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+15:10:07 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:10:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:10:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:17:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:17:27 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:20:07 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:20:58 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:22:52 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:24:10 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:38:36 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:59:16 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+15:59:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:07:17 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:07:30 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:08:10 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:09:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:09:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:22:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+16:32:35 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/carts","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+16:32:36 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/carts","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+16:54:41 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/carts","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+16:55:39 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/carts","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+16:56:17 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/carts","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+16:57:34 [[31merror[39m]: API Error Cannot read properties of undefined (reading 'databaseName') {"url":"/api/v1/admin/customers?page=1&limit=10&search=&sortBy=%5Bobject+Object%5D&sortOrder=asc","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+21:45:57 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/carts","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+21:45:58 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/carts","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+21:51:57 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+21:52:24 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+21:52:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:00:49 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/carts","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+22:11:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:14:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:15:44 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:16:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:17:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:17:31 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:19:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:20:25 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:21:21 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:34:50 [[31merror[39m]: API Error invalid input syntax for type uuid: "undefined" {"url":"/api/v1/admin/customers/undefined","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+22:34:53 [[31merror[39m]: API Error invalid input syntax for type uuid: "undefined" {"url":"/api/v1/admin/customers/undefined","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+22:35:46 [[31merror[39m]: API Error invalid input syntax for type uuid: "undefined" {"url":"/api/v1/admin/customers/undefined","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+22:36:54 [[31merror[39m]: API Error invalid input syntax for type uuid: "undefined" {"url":"/api/v1/admin/customers/undefined","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+22:37:03 [[31merror[39m]: API Error invalid input syntax for type uuid: "undefined" {"url":"/api/v1/admin/customers/undefined","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+23:07:34 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:08:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:09:48 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:10:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:10:28 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:16:23 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:17:46 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:18:08 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:18:13 [[31merror[39m]: API Error Cannot set headers after they are sent to the client {"url":"/api/v1/profile","method":"PUT","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+23:19:36 [[31merror[39m]: API Error Cannot set headers after they are sent to the client {"url":"/api/v1/profile","method":"PUT","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+23:24:24 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:26:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:26:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:26:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:27:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:27:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:28:14 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:29:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:31:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:31:34 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:44:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:00:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:00:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:00:21 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:03:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:03:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:03:35 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:04:46 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:05:09 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:05:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:05:36 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:05:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:06:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:06:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:07:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:07:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:07:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:12:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:12:25 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:15:49 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:15:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:16:09 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:17:16 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:36:48 [[31merror[39m]: API Error Please provide a valid phone number {"url":"/api/v1/admin/customers","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+00:37:47 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:38:17 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:39:31 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:40:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:40:06 [[31merror[39m]: API Error Please provide a valid phone number {"url":"/api/v1/admin/customers","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+00:40:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:42:36 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:43:24 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:44:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:44:31 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:44:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:45:23 [[31merror[39m]: API Error Please provide a valid phone number {"url":"/api/v1/admin/customers","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+00:46:34 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:17:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:52:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:53:55 [[31merror[39m]: API Error column distinctAlias.product_createdAt does not exist {"url":"/api/v1/admin/products?page=1&limit=10&search=&sortBy=createdAt&sortOrder=desc","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+01:54:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:54:29 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:54:52 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:55:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:55:29 [[31merror[39m]: API Error column distinctAlias.product_createdAt does not exist {"url":"/api/v1/admin/products?page=1&limit=10&search=&sortBy=createdAt&sortOrder=desc","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+01:56:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:56:20 [[31merror[39m]: API Error column distinctAlias.product_createdAt does not exist {"url":"/api/v1/admin/products?page=1&limit=10&search=&sortBy=createdAt&sortOrder=desc","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+01:56:29 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:56:54 [[31merror[39m]: API Error column distinctAlias.product_createdAt does not exist {"url":"/api/v1/admin/products?page=1&limit=10&search=&sortBy=createdAt&sortOrder=desc","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+01:58:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:00:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:01:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:01:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:03:33 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:07:16 [[31merror[39m]: API Error Provided "skip" value is not a number. Please provide a numeric value. {"url":"/api/v1/admin/products?page=%5Bobject+Object%5D1&limit=10&search=&sortBy=createdAt&sortOrder=desc","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+02:07:43 [[31merror[39m]: API Error Provided "skip" value is not a number. Please provide a numeric value. {"url":"/api/v1/admin/products?page=%5Bobject+Object%5D1&limit=10&search=&sortBy=createdAt&sortOrder=desc","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"}
+21:30:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:45:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:15:24 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:18:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:20:19 [[31merror[39m]: API Error invalid input syntax for type uuid: "level-2" {"url":"/api/v1/admin/categories/level-2?categoryLevel1Id=9aeb9cb2-f432-4369-92ef-3fcd9869aed6&isActive=true&limit=1000","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:20:19 [[31merror[39m]: API Error invalid input syntax for type uuid: "level-1" {"url":"/api/v1/admin/categories/level-1?categoryId=c5cae7ce-7611-412e-b12e-242e8624cc15&isActive=true&limit=1000","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:21:48 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:21:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:25:25 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:25:35 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:26:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:27:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:27:25 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:27:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:30:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:32:44 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:33:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:35:39 [[31merror[39m]: API Error invalid input syntax for type uuid: "level-1" {"url":"/api/v1/admin/categories/level-1?categoryId=c5cae7ce-7611-412e-b12e-242e8624cc15&isActive=true&isAll=true&limit=1000","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:35:39 [[31merror[39m]: API Error invalid input syntax for type uuid: "level-2" {"url":"/api/v1/admin/categories/level-2?categoryLevel1Id=9aeb9cb2-f432-4369-92ef-3fcd9869aed6&isActive=true&isAll=true&limit=1000","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:36:41 [[31merror[39m]: API Error invalid input syntax for type uuid: "level-2" {"url":"/api/v1/admin/categories/level-2?categoryLevel1Id=9aeb9cb2-f432-4369-92ef-3fcd9869aed6&isActive=true&isAll=true&limit=1000","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:36:41 [[31merror[39m]: API Error invalid input syntax for type uuid: "level-1" {"url":"/api/v1/admin/categories/level-1?categoryId=c5cae7ce-7611-412e-b12e-242e8624cc15&isActive=true&isAll=true&limit=1000","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:39:09 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:39:47 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:31:21 [[31merror[39m]: API Error null value in column "product_id" of relation "product_images" violates not-null constraint {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:31:28 [[31merror[39m]: API Error null value in column "product_id" of relation "product_images" violates not-null constraint {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:33:12 [[31merror[39m]: API Error null value in column "product_id" of relation "product_images" violates not-null constraint {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:35:30 [[31merror[39m]: API Error null value in column "product_id" of relation "product_images" violates not-null constraint {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:38:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:40:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:40:10 [[31merror[39m]: API Error null value in column "product_id" of relation "product_images" violates not-null constraint {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:40:35 [[31merror[39m]: API Error null value in column "product_id" of relation "product_images" violates not-null constraint {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:41:52 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:42:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:42:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:42:29 [[31merror[39m]: API Error null value in column "product_id" of relation "product_images" violates not-null constraint {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:43:46 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:43:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:44:33 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:45:21 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:45:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:46:14 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:46:29 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:50:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:50:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:51:14 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:09:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:11:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:13:41 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:47:40 [[31merror[39m]: API Error Unexpected field {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+02:50:03 [[31merror[39m]: API Error Unexpected field {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+02:50:19 [[31merror[39m]: API Error Unexpected field {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/add","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+03:07:43 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:08:08 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:09:06 [[31merror[39m]: API Error Schema with external rules must use validateAsync() {"url":"/api/v1/admin/products/ba175eb3-029a-45c0-bffa-8aa94bdb0f4d","method":"PUT","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+03:09:19 [[31merror[39m]: API Error Schema with external rules must use validateAsync() {"url":"/api/v1/admin/products/ba175eb3-029a-45c0-bffa-8aa94bdb0f4d","method":"PUT","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+21:44:30 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+21:46:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+21:47:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:17:38 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:17:46 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:18:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:20:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:24:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:24:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:27:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:28:00 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:28:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:29:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:30:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:34:03 [[31merror[39m]: API Error Unexpected field {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/a3cedab4-07a4-42cb-998a-3d89b83735e1","method":"PATCH","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:52:55 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:54:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:54:50 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:54:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:57:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:57:49 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:59:41 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:00:14 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:08:09 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:10:21 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:10:48 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:17:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:18:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:19:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:20:10 [[31merror[39m]: API Error Unexpected field {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/a3cedab4-07a4-42cb-998a-3d89b83735e1","method":"PATCH","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+01:20:14 [[31merror[39m]: API Error Unexpected field {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098/images/a3cedab4-07a4-42cb-998a-3d89b83735e1","method":"PATCH","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+01:26:31 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:54:55 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:57:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:11:41 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:11:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:19:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:19:46 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:22:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:24:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:55:28 [[31merror[39m]: API Error update or delete on table "products" violates foreign key constraint "FK_30e89257a105eab7648a35c7fce" on table "cart_items" {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098","method":"DELETE","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+02:55:40 [[31merror[39m]: API Error update or delete on table "products" violates foreign key constraint "FK_30e89257a105eab7648a35c7fce" on table "cart_items" {"url":"/api/v1/admin/products/53d44d74-ad1c-48c0-bd01-c2625050a098","method":"DELETE","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+02:56:47 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:00:41 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:01:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:01:44 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:01:57 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:02:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:02:28 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:02:40 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:02:48 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:03:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:04:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:04:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:04:49 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:05:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:07:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:09:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:15:52 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:16:27 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:45:21 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:50:32 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:51:47 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:52:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:52:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:55:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:56:27 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:56:49 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+17:56:59 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+18:36:14 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+18:50:52 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+19:23:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+20:29:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+20:29:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+20:30:41 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+20:36:33 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+20:42:43 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+20:43:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+20:43:34 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+20:43:49 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+20:44:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:19:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:25:28 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:31:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:53:33 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:05:42 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:06:43 [[31merror[39m]: API Error Property "isDeleted" was not found in "Product". Make sure your query is correct. {"url":"/api/v1/carts","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:17:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:18:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:18:26 [[31merror[39m]: API Error null value in column "cart_id" of relation "cart_items" violates not-null constraint {"url":"/api/v1/carts/items","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:56:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:18:57 [[31merror[39m]: API Error "reason" length must be at least 5 characters long {"url":"/api/v1/orders/9d3fb14c-500b-47d8-8ef0-33470a2e451c/cancel","method":"POST","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+03:33:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:34:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:34:47 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:35:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:35:23 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:35:31 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:35:41 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:37:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:38:46 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:39:12 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:39:18 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:39:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:40:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:40:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:44:20 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:46:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:46:19 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+03:46:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+21:42:47 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/orders?page=1&limit=10","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+22:13:28 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:15:25 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:15:36 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:15:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:15:56 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:16:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:16:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:17:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:18:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:19:18 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:19:43 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:19:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:20:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:21:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:50:40 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/orders/1e2570b2-e9d7-4984-abb9-01cf5a35677f","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:51:47 [[31merror[39m]: API Error missing FROM-clause entry for table "lineitems" {"url":"/api/v1/admin/orders/1e2570b2-e9d7-4984-abb9-01cf5a35677f","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:53:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:54:54 [[31merror[39m]: API Error missing FROM-clause entry for table "lineitems" {"url":"/api/v1/admin/orders/1e2570b2-e9d7-4984-abb9-01cf5a35677f","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+23:57:06 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+23:58:14 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:05:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:07:14 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/admin/orders/60447bad-7801-449b-91b3-d1b813077099","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:07:34 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/admin/orders/1e2570b2-e9d7-4984-abb9-01cf5a35677f","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:08:36 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/orders/60447bad-7801-449b-91b3-d1b813077099","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:09:58 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/orders/60447bad-7801-449b-91b3-d1b813077099","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:18:28 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:22:10 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/orders/1e2570b2-e9d7-4984-abb9-01cf5a35677f","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:24:10 [[31merror[39m]: API Error You don't have permission to access this area. If you think this is an error, please contact support. {"url":"/api/v1/orders/9d3fb14c-500b-47d8-8ef0-33470a2e451c","method":"GET","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+00:30:02 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:32:04 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:34:05 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:35:50 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:38:22 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+00:39:21 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:14:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:15:54 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:19:28 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:19:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:24:53 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:25:15 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:25:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:27:14 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:56:52 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:57:01 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:57:10 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:57:30 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+01:59:11 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:07:39 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:08:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:27:50 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+02:31:43 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:21:37 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:21:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:21:51 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:22:45 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:23:13 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:23:26 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:23:36 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:24:23 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.
+22:25:03 [[33mwarn[39m]: [SECURITY] Redis password not set! This is NOT recommended for production.

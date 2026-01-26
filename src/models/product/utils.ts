@@ -1,10 +1,10 @@
 const productUtils = {
   validateDiscount(discount: { type: "percentage" | "fixed"; value: number }, price: number): void {
-    if (discount.type === "percentage" && discount.value > 100) {
-      throw new Error("Percentage discount cannot exceed 100%");
+    if (discount.type === "percentage" && discount.value >= 100) {
+      throw new Error("Percentage discount must be less than 100% to ensure product has sale price");
     }
     if (discount.type === "fixed" && discount.value >= price) {
-      throw new Error("Fixed discount cannot be equal to or greater than price");
+      throw new Error("Fixed discount must be less than price to ensure product has sale price");
     }
   },
 

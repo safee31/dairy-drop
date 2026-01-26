@@ -17,7 +17,11 @@ import { Inventory } from "@/models/inventory";
 import { InventoryHistory } from "@/models/inventoryHistory";
 import { Cart } from "@/models/cart";
 import { CartItem } from "@/models/cart";
-import { Order, OrderLineItem, OrderDeliveryHistory } from "@/models/order";
+import { Order } from "@/models/order";
+import OrderLineItem from "@/models/order/orderlineitem.entity";
+import OrderDeliveryHistory from "@/models/order/orderdeliveryhistory.entity";
+import { HeroSection } from "@/models/heroSection";
+import { OrderSubscriber } from "@/models/order/order.subscriber";
 
 // Redis cache configuration for TypeORM
 const getCacheConfig = () => {
@@ -41,9 +45,9 @@ const getCacheConfig = () => {
 const baseConfig: DataSourceOptions = {
   type: "postgres",
   url: config.DATABASE_URL,
-  entities: [User, Role, Address, Category, CategoryLevel1, CategoryLevel2, Product, ProductImage, Inventory, InventoryHistory, Cart, CartItem, Order, OrderLineItem, OrderDeliveryHistory],
+  entities: [User, Role, Address, Category, CategoryLevel1, CategoryLevel2, Product, ProductImage, Inventory, InventoryHistory, Cart, CartItem, Order, OrderLineItem, OrderDeliveryHistory, HeroSection],
   migrations: ["src/migrations/*.ts"],
-  subscribers: [],
+  subscribers: [OrderSubscriber],
   // Performance optimizations
   cache: getCacheConfig(),
   // Logging: include queries and schema in development for visibility

@@ -4,7 +4,7 @@ import { requireAdmin } from "@/middleware/roles-auth";
 import { validate } from "@/middleware/validate";
 import { upload } from "@/middleware/upload";
 import { productSchemas } from "@/models/product";
-import * as productController from "@/controllers/admin/products";
+import productController from "@/controllers/admin/products";
 import * as productImageController from "@/controllers/admin/productImages";
 
 const router = Router();

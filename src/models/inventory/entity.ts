@@ -3,7 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   UpdateDateColumn,
-  ManyToOne,
+  OneToOne,
   OneToMany,
   JoinColumn,
   Index,
@@ -13,19 +13,18 @@ import { Product } from "@/models/product";
 import { InventoryHistory } from "@/models/inventoryHistory";
 
 @Entity("inventories")
-@Index(["productId"])
 @Index(["inStock"])
 @Index(["stockQuantity"])
 export class Inventory {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @ManyToOne(() => Product, { nullable: false, onDelete: "CASCADE" })
-  @JoinColumn({ name: "product_id" })
-  product!: Relation<Product>;
-
-  @Column("uuid")
+  @Column("uuid", { unique: true })
   productId!: string;
+
+  @OneToOne(() => Product, (product) => product.inventory, { nullable: false, onDelete: "CASCADE" })
+  @JoinColumn({ name: "productId" })
+  product!: Relation<Product>;
 
   @Column("int", { default: 0 })
   stockQuantity!: number;

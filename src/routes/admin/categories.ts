@@ -5,7 +5,7 @@ import { validate } from "@/middleware/validate";
 import { categorySchemas } from "@/models/category/category.schema";
 import { categoryLevel1Schemas } from "@/models/category/category-level1.schema";
 import { categoryLevel2Schemas } from "@/models/category/category-level2.schema";
-import * as categoryController from "@/controllers/admin/categories";
+import categoryController from "@/controllers/admin/categories";
 
 const router = Router();
 
@@ -13,18 +13,7 @@ router.use(validateLoginSession);
 router.use(requireAdmin);
 
 // ============================================
-// ROOT CATEGORY ROUTES
-// ============================================
-
-router.get("/", validate(categorySchemas.list), categoryController.getAllCategories);
-router.get("/:id", categoryController.getCategoryById);
-router.post("/", validate(categorySchemas.create), categoryController.createCategory);
-router.put("/:id", validate(categorySchemas.update), categoryController.updateCategory);
-router.delete("/:id", categoryController.deleteCategory);
-router.patch("/:id/toggle-status", categoryController.toggleCategoryStatus);
-
-// ============================================
-// CATEGORY LEVEL 1 ROUTES
+// CATEGORY LEVEL 1 ROUTES (before /:id catch-all)
 // ============================================
 
 router.get(
@@ -47,7 +36,7 @@ router.delete("/level1/:id", categoryController.deleteCategoryLevel1);
 router.patch("/level1/:id/toggle-status", categoryController.toggleCategoryLevel1Status);
 
 // ============================================
-// CATEGORY LEVEL 2 ROUTES
+// CATEGORY LEVEL 2 ROUTES (before /:id catch-all)
 // ============================================
 
 router.get(
@@ -71,5 +60,16 @@ router.patch(
   "/level2/:id/toggle-status",
   categoryController.toggleCategoryLevel2Status,
 );
+
+// ============================================
+// ROOT CATEGORY ROUTES (after specific routes)
+// ============================================
+
+router.get("/", validate(categorySchemas.list), categoryController.getAllCategories);
+router.post("/", validate(categorySchemas.create), categoryController.createCategory);
+router.get("/:id", categoryController.getCategoryById);
+router.put("/:id", validate(categorySchemas.update), categoryController.updateCategory);
+router.delete("/:id", categoryController.deleteCategory);
+router.patch("/:id/toggle-status", categoryController.toggleCategoryStatus);
 
 export default router;
