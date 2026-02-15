@@ -14,6 +14,7 @@ import { Role } from "../role/entity";
 import { Address } from "../address/entity";
 import { Cart } from "../cart/entity";
 import { Order } from "../order/entity";
+import { ProductReview } from "../productReview/entity";
 
 @Entity("users")
 @Index(["email", "isActive"], { unique: true })
@@ -80,6 +81,9 @@ export class User {
     onDelete: "CASCADE",
   })
   orders!: Relation<Order[]>;
+
+  @OneToMany(() => ProductReview, (review) => review.user)
+  reviews!: Relation<ProductReview[]>;
 }
 
 export default User;

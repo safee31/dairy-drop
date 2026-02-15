@@ -17,6 +17,7 @@ import { Category } from "../category/category.entity";
 import { ProductImage } from "@/models/productImage";
 import { Inventory } from "@/models/inventory";
 import { CartItem } from "@/models/cart";
+import { ProductReview } from "@/models/productReview";
 
 @Entity("products")
 @Index(["sku"])
@@ -115,4 +116,7 @@ export class Product {
     onDelete: "CASCADE",
   })
   cartItems!: Relation<CartItem[]>;
+
+  @OneToMany(() => ProductReview, (review) => review.product)
+  reviews!: Relation<ProductReview[]>;
 }

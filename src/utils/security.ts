@@ -7,11 +7,9 @@ const csrfTokenKey = (token: string) => `csrf:${token}`;
 const csrfSessionKey = (sessionId: string) => `csrf_session:${sessionId}`;
 export const csrfService = {
   generate: async (sessionId: string, ttlSeconds: number = config.SESSION_EXPIRY): Promise<string> => {
-    // Check if token already exists for this session (reuse it)
     const existingToken = await getKey(csrfSessionKey(sessionId));
     if (existingToken) return existingToken as string;
 
-    // Generate new token only if session doesn't have one
     const token = crypto.randomBytes(32).toString("hex");
     await setKey(csrfTokenKey(token), sessionId, ttlSeconds);
     await setKey(csrfSessionKey(sessionId), token, ttlSeconds);

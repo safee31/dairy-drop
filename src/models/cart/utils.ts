@@ -17,8 +17,8 @@ export function calculateCartTotals(
   totalItems: number;
   totalQuantity: number;
 } {
-  // Filter out deleted products from calculation
-  const activeItems = items.filter((item) => !item.product?.isDeleted);
+  // Filter out deleted/unselected products from calculation
+  const activeItems = items.filter((item) => !item.product?.isDeleted && item.isSelected !== false);
 
   // Use totalPrice (unitPrice * quantity) which already includes sale price/discounts
   const subtotal = activeItems.reduce((sum, item) => {

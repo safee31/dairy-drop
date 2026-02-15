@@ -8,7 +8,7 @@ import { authUtils } from "@/models/user/utils";
 import { sendNewCustomerCredentialsEmail } from "@/utils/emailService";
 import config from "@/config/env";
 
-export const getAllCustomers = asyncHandler(async (req, res) => {
+const getAllCustomers = asyncHandler(async (req, res) => {
   const {
     page = 1,
     limit = 10,
@@ -66,7 +66,7 @@ export const getAllCustomers = asyncHandler(async (req, res) => {
   );
 });
 
-export const getCustomerById = asyncHandler(async (req, res) => {
+const getCustomerById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const customer = await UserRepo.findOne({
@@ -79,7 +79,7 @@ export const getCustomerById = asyncHandler(async (req, res) => {
   }
 
   if (customer.role?.type !== 2) {
-    return responseHandler.error(res, "User is not a customer", 400);
+    return responseHandler.notFound(res, "Customer not found");
   }
 
   return responseHandler.success(
@@ -102,13 +102,13 @@ export const getCustomerById = asyncHandler(async (req, res) => {
   );
 });
 
-export const createCustomer = asyncHandler(async (req, res) => {
+const createCustomer = asyncHandler(async (req, res) => {
   const { email, password, fullName, phoneNumber } = req.body;
 
   const existingUser = await UserRepo.findOneBy({ email: normalizeEmail(email) });
 
   if (existingUser) {
-    return responseHandler.error(res, "User with this email already exists", 400);
+    return responseHandler.error(res, "An account with this email already exists.", 409);
   }
 
   let profileImage = null;
@@ -122,12 +122,12 @@ export const createCustomer = asyncHandler(async (req, res) => {
   const customerRole = await RoleRepo.findOneBy({ type: 2 });
 
   if (!customerRole) {
-    return responseHandler.error(res, "Customer role not found", 500);
+    return responseHandler.error(res, "Unable to create customer. Please try again later.", 500);
   }
   if (req.file) {
     profileImage = await saveImage(req.file, "profiles");
   }
- 
+
   const newCustomer = UserRepo.create({
     id: generateId(),
     email: normalizeEmail(email),
@@ -175,12 +175,12 @@ export const createCustomer = asyncHandler(async (req, res) => {
   );
 });
 
-export const updateCustomer = asyncHandler(async (req, res) => {
+const updateCustomer = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { fullName, phoneNumber, password, isActive } = req.body;
+  const { fullName, phoneNumber, isActive } = req.body;
 
   const customer = await UserRepo.findOne({
-    where: { id, isActive: true },
+    where: { id },
     relations: ["role"],
   });
 
@@ -189,23 +189,13 @@ export const updateCustomer = asyncHandler(async (req, res) => {
   }
 
   if (customer.role?.type !== 2) {
-    return responseHandler.error(res, "User is not a customer", 400);
+    return responseHandler.notFound(res, "Customer not found");
   }
 
   if (fullName) customer.fullName = fullName;
   if (phoneNumber !== undefined) customer.phoneNumber = phoneNumber || null;
   if (isActive !== undefined) customer.isActive = isActive === true || isActive === "true";
 
-  if (password) {
-    customer.password = await authUtils.hashPassword(
-      password,
-      config.BCRYPT_SALT_ROUNDS,
-    );
-  }
-
-  if (req.file) {
-    customer.profileImage = await updateImage(req.file, customer.profileImage, "profiles");
-  }
 
   await UserRepo.save(customer);
 
@@ -231,39 +221,77 @@ export const updateCustomer = asyncHandler(async (req, res) => {
   );
 });
 
-export const deleteCustomer = asyncHandler(async (req, res) => {
+const uploadCustomerImage = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const customer = await UserRepo.findOne({
-    where: { id, isActive: true },
-    relations: ["role"],
-  });
+  if (!req.file) {
+    return responseHandler.error(res, "Please select an image to upload", 400);
+  }
+
+  const customer = await UserRepo.findOne({ where: { id, isActive: true }, relations: ["role"] });
 
   if (!customer) {
     return responseHandler.error(res, "Customer not found", 404);
   }
 
   if (customer.role?.type !== 2) {
-    return responseHandler.error(res, "User is not a customer", 400);
+    return responseHandler.notFound(res, "Customer not found");
   }
 
-  // Soft delete: set isActive = false instead of hard delete
-  customer.isActive = false;
+  customer.profileImage = await updateImage(req.file, customer.profileImage, "profiles");
+
   await UserRepo.save(customer);
 
-  auditLogger.info("Admin soft-deleted customer", {
+  auditLogger.info("Admin uploaded customer profile image", {
     adminId: req.user?.userId,
-    customerId: id,
+    customerId: customer.id,
   });
 
-  return responseHandler.success(res, {}, "Customer deleted successfully");
+  return responseHandler.success(
+    res,
+    { customer: { id: customer.id, profileImage: customer.profileImage } },
+    "Profile image uploaded successfully!",
+    201,
+  );
 });
 
-export const toggleCustomerStatus = asyncHandler(async (req, res) => {
+const deleteCustomerImage = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const customer = await UserRepo.findOne({ where: { id, isActive: true }, relations: ["role"] });
+
+  if (!customer) {
+    return responseHandler.error(res, "Customer not found", 404);
+  }
+
+  if (customer.role?.type !== 2) {
+    return responseHandler.notFound(res, "Customer not found");
+  }
+
+  if (!customer.profileImage) {
+    return responseHandler.error(res, "No profile image to delete", 400);
+  }
+
+  const { deleteImage } = await import("@/utils/image");
+
+  await deleteImage(customer.profileImage);
+  customer.profileImage = null;
+
+  await UserRepo.save(customer);
+
+  auditLogger.info("Admin deleted customer profile image", {
+    adminId: req.user?.userId,
+    customerId: customer.id,
+  });
+
+  return responseHandler.success(res, { profileImage: null }, "Profile image deleted successfully!");
+});
+
+const toggleCustomerStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const customer = await UserRepo.findOne({
-    where: { id, isActive: true },
+    where: { id },
     relations: ["role"],
   });
 
@@ -272,7 +300,7 @@ export const toggleCustomerStatus = asyncHandler(async (req, res) => {
   }
 
   if (customer.role?.type !== 2) {
-    return responseHandler.error(res, "User is not a customer", 400);
+    return responseHandler.notFound(res, "Customer not found");
   }
 
   customer.isActive = !customer.isActive;
@@ -303,7 +331,8 @@ export default {
   getCustomerById,
   createCustomer,
   updateCustomer,
-  deleteCustomer,
+  uploadCustomerImage,
+  deleteCustomerImage,
   toggleCustomerStatus,
 };
 

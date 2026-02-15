@@ -59,7 +59,7 @@ const userSchemas = {
       .optional()
       .allow(null, "")
       .messages({
-        "string.pattern.base": "Please provide a valid Pakistan phone number (03XX-XXXXXXX or +923XX-XXXXXXX)",
+        "string.pattern.base": "Please provide a valid phone number",
       }),
 
     profileImage: Joi.string()
@@ -84,7 +84,7 @@ const userSchemas = {
       .optional()
       .allow(null, "")
       .messages({
-        "string.pattern.base": "Please provide a valid Pakistan phone number (03XX-XXXXXXX or +923XX-XXXXXXX)",
+        "string.pattern.base": "Please provide a valid phone number",
       }),
 
     dateOfBirth: Joi.date()
@@ -289,9 +289,12 @@ const userSchemas = {
           password: Joi.string().min(8).max(128).required(),
           phoneNumber: Joi.string()
             .trim()
-            .pattern(/^\+?[1-9]\d{1,14}$/)
+            .pattern(/^(\+92|0)?[3][0-9]{2}[0-9]{7}$/)
             .optional()
-            .allow(null, ""),
+            .allow(null, "")
+            .messages({
+              "string.pattern.base": "Please provide a valid phone number",
+            }),
           profileImage: Joi.string().trim().uri().optional().allow(null, ""),
           isActive: Joi.boolean().default(true).optional(),
         }),
@@ -339,7 +342,7 @@ const adminCustomerSchemas = {
       .optional()
       .allow(null, "")
       .messages({
-        "string.pattern.base": "Please provide a valid Pakistan phone number (03XX-XXXXXXX or +923XX-XXXXXXX)",
+        "string.pattern.base": "Please provide a valid phone number",
       }),
   }),
 
@@ -354,22 +357,7 @@ const adminCustomerSchemas = {
       .optional()
       .allow(null, "")
       .messages({
-        "string.pattern.base": "Please provide a valid Pakistan phone number (03XX-XXXXXXX or +923XX-XXXXXXX)",
-      }),
-    password: Joi.string()
-      .min(8)
-      .max(128)
-      .pattern(
-        new RegExp(
-          "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]",
-        ),
-      )
-      .optional()
-      .messages({
-        "string.min": "Password must be at least 8 characters long",
-        "string.max": "Password cannot exceed 128 characters",
-        "string.pattern.base":
-          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+        "string.pattern.base": "Please provide a valid phone number",
       }),
     isActive: Joi.boolean().optional(),
   }).min(1),

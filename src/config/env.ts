@@ -65,6 +65,10 @@ const config = {
 
   // CORS Configuration
   ORIGIN_URL: process.env.ORIGIN_URL,
+  ALLOWED_ORIGINS: (process.env.ALLOWED_ORIGINS || process.env.ORIGIN_URL || "")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean),
   SERVER_URL: process.env.SERVER_URL,
 
   // AWS Configuration

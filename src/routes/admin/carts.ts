@@ -1,15 +1,12 @@
 import { Router } from "express";
-import { validateLoginSession } from "@/middleware/validateLoginSession";
-import { requireAdmin } from "@/middleware/roles-auth";
-import * as cartController from "@/controllers/admin/carts";
+import cartCtrl from "@/controllers/admin/carts";
 
 const router = Router();
 
-router.use(validateLoginSession);
-router.use(requireAdmin);
+// Auth + role middleware applied by admin/index.ts
 
-router.get("/", cartController.listCarts);
-router.get("/:id", cartController.getCartById);
-router.delete("/:id", cartController.deleteCart);
+router.get("/", cartCtrl.listCarts);
+router.get("/:id", cartCtrl.getCartById);
+router.delete("/:id", cartCtrl.deleteCart);
 
 export default router;

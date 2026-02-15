@@ -3,27 +3,23 @@ import Joi from "joi";
 export class CreateHeroSectionDTO {
   title!: string;
   description!: string;
-  imageUrl!: string;
   imageAlt?: string;
   cta!: {
     text: string;
     link: string;
   };
   displayOrder!: number;
-  isActive?: boolean;
 }
 
 export class UpdateHeroSectionDTO {
   title?: string;
   description?: string;
-  imageUrl?: string;
   imageAlt?: string;
   cta?: {
     text: string;
     link: string;
   };
   displayOrder?: number;
-  isActive?: boolean;
 }
 
 const heroSectionSchemas = {
@@ -44,13 +40,6 @@ const heroSectionSchemas = {
       .messages({
         "string.empty": "Description is required",
         "string.min": "Description must be at least 10 characters",
-      }),
-
-    imageUrl: Joi.string()
-      .uri()
-      .required()
-      .messages({
-        "string.uri": "Valid image URL is required",
       }),
 
     imageAlt: Joi.string()
@@ -76,10 +65,6 @@ const heroSectionSchemas = {
       .min(0)
       .required()
       .messages({ "number.base": "Display order must be a number" }),
-
-    isActive: Joi.boolean()
-      .default(true)
-      .optional(),
   }),
 
   update: Joi.object({
@@ -91,10 +76,6 @@ const heroSectionSchemas = {
     description: Joi.string()
       .min(10)
       .max(1000)
-      .optional(),
-
-    imageUrl: Joi.string()
-      .uri()
       .optional(),
 
     imageAlt: Joi.string()
@@ -115,9 +96,6 @@ const heroSectionSchemas = {
     displayOrder: Joi.number()
       .integer()
       .min(0)
-      .optional(),
-
-    isActive: Joi.boolean()
       .optional(),
   })
     .min(1)

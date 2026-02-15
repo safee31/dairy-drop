@@ -126,15 +126,15 @@ export const verifyAccessToken = async (token: string) => {
   });
 
   if (!user) {
-    throw customError(AuthErrors.USER_NOT_FOUND, 401);
+    throw customError(AuthErrors.USER_NOT_FOUND.message, 401);
   }
 
   if (!user.isActive) {
-    throw customError(AuthErrors.ACCOUNT_INACTIVE, 401);
+    throw customError(AuthErrors.ACCOUNT_INACTIVE.message, 403);
   }
 
   if (!user.isVerified) {
-    throw customError(AuthErrors.EMAIL_NOT_VERIFIED, 401);
+    throw customError(AuthErrors.EMAIL_NOT_VERIFIED.message, 403);
   }
 
   // Build response with user data

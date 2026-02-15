@@ -1,30 +1,32 @@
 import { Request, Response, NextFunction } from "express";
-import { AppError } from "@/middleware/errorHandler";
 import { AuthErrors } from "@/utils/customError";
+import { responseHandler } from "@/middleware/responseHandler";
 
+/**
+ * Role-based access control middleware.
+ * Accepts a single role type or array of role types (numbers).
+ * Must be used after validateLoginSession (requires req.user to be set).
+ */
+export const requireRole = (allowedTypes: number | number[]) => {
+  const types = Array.isArray(allowedTypes) ? allowedTypes : [allowedTypes];
 
-// Role-based access control
-export const requireRole = (allowedRoles: string[]) => {
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as any;
 
     if (!user || !user.role) {
-      return next(new AppError(AuthErrors.INSUFFICIENT_PERMISSIONS, 403));
+      return responseHandler.forbidden(res, AuthErrors.INSUFFICIENT_PERMISSIONS);
     }
 
-    const userRole = (user?.role as { type: number })?.type;
-
-    if (!allowedRoles.includes(userRole.toString())) {
-      return next(new AppError(AuthErrors.INSUFFICIENT_PERMISSIONS, 403));
+    if (!types.includes(user.role.type)) {
+      return responseHandler.forbidden(res, AuthErrors.INSUFFICIENT_PERMISSIONS);
     }
 
     next();
   };
 };
 
-export const requireAdmin = requireRole(["1"]);
-export const requireCustomer = requireRole(["2"]);
-
+export const requireAdmin = requireRole(1);
+export const requireCustomer = requireRole(2);
 
 export default {
   requireRole,

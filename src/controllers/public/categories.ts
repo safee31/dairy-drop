@@ -3,7 +3,7 @@ import { responseHandler } from "@/middleware/responseHandler";
 import { CategoryRepo } from "@/models/repositories";
 
 // Public category listing with hierarchy (for filters)
-export const listCategories = asyncHandler(async (req, res) => {
+const listCategories = asyncHandler(async (req, res) => {
   const {
     page = 1,
     limit = 100,
@@ -54,7 +54,7 @@ export const listCategories = asyncHandler(async (req, res) => {
 });
 
 // Get single category with full hierarchy
-export const getCategory = asyncHandler(async (req, res) => {
+const getCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const category = await CategoryRepo.createQueryBuilder("category")

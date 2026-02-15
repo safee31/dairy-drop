@@ -10,8 +10,14 @@ export async function generateOrderNumber(): Promise<number> {
     .select("MAX(order.orderNumber)", "maxOrderNumber")
     .getRawOne();
 
-  const lastOrderNumber = lastOrder?.maxOrderNumber || 0;
-  return lastOrderNumber + 1;
+  const lastOrderNumber = Number(lastOrder?.maxOrderNumber) || 0;
+  const nextNumber = lastOrderNumber + 1;
+
+  if (nextNumber > 999999) {
+    throw new Error("Order number limit reached (999999). Contact support.");
+  }
+
+  return nextNumber;
 }
 
 

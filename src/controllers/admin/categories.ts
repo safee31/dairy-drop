@@ -623,6 +623,59 @@ const createCategory = asyncHandler(async (req, res) => {
 
   return responseHandler.success(res, item, "Category Level 2 status toggled successfully");
 });
+
+const listCategoryLevel2Hierarchy = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 50,
+    search = "",
+    isActive = "true",
+    sortBy = "displayOrder",
+    order = "ASC",
+  } = req.query;
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const queryBuilder = CategoryLevel2Repo.createQueryBuilder("level2")
+    .leftJoinAndSelect("level2.categoryLevel1", "level1")
+    .leftJoinAndSelect("level1.category", "rootCategory");
+
+  if (search) {
+    queryBuilder.andWhere(
+      "(level2.name ILIKE :search OR level1.name ILIKE :search OR rootCategory.name ILIKE :search)",
+      { search: `%${search}%` },
+    );
+  }
+
+  if (isActive !== undefined && isActive !== "") {
+    queryBuilder.andWhere("level2.isActive = :isActive", {
+      isActive: String(isActive) === "true",
+    });
+  }
+
+  const total = await queryBuilder.getCount();
+
+  const data = await queryBuilder
+    .orderBy(`level2.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC")
+    .skip(skip)
+    .take(Number(limit))
+    .getMany();
+
+  return responseHandler.success(
+    res,
+    {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / Number(limit)),
+      },
+    },
+    "Category Level 2 hierarchy retrieved successfully",
+  );
+});
+
 export default {
   getAllCategories,
   getCategoryById,
@@ -642,4 +695,5 @@ export default {
   updateCategoryLevel2,
   deleteCategoryLevel2,
   toggleCategoryLevel2Status,
+  listCategoryLevel2Hierarchy,
 };

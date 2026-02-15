@@ -42,7 +42,7 @@ const addressSchemas = {
 
     phoneNumber: Joi.string()
       .trim()
-      .pattern(/^\+?[1-9]\d{1,14}$/)
+      .pattern(/^(\+92|0)?[3][0-9]{2}[0-9]{7}$/)
       .optional()
       .allow(null, "")
       .messages({
@@ -102,7 +102,7 @@ const addressSchemas = {
 
     phoneNumber: Joi.string()
       .trim()
-      .pattern(/^\+?[1-9]\d{1,14}$/)
+      .pattern(/^(\+92|0)?[3][0-9]{2}[0-9]{7}$/)
       .optional()
       .allow(null, "")
       .messages({

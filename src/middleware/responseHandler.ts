@@ -20,48 +20,31 @@ export const responseHandler = {
 
   /**
    * Handles error responses.
-   * @param {Object} res - Express response object
-   * @param {string} message - Error message (default: "An error occurred")
-   * @param {number} status - HTTP status code (default: 500)
-   * @param {Object|null} details - Additional error details (optional)
+   * Accepts either a plain string or an AuthError object { code, message }
    */
   error: (
     res: Response,
-    message: string = "An error occurred",
+    messageOrError: string | { code: string; message: string } = "An error occurred",
     status: number = 500,
     details: Record<string, unknown> | null = null,
   ) => {
+    const message = typeof messageOrError === "object" ? messageOrError.message : messageOrError;
+    const code = typeof messageOrError === "object" ? messageOrError.code : undefined;
     const response: Record<string, unknown> = { success: false, message };
-    if (details) {
-      response.details = details;
-    }
+    if (code) response.code = code;
+    if (details) response.details = details;
     res.status(status).json(response);
   },
 
-  /**
-   * Handles 404 Not Found responses.
-   * @param {Object} res - Express response object
-   * @param {string} message - Not found message (default: "Resource not found")
-   */
-  notFound: (res: Response, message: string = "Resource not found") => {
-    responseHandler.error(res, message, 404);
+  notFound: (res: Response, messageOrError: string | { code: string; message: string } = "Resource not found") => {
+    responseHandler.error(res, messageOrError, 404);
   },
 
-  /**
-   * Handles 401 Unauthorized responses.
-   * @param {Object} res - Express response object
-   * @param {string} message - Unauthorized message (default: "Unauthorized access")
-   */
-  unauthorized: (res: Response, message: string = "Unauthorized access") => {
-    responseHandler.error(res, message, 401);
+  unauthorized: (res: Response, messageOrError: string | { code: string; message: string } = "Unauthorized access") => {
+    responseHandler.error(res, messageOrError, 401);
   },
 
-  /**
-   * Handles 403 Forbidden responses.
-   * @param {Object} res - Express response object
-   * @param {string} message - Forbidden message (default: "Access forbidden")
-   */
-  forbidden: (res: Response, message: string = "Access forbidden") => {
-    responseHandler.error(res, message, 403);
+  forbidden: (res: Response, messageOrError: string | { code: string; message: string } = "Access forbidden") => {
+    responseHandler.error(res, messageOrError, 403);
   },
 };

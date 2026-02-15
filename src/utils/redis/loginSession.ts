@@ -153,9 +153,23 @@ const login = async (
   bucket.sessions = bucket.sessions || {};
   const existingSessionIds = Object.keys(bucket.sessions || {}).filter((sid) => !bucket.sessions[sid].revoked);
 
-  if (existingSessionIds.length >= config.MAX_SESSIONS_PER_USER) {
-    existingSessionIds.sort((a, b) => bucket.sessions[a].createdAt - bucket.sessions[b].createdAt);
-    const oldestSessionId = existingSessionIds[0];
+  // Revoke stale session from same device (IP + userAgent) to prevent orphaned sessions
+  // This handles the case where user manually deletes cookie and re-logs in
+  for (const sid of existingSessionIds) {
+    const s = bucket.sessions[sid];
+    if (s.ip === ip && s.userAgent === userAgent) {
+      await revokeSession(sid);
+    }
+  }
+
+  // Re-read bucket after potential revocations
+  const updatedBucket = await readUserBucket(normalizedEmail);
+  updatedBucket.sessions = updatedBucket.sessions || {};
+  const activeSessionIds = Object.keys(updatedBucket.sessions).filter((sid) => !updatedBucket.sessions[sid].revoked);
+
+  if (activeSessionIds.length >= config.MAX_SESSIONS_PER_USER) {
+    activeSessionIds.sort((a, b) => updatedBucket.sessions[a].createdAt - updatedBucket.sessions[b].createdAt);
+    const oldestSessionId = activeSessionIds[0];
     await revokeSession(oldestSessionId);
   }
 

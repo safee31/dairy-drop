@@ -39,6 +39,15 @@ const cartItemSchemas = {
         "number.max": "Maximum quantity is 50",
       }),
   }),
+
+  toggleSelect: Joi.object({
+    isSelected: Joi.boolean()
+      .required()
+      .messages({
+        "any.required": "isSelected is required",
+        "boolean.base": "isSelected must be a boolean",
+      }),
+  }),
 };
 
 export default cartItemSchemas;

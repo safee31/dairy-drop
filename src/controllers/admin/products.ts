@@ -18,7 +18,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
 
     const skip = (Number(page) - 1) * Number(limit);
 
-    const baseQuery = ProductRepo.createQueryBuilder("product")
+    const queryBuilder = ProductRepo.createQueryBuilder("product")
         .leftJoinAndSelect("product.category", "category")
         .leftJoinAndSelect(
             "product.images",
@@ -28,46 +28,45 @@ const getAllProducts = asyncHandler(async (req, res) => {
         );
 
     if (search) {
-        baseQuery.andWhere(
+        queryBuilder.andWhere(
             "(product.name ILIKE :search OR product.sku ILIKE :search OR product.brand ILIKE :search)",
             { search: `%${search}%` },
         );
     }
 
     if (categoryId) {
-        baseQuery.andWhere("product.categoryId = :categoryId", { categoryId });
+        queryBuilder.andWhere("product.categoryId = :categoryId", { categoryId });
     }
 
     if (isActive !== undefined) {
-        baseQuery.andWhere("product.isActive = :isActive", {
+        queryBuilder.andWhere("product.isActive = :isActive", {
             isActive: isActive === "true",
         });
     }
 
-    const [products, total] = await Promise.all([
-        baseQuery
-            .select([
-                "product.id",
-                "product.name",
-                "product.brand",
-                "product.price",
-                "product.salePrice",
-                "product.isActive",
-                "product.isDeleted",
-                "product.createdAt",
-                "category.id",
-                "category.name",
-                "images.id",
-                "images.imageUrl",
-                "images.isPrimary",
-                "images.displayOrder",
-            ])
-            .orderBy(`product.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC")
-            .skip(skip)
-            .take(Number(limit))
-            .getMany(),
-        baseQuery.getCount(),
-    ]);
+    const total = await queryBuilder.getCount();
+
+    const products = await queryBuilder
+        .select([
+            "product.id",
+            "product.name",
+            "product.brand",
+            "product.price",
+            "product.salePrice",
+            "product.isActive",
+            "product.isDeleted",
+            "product.createdAt",
+            "category.id",
+            "category.name",
+            "images.id",
+            "images.imageUrl",
+            "images.isPrimary",
+            "images.displayOrder",
+        ])
+        .orderBy(`product.${String(sortBy)}`, String(order).toUpperCase() as "ASC" | "DESC")
+        .skip(skip)
+        .take(Number(limit))
+        .getMany();
 
     return responseHandler.success(
         res,

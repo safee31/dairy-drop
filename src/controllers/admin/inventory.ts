@@ -8,7 +8,7 @@ import { CreateInventoryHistory } from "@/models/inventoryHistory";
 // INVENTORY CRUD OPERATIONS
 // ============================================
 
-export const getAllInventory = asyncHandler(async (req, res) => {
+const getAllInventory = asyncHandler(async (req, res) => {
     const {
         page = 1,
         limit = 10,
@@ -71,7 +71,7 @@ export const getAllInventory = asyncHandler(async (req, res) => {
     );
 });
 
-export const getInventoryById = asyncHandler(async (req, res) => {
+const getInventoryById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     const inventory = await InventoryRepo.findOne({
@@ -86,9 +86,9 @@ export const getInventoryById = asyncHandler(async (req, res) => {
     return responseHandler.success(res, inventory, "Inventory retrieved successfully");
 });
 
-export const updateInventoryStock = asyncHandler(async (req, res) => {
+const adjustInventoryStock = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { stockQuantity, reorderLevel, notes } = req.body;
+    const { quantityChange, operationType, reorderLevel, referenceId, notes } = req.body;
 
     const inventory = await InventoryRepo.findOne({
         where: { id },
@@ -101,9 +101,28 @@ export const updateInventoryStock = asyncHandler(async (req, res) => {
 
     const previousQuantity = inventory.stockQuantity;
 
-    // Update stock quantity if provided
-    if (stockQuantity !== undefined) {
-        inventory.stockQuantity = stockQuantity;
+    // Adjust stock quantity if provided
+    if (quantityChange) {
+        const newQuantity = previousQuantity + quantityChange;
+
+        if (newQuantity < 0) {
+            return responseHandler.error(res, "Adjustment would result in negative stock", 400);
+        }
+
+        inventory.stockQuantity = newQuantity;
+        inventory.inStock = newQuantity > 0;
+
+        // Record adjustment in history
+        const history = InventoryHistoryRepo.create({
+            inventoryId: inventory.id,
+            quantityChange,
+            newStockQuantity: newQuantity,
+            type: operationType,
+            referenceId: referenceId || null,
+            notes: notes || `${operationType} adjustment`,
+        } as CreateInventoryHistory);
+
+        await InventoryHistoryRepo.save(history);
     }
 
     // Update reorder level if provided
@@ -111,93 +130,16 @@ export const updateInventoryStock = asyncHandler(async (req, res) => {
         inventory.reorderLevel = reorderLevel;
     }
 
-    // Update in stock status
-    inventory.inStock = inventory.stockQuantity > 0;
-
     await InventoryRepo.save(inventory);
-
-    // Record history if stock changed
-    if (stockQuantity !== undefined && stockQuantity !== previousQuantity) {
-        const quantityChange = stockQuantity - previousQuantity;
-        
-        const history = InventoryHistoryRepo.create({
-            inventoryId: inventory.id,
-            quantityChange,
-            newStockQuantity: stockQuantity,
-            type: quantityChange > 0 ? "purchase" : "sale",
-            notes: notes || `Stock ${quantityChange > 0 ? "increased" : "decreased"} by ${Math.abs(quantityChange)}`,
-        } as CreateInventoryHistory);
-
-        await InventoryHistoryRepo.save(history);
-    }
-
-    auditLogger.info("Inventory stock updated", {
-        inventoryId: inventory.id,
-        productId: inventory.productId,
-        previousQuantity,
-        newQuantity: inventory.stockQuantity,
-    });
-
-    return responseHandler.success(
-        res,
-        await getInventoryDetails(id),
-        "Inventory stock updated successfully",
-    );
-});
-
-export const adjustInventoryStock = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { quantityChange, operationType, referenceId, notes } = req.body;
-
-    if (!quantityChange) {
-        return responseHandler.error(res, "Quantity change is required", 400);
-    }
-
-    if (!["purchase", "sale", "return", "adjustment"].includes(operationType)) {
-        return responseHandler.error(res, "Invalid operation type", 400);
-    }
-
-    const inventory = await InventoryRepo.findOne({
-        where: { id },
-        relations: ["product"],
-    });
-
-    if (!inventory) {
-        return responseHandler.error(res, "Inventory not found", 404);
-    }
-
-    const previousQuantity = inventory.stockQuantity;
-    const newQuantity = previousQuantity + quantityChange;
-
-    // Prevent negative stock
-    if (newQuantity < 0) {
-        return responseHandler.error(res, "Adjustment would result in negative stock", 400);
-    }
-
-    inventory.stockQuantity = newQuantity;
-    inventory.inStock = newQuantity > 0;
-
-    await InventoryRepo.save(inventory);
-
-    // Record adjustment in history
-    const history = InventoryHistoryRepo.create({
-        inventoryId: inventory.id,
-        quantityChange,
-        newStockQuantity: newQuantity,
-        type: operationType,
-        referenceId: referenceId || null,
-        notes: notes || `${operationType} adjustment`,
-    } as CreateInventoryHistory);
-
-    await InventoryHistoryRepo.save(history);
 
     auditLogger.info("Inventory adjusted", {
         inventoryId: inventory.id,
         productId: inventory.productId,
-        operationType,
-        quantityChange,
+        operationType: operationType || null,
+        quantityChange: quantityChange || 0,
+        reorderLevel: reorderLevel ?? inventory.reorderLevel,
         previousQuantity,
-        newQuantity,
+        newQuantity: inventory.stockQuantity,
     });
 
     return responseHandler.success(
@@ -207,9 +149,9 @@ export const adjustInventoryStock = asyncHandler(async (req, res) => {
     );
 });
 
-export const getInventoryHistory = asyncHandler(async (req, res) => {
+const getInventoryHistory = asyncHandler(async (req, res) => {
     const { inventoryId } = req.params;
-    const { page = 1, limit = 20, type, sortBy = "createdAt", order = "DESC" } = req.query;
+    const { page = 1, limit = 20, search = "", type, sortBy = "createdAt", order = "DESC" } = req.query;
 
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -222,6 +164,10 @@ export const getInventoryHistory = asyncHandler(async (req, res) => {
 
     const queryBuilder = InventoryHistoryRepo.createQueryBuilder("history")
         .where("history.inventoryId = :inventoryId", { inventoryId });
+
+    if (search) {
+        queryBuilder.andWhere("history.notes ILIKE :search", { search: `%${search}%` });
+    }
 
     if (type) {
         queryBuilder.andWhere("history.type = :type", { type });
@@ -250,8 +196,8 @@ export const getInventoryHistory = asyncHandler(async (req, res) => {
     );
 });
 
-export const getLowStockProducts = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, sortBy = "stockQuantity", order = "ASC" } = req.query;
+const getLowStockProducts = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, search = "", sortBy = "stockQuantity", order = "ASC" } = req.query;
 
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -261,7 +207,15 @@ export const getLowStockProducts = asyncHandler(async (req, res) => {
         .leftJoinAndSelect("categoryLevel2.categoryLevel1", "categoryLevel1")
         .leftJoinAndSelect("categoryLevel1.category", "category")
         .where("inventory.stockQuantity <= inventory.reorderLevel")
-        .andWhere("product.isActive = :isActive", { isActive: true });
+        .andWhere("product.isActive = :isActive", { isActive: true })
+        .andWhere("product.isDeleted = :isDeleted", { isDeleted: false });
+
+    if (search) {
+        queryBuilder.andWhere(
+            "(product.name ILIKE :search OR product.sku ILIKE :search OR product.brand ILIKE :search)",
+            { search: `%${search}%` },
+        );
+    }
 
     const total = await queryBuilder.getCount();
 
@@ -286,7 +240,7 @@ export const getLowStockProducts = asyncHandler(async (req, res) => {
     );
 });
 
-export const getInventorySummary = asyncHandler(async (_req, res) => {
+const getInventorySummary = asyncHandler(async (_req, res) => {
     const totalProducts = await InventoryRepo.count();
 
     const lowStockCount = await InventoryRepo.createQueryBuilder("inventory")
@@ -340,7 +294,6 @@ async function getInventoryDetails(inventoryId: string) {
 export default {
     getAllInventory,
     getInventoryById,
-    updateInventoryStock,
     adjustInventoryStock,
     getInventoryHistory,
     getLowStockProducts,

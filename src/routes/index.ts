@@ -1,24 +1,19 @@
 import { Router } from "express";
-import authRoutes from "./auth";
-import profileRoutes from "./profile";
-import addressRoutes from "./addresses";
+import customerRoutes from "./customer";
 import adminRoutes from "./admin";
 import productsRoutes from "./products";
-import cartsRoutes from "./carts";
-import ordersRoutes from "./orders";
 import categoriesRoutes from "./categories";
 import heroSectionsRoutes from "./heroSections";
 
 const router = Router();
 
-router.use("/auth", authRoutes);
-router.use("/profile", profileRoutes);
-router.use("/addresses", addressRoutes);
+// Role-based route groups (auth + protected routes aggregated inside)
+router.use("/customer", customerRoutes);
 router.use("/admin", adminRoutes);
+
+// Public routes (no auth required)
 router.use("/products", productsRoutes);
 router.use("/categories", categoriesRoutes);
 router.use("/hero-sections", heroSectionsRoutes);
-router.use("/carts", cartsRoutes);
-router.use("/orders", ordersRoutes);
 
 export default router;

@@ -1,10 +1,8 @@
-// src/config/database.ts
 import "reflect-metadata";
 import { DataSource, DataSourceOptions } from "typeorm";
 import config from "./env";
 import { logger } from "@/utils/logger";
 
-// Import entities
 import { User } from "@/models/user";
 import { Role } from "@/models/role";
 import { Address } from "@/models/address";
@@ -21,9 +19,10 @@ import { Order } from "@/models/order";
 import OrderLineItem from "@/models/order/orderlineitem.entity";
 import OrderDeliveryHistory from "@/models/order/orderdeliveryhistory.entity";
 import { HeroSection } from "@/models/heroSection";
+import { ProductReview } from "@/models/productReview";
+import ReviewResponse from "@/models/productReview/reviewresponse.entity";
 import { OrderSubscriber } from "@/models/order/order.subscriber";
 
-// Redis cache configuration for TypeORM
 const getCacheConfig = () => {
   if (config.REDIS_URL || (config.REDIS_HOST && config.REDIS_PORT)) {
     const redisUrl = config.REDIS_URL || `redis://${config.REDIS_HOST}:${config.REDIS_PORT}`;
@@ -35,41 +34,35 @@ const getCacheConfig = () => {
           reconnectStrategy: (retries: number) => Math.min(retries * 50, 500),
         },
       },
-      duration: 30000, // Cache for 30 seconds
+      duration: 30000,
     };
   }
-  return false; // Disable caching if Redis not available
+  return false;
 };
 
-// Common configuration
 const baseConfig: DataSourceOptions = {
   type: "postgres",
   url: config.DATABASE_URL,
-  entities: [User, Role, Address, Category, CategoryLevel1, CategoryLevel2, Product, ProductImage, Inventory, InventoryHistory, Cart, CartItem, Order, OrderLineItem, OrderDeliveryHistory, HeroSection],
+  entities: [User, Role, Address, Category, CategoryLevel1, CategoryLevel2, Product, ProductImage, Inventory, InventoryHistory, Cart, CartItem, Order, OrderLineItem, OrderDeliveryHistory, HeroSection, ProductReview, ReviewResponse],
   migrations: ["src/migrations/*.ts"],
   subscribers: [OrderSubscriber],
-  // Performance optimizations
   cache: getCacheConfig(),
-  // Logging: include queries and schema in development for visibility
   logging: config.IN_PROD ? ["error", "warn"] : ["error", "warn", "query", "schema"],
   logger: config.IN_PROD ? "file" : "advanced-console",
-  maxQueryExecutionTime: 1000, // Log queries taking longer than 1 second
+  maxQueryExecutionTime: 1000,
 };
 
-// Create DataSource for application (with synchronize based on environment)
 export const AppDataSource = new DataSource({
   ...baseConfig,
   synchronize: config.IN_PROD ? false : true,
 });
 
-// Create DataSource for CLI (with synchronize always false)
 export const CliDataSource = new DataSource({
   ...baseConfig,
   synchronize: false,
   logging: ["error", "warn", "query", "schema"],
 });
 
-// Database connection helpers
 export const connectDatabase = async (): Promise<void> => {
   try {
     if (!AppDataSource.isInitialized) {
@@ -93,6 +86,124 @@ export const disconnectDatabase = async (): Promise<void> => {
   } catch (error) {
     logger.error("Database disconnection failed", { error });
   }
+};
+
+export const transactionUtils = {
+  /**
+   * Execute a callback function within a database transaction
+   * Automatically handles connection, transaction lifecycle, and error handling
+   * 
+   * @param callback - Async function that receives queryRunner and manager
+   * @returns Result of the callback function
+   * 
+   * @example
+   * const order = await transactionUtils.executeInTransaction(async (manager) => {
+   *   const cart = await manager.findOne(Cart, { where: { userId } });
+   *   const order = manager.create(Order, { userId });
+   *   await manager.save(order);
+   *   return order;
+   * });
+   */
+  executeInTransaction: async <T>(
+    callback: (manager: any) => Promise<T>
+  ): Promise<T> => {
+    const queryRunner = AppDataSource.createQueryRunner();
+    
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      
+      const result = await callback(queryRunner.manager);
+      
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      logger.error("Transaction failed and rolled back", { error });
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  },
+
+  /**
+   * Execute a callback with full queryRunner access for advanced transaction scenarios
+   * Provides queryRunner object for direct control
+   * 
+   * @param callback - Async function that receives full queryRunner object
+   * @returns Result of the callback function
+   * 
+   * @example
+   * const result = await transactionUtils.withQueryRunner(async (queryRunner) => {
+   *   const manager = queryRunner.manager;
+   *   const cart = await manager.findOne(Cart, { where: { userId } });
+   *   // ... perform operations
+   *   return { success: true };
+   * });
+   */
+  withQueryRunner: async <T>(
+    callback: (queryRunner: any) => Promise<T>
+  ): Promise<T> => {
+    const queryRunner = AppDataSource.createQueryRunner();
+    
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      
+      const result = await callback(queryRunner);
+      
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      logger.error("Transaction failed and rolled back", { error });
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  },
+
+  /**
+   * Get a new query runner for manual transaction management
+   * Use this only when you need manual control over transaction lifecycle
+   * Remember to call release() after use
+   * 
+   * @returns QueryRunner instance ready for use
+   * 
+   * @example
+   * const queryRunner = await transactionUtils.getQueryRunner();
+   * try {
+   *   await queryRunner.startTransaction();
+   *   // ... perform operations
+   *   await queryRunner.commitTransaction();
+   * } catch (error) {
+   *   await queryRunner.rollbackTransaction();
+   * } finally {
+   *   await queryRunner.release();
+   * }
+   */
+  getQueryRunner: async () => {
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    return queryRunner;
+  },
+
+  /**
+   * Release a query runner safely
+   * 
+   * @param queryRunner - QueryRunner instance to release
+   */
+  releaseQueryRunner: async (queryRunner: any) => {
+    try {
+      if (queryRunner?.isTransactionActive) {
+        await queryRunner.rollbackTransaction();
+      }
+    } catch (error) {
+      logger.error("Error during transaction cleanup", { error });
+    } finally {
+      await queryRunner?.release();
+    }
+  },
 };
 
 export default AppDataSource;

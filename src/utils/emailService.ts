@@ -147,7 +147,7 @@ export const sendOrderStatusNotification = async (
       <p>${statusMessage}</p>
       
       <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-        <p><strong>Order Number:</strong> #${orderNumber.toString().padStart(6, "0")}</p>
+        <p><strong>Order Number:</strong> ${orderNumber.toString().padStart(6, "0")}</p>
         <p><strong>Status:</strong> ${status.toUpperCase()}</p>
         <p><strong>Amount:</strong> Rs ${totalAmount.toLocaleString()}</p>
       </div>
@@ -204,7 +204,7 @@ export const sendDeliveryStatusNotification = async (
       <p>${deliveryMessage}</p>
       
       <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-        <p><strong>Order Number:</strong> #${orderNumber.toString().padStart(6, "0")}</p>
+        <p><strong>Order Number:</strong> ${orderNumber.toString().padStart(6, "0")}</p>
         <p><strong>Delivery Status:</strong> ${deliveryStatus.replace(/_/g, " ").toUpperCase()}</p>
         <p><strong>Amount:</strong> Rs ${totalAmount.toLocaleString()}</p>
       </div>

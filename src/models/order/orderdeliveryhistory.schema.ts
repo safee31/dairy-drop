@@ -24,18 +24,20 @@ const orderDeliveryHistorySchemas = {
         "any.only": `Status must be one of: ${Object.values(OrderStatus).join(", ")}`,
       }),
 
-    deliveryPersonName: Joi.string().min(2).max(100).optional(),
+    deliveryPersonName: Joi.string().min(2).max(100).optional().allow("", null),
 
     deliveryPersonPhone: Joi.string()
-      .pattern(/^[0-9+\-\s()]{10,15}$/)
+      .trim()
+      .pattern(/^(\+92|0)?[3][0-9]{2}[0-9]{7}$/)
       .optional()
+      .allow("", null)
       .messages({
-        "string.pattern.base": "Phone number must be 10-15 digits",
+        "string.pattern.base": "Please provide a valid phone number",
       }),
 
-    location: Joi.string().max(100).optional(),
+    location: Joi.string().max(100).optional().allow("", null),
 
-    notes: Joi.string().max(500).optional(),
+    notes: Joi.string().max(500).optional().allow("", null),
   }),
 
   updatePayment: Joi.object({

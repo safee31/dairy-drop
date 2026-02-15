@@ -42,6 +42,9 @@ export class CartItem {
   @Column("numeric", { precision: 10, scale: 2, transformer: { to: (v) => v, from: (v) => Number(v) } })
   totalPrice!: number;
 
+  @Column("boolean", { default: true })
+  isSelected!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
 

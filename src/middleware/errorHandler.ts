@@ -45,17 +45,15 @@ export const errorHandler = (
   }
 
   if (err.name === "JsonWebTokenError") {
-    const message = "Invalid token";
-    error = new AppError(message, 401);
+    error = new AppError("Your session is invalid. Please log in again.", 401);
   }
 
   if (err.name === "TokenExpiredError") {
-    const message = "Token expired";
-    error = new AppError(message, 401);
+    error = new AppError("Your session has expired. Please log in again.", 401);
   }
 
   const statusCode = error.statusCode || 500;
-  const message = error.message || "Internal Server Error";
+  const message = error.message || "Something went wrong. Please try again later.";
 
   res.status(statusCode).json({
     success: false,
@@ -74,14 +72,14 @@ const handleDatabaseError = (err: QueryFailedError): string => {
   }
 
   if (code === "23503") {
-    return "Invalid reference provided";
+    return "The selected item could not be found.";
   }
 
   if (code === "23502") {
-    return "Required field is missing";
+    return "A required field is missing.";
   }
 
-  return "Database error occurred";
+  return "Something went wrong. Please try again later.";
 };
 
 (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>

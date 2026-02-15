@@ -9,33 +9,31 @@ export class CreateInventoryHistory {
   notes?: string | null;
 }
 
-export interface UpdateInventoryHistory {
-  notes?: string | null;
-}
-
 const inventoryHistorySchemas = {
-  create: Joi.object<CreateInventoryHistory>({
-    inventoryId: Joi.string().uuid().required().messages({
-      "string.guid": "Invalid inventory ID",
-    }),
-    quantityChange: Joi.number().integer().required().messages({
+  adjustStock: Joi.object({
+    quantityChange: Joi.number().integer().not(0).optional().messages({
       "number.base": "Quantity change must be a number",
+      "any.invalid": "Quantity change cannot be zero",
     }),
-    newStockQuantity: Joi.number().integer().min(0).required().messages({
-      "number.base": "New stock quantity must be a non-negative number",
-    }),
-    type: Joi.string()
-      .valid("purchase", "sale", "return", "adjustment", "initial")
-      .required()
+    operationType: Joi.string()
+      .valid("purchase", "sale", "return", "adjustment")
+      .when("quantityChange", {
+        is: Joi.exist(),
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      })
       .messages({
-        "any.only": "Type must be one of: purchase, sale, return, adjustment, initial",
+        "any.only":
+          "Operation type must be one of: purchase, sale, return, adjustment",
       }),
-    referenceId: Joi.string().max(100).optional().allow(null),
-    notes: Joi.string().optional().allow(null),
-  }),
-
-  update: Joi.object<UpdateInventoryHistory>({
-    notes: Joi.string().optional().allow(null),
+    reorderLevel: Joi.number().integer().min(0).optional().messages({
+      "number.base": "Reorder level must be a non-negative number",
+    }),
+    referenceId: Joi.string().max(100).optional().allow(null, ""),
+    notes: Joi.string().optional().allow(null, ""),
+  }).or("quantityChange", "reorderLevel").messages({
+    "object.missing":
+      "At least one of quantity change or reorder level is required",
   }),
 };
 

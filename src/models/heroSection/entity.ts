@@ -20,8 +20,8 @@ export class HeroSection {
   @Column("text")
   description!: string;
 
-  @Column("varchar", { length: 500 })
-  imageUrl!: string;
+  @Column("varchar", { length: 500, nullable: true })
+  imageUrl?: string;
 
   @Column("varchar", { length: 100, nullable: true })
   imageAlt?: string;

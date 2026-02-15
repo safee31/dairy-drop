@@ -66,7 +66,7 @@ export const loginRateLimiter = rateLimiter({
 export const otpRateLimiter = rateLimiter({
   windowMs: 5 * 60 * 1000, // 5 minutes
   maxRequests: config.OTP_RATE_LIMIT_MAX_REQUESTS, // 3 OTP requests per 5 minutes
-  message: "Too many OTP requests. Please try again later.",
+  message: "Too many verification requests. Please try again later.",
   keyGenerator: (req) => `otp:${req.ip}:${req.body.email || "unknown"}`,
 });
 

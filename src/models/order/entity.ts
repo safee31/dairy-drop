@@ -79,11 +79,11 @@ export class Order {
   @Column("jsonb")
   deliveryAddress!: {
     fullName: string;
-    phone: string;
-    addressLine1: string;
-    addressLine2?: string;
+    phoneNumber?: string | null;
+    streetAddress: string;
+    apartment?: string | null;
     city: string;
-    state: string;
+    state?: string | null;
     postalCode: string;
     country: string;
     instructions?: string;

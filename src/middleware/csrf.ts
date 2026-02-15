@@ -4,7 +4,6 @@ import { csrfService, sessionSecurityService, SessionMetadata, securityAuditServ
 import { responseHandler } from "@/middleware/responseHandler";
 import { AuthErrors } from "@/utils/customError";
 
-// Attach CSRF token (reuse per session) in `x-csrf-token` header
 export const csrfTokenMiddleware = async (
   req: Request,
   res: Response,
@@ -16,22 +15,17 @@ export const csrfTokenMiddleware = async (
       return next();
     }
 
-    // Get or generate CSRF token (reuses existing token for the session)
-    // Token expires with session, preventing stale token issues
     const csrfToken = await csrfService.generate(sessionId);
     res.locals.csrfToken = csrfToken;
     
-    // Send CSRF token in response header for frontend to capture
     res.setHeader("x-csrf-token", csrfToken);
 
     next();
   } catch (error) {
-    // Non-critical, continue without CSRF token
     next();
   }
 };
 
-// Validate CSRF token from header or request body
 export const validateCsrfToken = async (
   req: Request,
   res: Response,
@@ -40,36 +34,33 @@ export const validateCsrfToken = async (
   try {
     const sessionId = req.cookies?.sessionId;
     if (!sessionId) {
-      return responseHandler.unauthorized(res, AuthErrors.TOKEN_REQUIRED);
+      return responseHandler.unauthorized(res, AuthErrors.SESSION_REQUIRED);
     }
 
-    // Extract CSRF token from request (header takes precedence, then body)
     const csrfToken = req.headers["x-csrf-token"] || req.body?.csrfToken;
     if (!csrfToken) {
       securityAuditService.log("security:csrf_missing", req.user?.userId || "anonymous", {
         ip: req.ip,
         path: req.path,
       });
-      return responseHandler.error(res, "Missing CSRF token", 403);
+      return responseHandler.forbidden(res, AuthErrors.CSRF_MISSING);
     }
 
-    // Validate token
     const isValid = await csrfService.validate(csrfToken as string, sessionId);
     if (!isValid) {
       securityAuditService.log("security:csrf_invalid", req.user?.userId || "anonymous", {
         ip: req.ip,
         path: req.path,
       });
-      return responseHandler.error(res, "Invalid or expired CSRF token", 403);
+      return responseHandler.forbidden(res, AuthErrors.CSRF_INVALID);
     }
 
     next();
   } catch (error) {
-    return responseHandler.error(res, "CSRF validation failed", 500);
+    return responseHandler.error(res, "Something went wrong. Please refresh the page and try again.", 500);
   }
 };
 
-// Validate session metadata (IP, User-Agent) to detect hijacking
 export const validateSessionMetadata = async (
   req: Request,
   res: Response,
@@ -103,7 +94,7 @@ export const validateSessionMetadata = async (
         path: req.path,
       });
       clearCookie(res, "sessionId");
-      return responseHandler.unauthorized(res, "Session validation failed. Please log in again.");
+      return responseHandler.unauthorized(res, AuthErrors.SESSION_HIJACKED);
     }
 
     next();

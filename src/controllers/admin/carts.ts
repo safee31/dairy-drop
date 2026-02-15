@@ -2,21 +2,51 @@ import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { CartRepo } from "@/models/repositories";
 
-export const listCarts = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 50 } = req.query as any;
+const listCarts = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 50,
+    search = "",
+    sortBy = "createdAt",
+    sortOrder = "desc",
+  } = req.query as any;
   const skip = (Number(page) - 1) * Number(limit);
 
-  const [carts, total] = await CartRepo.findAndCount({
-    relations: ["items", "user"],
-    skip,
-    take: Number(limit),
-    order: { createdAt: "DESC" },
-  });
+  const queryBuilder = CartRepo.createQueryBuilder("cart")
+    .leftJoinAndSelect("cart.items", "items")
+    .leftJoinAndSelect("cart.user", "user");
 
-  return responseHandler.success(res, { carts, pagination: { page: Number(page), limit: Number(limit), total } }, "Carts retrieved");
+  if (search) {
+    queryBuilder.andWhere(
+      "(user.fullName ILIKE :search OR user.email ILIKE :search)",
+      { search: `%${search}%` },
+    );
+  }
+
+  const total = await queryBuilder.getCount();
+
+  const carts = await queryBuilder
+    .orderBy(`cart.${String(sortBy)}`, String(sortOrder).toUpperCase() as "ASC" | "DESC")
+    .skip(skip)
+    .take(Number(limit))
+    .getMany();
+
+  return responseHandler.success(
+    res,
+    {
+      carts,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / Number(limit)),
+      },
+    },
+    "Carts retrieved",
+  );
 });
 
-export const getCartById = asyncHandler(async (req, res) => {
+const getCartById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const cart = await CartRepo.findOne({ where: { id }, relations: ["items", "user"] });
@@ -25,7 +55,7 @@ export const getCartById = asyncHandler(async (req, res) => {
   return responseHandler.success(res, cart, "Cart retrieved");
 });
 
-export const deleteCart = asyncHandler(async (req, res) => {
+const deleteCart = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const cart = await CartRepo.findOne({ where: { id } });

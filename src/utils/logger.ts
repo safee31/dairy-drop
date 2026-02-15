@@ -3,15 +3,12 @@ import path from "path";
 import config from "@/config/env";
 import { AsyncLocalStorage } from "async_hooks";
 
-// AsyncLocalStorage for request-scoped context (no extra package needed)
 export const requestContext = new AsyncLocalStorage<{ requestId: string }>();
 
-// Get current requestId or empty string
 const getRequestId = (): string => {
   return requestContext.getStore()?.requestId || "";
 };
 
-// Production format: clean JSON with only necessary fields
 const prodFormat = winston.format.combine(
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
   winston.format.errors({ stack: false }), // Don't log stack traces in prod
@@ -47,7 +44,7 @@ const devFormat = winston.format.combine(
 
 // Create main logger - minimal logging for scalability
 export const logger = winston.createLogger({
-  level: config.IN_PROD ? "warn" : "info", // Only warn/error in prod, info in dev
+  level: config.IN_PROD ? "warn" : "info",
   format: config.IN_PROD ? prodFormat : devFormat,
   transports: [
     // Errors only - keep logs minimal and scalable

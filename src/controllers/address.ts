@@ -4,7 +4,7 @@ import { securityAuditService } from "@/utils/security";
 import { AddressRepo } from "@/models/repositories";
 import { Address } from "@/models/address";
 
-export const getUserAddresses = asyncHandler(async (req, res) => {
+const getUserAddresses = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
   const { page = 1, limit = 10, isPrimary, isActive, sortBy = "createdAt", sortOrder = "desc" } = req.query;
 
@@ -42,7 +42,7 @@ export const getUserAddresses = asyncHandler(async (req, res) => {
   );
 });
 
-export const getAddressById = asyncHandler(async (req, res) => {
+const getAddressById = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
   const userId = req.user?.userId;
 
@@ -55,7 +55,7 @@ export const getAddressById = asyncHandler(async (req, res) => {
   return responseHandler.success(res, { address }, "Address retrieved successfully");
 });
 
-export const createAddress = asyncHandler(async (req, res) => {
+const createAddress = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
   const { isPrimary, ...addressData } = req.body;
 
@@ -90,7 +90,7 @@ export const createAddress = asyncHandler(async (req, res) => {
   );
 });
 
-export const updateAddress = asyncHandler(async (req, res) => {
+const updateAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
   const userId = req.user?.userId;
   const { isPrimary, ...addressData } = req.body;
@@ -127,7 +127,7 @@ export const updateAddress = asyncHandler(async (req, res) => {
   );
 });
 
-export const deleteAddress = asyncHandler(async (req, res) => {
+const deleteAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
   const userId = req.user?.userId;
 
@@ -170,7 +170,7 @@ export const deleteAddress = asyncHandler(async (req, res) => {
   return responseHandler.success(res, {}, "Address deleted successfully");
 });
 
-export const setPrimaryAddress = asyncHandler(async (req, res) => {
+const setPrimaryAddress = asyncHandler(async (req, res) => {
   const { id } = req.params as { id: string };
   const userId = req.user?.userId;
 

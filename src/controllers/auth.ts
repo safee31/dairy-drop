@@ -13,14 +13,14 @@ import { setKey, getKey, delKey } from "@/utils/redis/redisClient";
 import { normalizeEmail, generateId } from "@/utils/helpers";
 import { csrfService } from "@/utils/security";
 
-export const registerCustomer = asyncHandler(async (req, res) => {
+const registerCustomer = asyncHandler(async (req, res) => {
   const { email, password, fullName, phoneNumber, profileImage } = req.body;
   const normalizedEmail = normalizeEmail(email);
 
   const existingUser = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
 
   if (existingUser) {
-    return responseHandler.error(res, AuthErrors.EMAIL_ALREADY_EXISTS, 400);
+    return responseHandler.error(res, AuthErrors.EMAIL_ALREADY_EXISTS, 409);
   }
 
   let customerRole = await RoleRepo.findOneBy({ name: "Customer", type: 2 });
@@ -151,23 +151,23 @@ export const registerCustomer = asyncHandler(async (req, res) => {
   );
 });
 
-export const verifyEmail = asyncHandler(async (req, res) => {
+const verifyEmail = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
 
   const user = await UserRepo.findOneBy({ email: normalizeEmail(email), isActive: true });
 
   if (!user) {
-    return responseHandler.error(res, "User not found!", 404);
+    return responseHandler.notFound(res, AuthErrors.USER_NOT_FOUND);
   }
 
   if (user.isVerified) {
-    return responseHandler.error(res, "User is already verified!", 404);
+    return responseHandler.error(res, "User is already verified.", 409);
   }
 
   // Verify OTP from Redis
   const isValidOTP = await verifyOTPCode(normalizeEmail(email), otp, "verify");
   if (!isValidOTP) {
-    return responseHandler.error(res, "Invalid or expired OTP", 400);
+    return responseHandler.error(res, AuthErrors.INVALID_OTP, 400);
   }
 
   user.isVerified = true;
@@ -192,7 +192,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   return responseHandler.success(res, {}, "Email verified successfully!");
 });
 
-export const loginCustomer = asyncHandler(async (req, res) => {
+const loginCustomer = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const normalizedEmail = normalizeEmail(email);
 
@@ -202,23 +202,15 @@ export const loginCustomer = asyncHandler(async (req, res) => {
   });
 
   if (!user || !(await authUtils.comparePassword(password, user.password))) {
-    return responseHandler.error(res, AuthErrors.INVALID_CREDENTIALS, 400);
+    return responseHandler.unauthorized(res, AuthErrors.INVALID_CREDENTIALS);
   }
 
   if (!config.ALLOW_UNVERIFIED_LOGIN && !user.isVerified) {
-    return responseHandler.error(
-      res,
-      AuthErrors.EMAIL_NOT_VERIFIED,
-      400,
-    );
+    return responseHandler.forbidden(res, AuthErrors.EMAIL_NOT_VERIFIED);
   }
 
   if (!user.isActive) {
-    return responseHandler.error(
-      res,
-      AuthErrors.ACCOUNT_INACTIVE,
-      400,
-    );
+    return responseHandler.forbidden(res, AuthErrors.ACCOUNT_INACTIVE);
   }
 
   const ip = req.ip || "unknown";
@@ -264,7 +256,10 @@ export const loginCustomer = asyncHandler(async (req, res) => {
     );
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    return responseHandler.error(res, errorMsg, 400);
+    if (errorMsg.includes("Too many login attempts")) {
+      return responseHandler.error(res, AuthErrors.RATE_LIMIT_EXCEEDED, 429);
+    }
+    return responseHandler.error(res, errorMsg, 500);
   }
 });
 
@@ -272,7 +267,7 @@ export const loginCustomer = asyncHandler(async (req, res) => {
  * Validate Session
  * Check if current session is valid (for SPA on page load)
  */
-export const validateSession = asyncHandler(async (req, res) => {
+const validateSession = asyncHandler(async (req, res) => {
   try {
     const sessionId = req.cookies.sessionId as string | undefined;
 
@@ -296,11 +291,11 @@ export const validateSession = asyncHandler(async (req, res) => {
       return res.json({ valid: false });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Validation failed" });
+    return res.status(500).json({ valid: false, error: "Something went wrong. Please try again." });
   }
 });
 // Validate session: returns { valid: boolean, ... }
-export const refreshSession = asyncHandler(async (req, res) => {
+const refreshSession = asyncHandler(async (req, res) => {
   try {
     const sessionId = req.cookies.sessionId as string | undefined;
     const ip = (req.ip || "unknown") as string;
@@ -333,21 +328,21 @@ export const refreshSession = asyncHandler(async (req, res) => {
         return responseHandler.success(res, {}, "Tokens refreshed");
       } catch (err) {
         try { clearCookie(res, "dd_session"); clearCookie(res, "dd_refresh"); } catch { }
-        return responseHandler.unauthorized(res, AuthErrors.INVALID_TOKEN);
+        return responseHandler.unauthorized(res, AuthErrors.REFRESH_TOKEN_INVALID);
       }
     }
 
-    return responseHandler.unauthorized(res, AuthErrors.TOKEN_REQUIRED);
+    return responseHandler.unauthorized(res, AuthErrors.SESSION_REQUIRED);
   } catch (error) {
     try { clearCookie(res, "sessionId"); } catch { }
     try { clearCookie(res, "dd_session"); clearCookie(res, "dd_refresh"); } catch { }
-    return responseHandler.unauthorized(res, AuthErrors.INVALID_TOKEN);
+    return responseHandler.unauthorized(res, AuthErrors.REFRESH_TOKEN_INVALID);
   }
 });
 
 
 // Logout: revoke session and clear session cookie
-export const logout = asyncHandler(async (req, res) => {
+const logout = asyncHandler(async (req, res) => {
   try {
     const sessionId = req.cookies?.sessionId;
     const email = (req.user as any)?.email;
@@ -366,7 +361,7 @@ export const logout = asyncHandler(async (req, res) => {
 });
 
 // Forgot password: send OTP for reset
-export const forgotPassword = asyncHandler(async (req, res) => {
+const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
   const normalizedEmail = normalizeEmail(email);
 
@@ -377,7 +372,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const user = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
 
   if (!user) {
-    return responseHandler.error(res, "User not found!", 404);
+    return responseHandler.notFound(res, AuthErrors.USER_NOT_FOUND);
   }
 
   const resetOTP = generateOTP();
@@ -404,7 +399,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   return responseHandler.success(res, {}, "OTP sent to email for password reset.");
 });
 
-export const resetPassword = asyncHandler(async (req, res) => {
+const resetPassword = asyncHandler(async (req, res) => {
   const { email, newPassword } = req.body;
   const normalizedEmail = normalizeEmail(email);
 
@@ -419,19 +414,19 @@ export const resetPassword = asyncHandler(async (req, res) => {
   // Require a short-lived reset session cookie set by verify-OTP (reset)
   const resetSessionId = req.cookies?.resetSessionId as string | undefined;
   if (!resetSessionId) {
-    return responseHandler.error(res, "Reset session is required. Verify OTP first.", 400);
+    return responseHandler.unauthorized(res, AuthErrors.INVALID_RESET_SESSION);
   }
 
   const user = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
 
   if (!user) {
-    return responseHandler.error(res, "User not found!", 404);
+    return responseHandler.notFound(res, AuthErrors.USER_NOT_FOUND);
   }
 
   // Validate and consume reset session (email-specific)
   const storedEmail = await getKey(`reset_session:${resetSessionId}`);
   if (!storedEmail) {
-    return responseHandler.error(res, "Invalid or expired reset session", 400);
+    return responseHandler.unauthorized(res, AuthErrors.INVALID_RESET_SESSION);
   }
 
   // Validate email matches
@@ -440,7 +435,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
       storedEmail,
       normalizedEmail,
     });
-    return responseHandler.error(res, "Reset session invalid for this email", 400);
+    return responseHandler.unauthorized(res, AuthErrors.INVALID_RESET_SESSION);
   }
 
   // consume reset session
@@ -473,17 +468,17 @@ export const resetPassword = asyncHandler(async (req, res) => {
 });
 
 // Read user profile
-export const readUser = asyncHandler(async (req, res) => {
+const readUser = asyncHandler(async (req, res) => {
   const sessionUser = (req.user as any);
 
   if (!sessionUser || !sessionUser.userId) {
-    return responseHandler.unauthorized(res, AuthErrors.TOKEN_REQUIRED);
+    return responseHandler.unauthorized(res, AuthErrors.SESSION_REQUIRED);
   }
 
   const dbUser = await UserRepo.findOne({ where: { id: sessionUser.userId, isActive: true }, relations: ["role"] });
 
   if (!dbUser) {
-    return responseHandler.unauthorized(res, AuthErrors.USER_NOT_FOUND);
+    return responseHandler.notFound(res, AuthErrors.USER_NOT_FOUND);
   }
 
   return responseHandler.success(
@@ -507,22 +502,22 @@ export const readUser = asyncHandler(async (req, res) => {
 });
 
 // Send OTP for verification or reset
-export const sendOTP = asyncHandler(async (req, res) => {
+const sendOTP = asyncHandler(async (req, res) => {
   const { email, otpType } = req.body;
   const normalizedEmail = normalizeEmail(email);
 
   if (!email || !otpType) {
-    return responseHandler.error(res, "Email and OTP type are required!", 400);
+    return responseHandler.error(res, "Email and verification type are required.", 400);
   }
 
   if (!["verify", "reset"].includes(otpType)) {
-    return responseHandler.error(res, "Invalid OTP type!", 400);
+    return responseHandler.error(res, "Invalid verification type.", 400);
   }
 
   const user = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
 
   if (!user) {
-    return responseHandler.error(res, "User not found!", 404);
+    return responseHandler.notFound(res, AuthErrors.USER_NOT_FOUND);
   }
 
   // Generate OTP and store in Redis
@@ -539,23 +534,23 @@ export const sendOTP = asyncHandler(async (req, res) => {
   return responseHandler.success(res, {}, "OTP sent to email.");
 });
 
-export const verifyResetOTP = asyncHandler(async (req, res) => {
+const verifyResetOTP = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
   const normalizedEmail = normalizeEmail(email);
 
   if (!email || !otp) {
-    return responseHandler.error(res, "Email and OTP are required!", 400);
+    return responseHandler.error(res, "Email and verification code are required.", 400);
   }
 
   const user = await UserRepo.findOneBy({ email: normalizedEmail, isActive: true });
   if (!user) {
-    return responseHandler.error(res, "User not found!", 404);
+    return responseHandler.notFound(res, AuthErrors.USER_NOT_FOUND);
   }
 
   // Verify OTP from Redis
   const isValidOTP = await verifyOTPCode(normalizedEmail, otp, "reset");
   if (!isValidOTP) {
-    return responseHandler.error(res, "Invalid or expired OTP", 400);
+    return responseHandler.error(res, AuthErrors.INVALID_OTP, 400);
   }
 
   // Clear OTP storage

@@ -2,11 +2,11 @@ import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { auditLogger } from "@/utils/logger";
 import { HeroSectionRepo } from "@/models/repositories";
-import { saveImage, updateImage, deleteImage } from "@/utils/image";
+import { updateImage, deleteImage } from "@/utils/image";
 
 const HERO_IMAGE_FOLDER = "hero-sections";
 
-export const getAllHeroSections = asyncHandler(async (req, res) => {
+const getAllHeroSections = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, search = "", sortBy = "displayOrder", order = "ASC" } = req.query;
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -58,7 +58,7 @@ export const getAllHeroSections = asyncHandler(async (req, res) => {
     );
 });
 
-export const getHeroSectionById = asyncHandler(async (req, res) => {
+const getHeroSectionById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     const section = await HeroSectionRepo.findOne({
@@ -72,36 +72,20 @@ export const getHeroSectionById = asyncHandler(async (req, res) => {
     return responseHandler.success(res, section, "Hero section retrieved successfully");
 });
 
-export const createHeroSection = asyncHandler(async (req, res) => {
-    const { title, description, imageAlt, cta, displayOrder, isActive } = req.body;
+const createHeroSection = asyncHandler(async (req, res) => {
+    const { title, description, imageAlt, cta, displayOrder } = req.body;
 
-    if (!req.file) {
-        return responseHandler.error(res, "Image file is required", 400);
-    }
-
-    let parsedCta = cta;
-    if (typeof cta === "string") {
-        try {
-            parsedCta = JSON.parse(cta);
-        } catch {
-            return responseHandler.error(res, "Invalid CTA JSON format", 400);
-        }
-    }
-
-    if (!parsedCta?.text || !parsedCta?.link) {
+    if (!cta?.text || !cta?.link) {
         return responseHandler.error(res, "CTA must have text and link properties", 400);
     }
-
-    const imageUrl = await saveImage(req.file, HERO_IMAGE_FOLDER);
 
     const section = HeroSectionRepo.create({
         title,
         description,
-        imageUrl,
         imageAlt: imageAlt || null,
-        cta: parsedCta,
+        cta,
         displayOrder: Number(displayOrder),
-        isActive: isActive !== "false" ? true : false,
+        isActive: true,
         createdBy: req.user?.userId || "system",
     });
 
@@ -121,50 +105,26 @@ export const createHeroSection = asyncHandler(async (req, res) => {
     );
 });
 
-export const updateHeroSection = asyncHandler(async (req, res) => {
+const updateHeroSection = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { title, description, imageAlt, cta, displayOrder, isActive } = req.body;
+    const { title, description, imageAlt, cta, displayOrder } = req.body;
 
     const section = await HeroSectionRepo.findOne({ where: { id } });
     if (!section) {
         return responseHandler.error(res, "Hero section not found", 404);
     }
 
-    if (req.file) {
-        const newImageUrl = await updateImage(
-            req.file,
-            section.imageUrl,
-            HERO_IMAGE_FOLDER
-        );
-        section.imageUrl = newImageUrl;
-    }
-
     if (cta) {
-        let parsedCta = cta;
-        if (typeof cta === "string") {
-            try {
-                parsedCta = JSON.parse(cta);
-            } catch {
-                return responseHandler.error(res, "Invalid CTA JSON format", 400);
-            }
+        if (!cta?.text || !cta?.link) {
+            return responseHandler.error(res, "CTA must have text and link properties", 400);
         }
-
-        if (!parsedCta?.text || !parsedCta?.link) {
-            return responseHandler.error(
-                res,
-                "CTA must have text and link properties",
-                400
-            );
-        }
-
-        section.cta = parsedCta;
+        section.cta = cta;
     }
 
-    if (title) section.title = title;
-    if (description) section.description = description;
+    if (title !== undefined) section.title = title;
+    if (description !== undefined) section.description = description;
     if (imageAlt !== undefined) section.imageAlt = imageAlt || null;
     if (displayOrder !== undefined) section.displayOrder = Number(displayOrder);
-    if (isActive !== undefined) section.isActive = isActive !== "false";
 
     section.updatedBy = req.user?.userId || "system";
     await HeroSectionRepo.save(section);
@@ -181,7 +141,7 @@ export const updateHeroSection = asyncHandler(async (req, res) => {
     );
 });
 
-export const deleteHeroSection = asyncHandler(async (req, res) => {
+const uploadHeroImage = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     const section = await HeroSectionRepo.findOne({ where: { id } });
@@ -189,7 +149,30 @@ export const deleteHeroSection = asyncHandler(async (req, res) => {
         return responseHandler.error(res, "Hero section not found", 404);
     }
 
-    await deleteImage(section.imageUrl);
+    if (!req.file) {
+        return responseHandler.error(res, "Image file is required", 400);
+    }
+
+    const newImageUrl = await updateImage(req.file, section.imageUrl || null, HERO_IMAGE_FOLDER);
+    section.imageUrl = newImageUrl;
+    section.updatedBy = req.user?.userId || "system";
+
+    await HeroSectionRepo.save(section);
+
+    return responseHandler.success(res, section, "Hero image uploaded successfully");
+});
+
+const deleteHeroSection = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const section = await HeroSectionRepo.findOne({ where: { id } });
+    if (!section) {
+        return responseHandler.error(res, "Hero section not found", 404);
+    }
+
+    if (section.imageUrl) {
+        await deleteImage(section.imageUrl);
+    }
 
     await HeroSectionRepo.remove(section);
 
@@ -201,7 +184,7 @@ export const deleteHeroSection = asyncHandler(async (req, res) => {
     return responseHandler.success(res, null, "Hero section deleted successfully");
 });
 
-export const toggleHeroSectionStatus = asyncHandler(async (req, res) => {
+const toggleHeroSectionStatus = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     const section = await HeroSectionRepo.findOne({ where: { id } });
@@ -231,6 +214,7 @@ export default {
     getHeroSectionById,
     createHeroSection,
     updateHeroSection,
+    uploadHeroImage,
     deleteHeroSection,
     toggleHeroSectionStatus,
 };

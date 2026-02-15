@@ -1,12 +1,15 @@
 import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
 import { securityAuditService } from "@/utils/security";
-import AppDataSource from "@/config/database";
+import { transactionUtils } from "@/config/database";
 import {
   OrderRepo,
   OrderLineItemRepo,
   CartRepo,
+  CartItemRepo,
   AddressRepo,
+  InventoryRepo,
+  ProductRepo,
 } from "@/models/repositories";
 import { orderSchemas, OrderStatus, PaymentStatus, PaymentMethod } from "@/models/order";
 import {
@@ -17,7 +20,7 @@ import {
 import { calculateCartTotals } from "@/models/cart/utils";
 import { sendOrderStatusNotification } from "@/utils/emailService";
 
-export const listOrders = asyncHandler(async (req, res) => {
+const listOrders = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
   const { page = 1, limit = 20, status } = req.query as any;
   const skip = (Number(page) - 1) * Number(limit);
@@ -59,28 +62,24 @@ export const listOrders = asyncHandler(async (req, res) => {
   );
 });
 
-export const getOrder = asyncHandler(async (req, res) => {
+const getOrder = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
   const { id } = req.params;
 
-  // Get order with all related data populated
   const order = await OrderRepo.createQueryBuilder("order")
     .where("order.id = :id AND order.userId = :userId", { id, userId })
-    // Populate lineItems with product snapshot
     .leftJoinAndSelect("order.lineItems", "lineItems")
-    // Populate delivery history
     .leftJoinAndSelect("order.deliveryHistory", "deliveryHistory")
     .orderBy("deliveryHistory.createdAt", "DESC")
     .getOne();
 
   if (!order) return responseHandler.error(res, "Order not found", 404);
 
-  // Return complete order with all related data
   return responseHandler.success(
     res,
     {
       id: order.id,
-      orderNumber: order.orderNumber, // Already formatted by subscriber
+      orderNumber: order.orderNumber,
       status: order.status,
       deliveryStatus: order.deliveryStatus,
       deliveryAddress: order.deliveryAddress,
@@ -96,7 +95,6 @@ export const getOrder = asyncHandler(async (req, res) => {
       cancellationReason: order.cancellationReason,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
-      // Populated relations
       lineItems: order.lineItems || [],
       deliveryHistory: order.deliveryHistory || [],
     },
@@ -104,55 +102,86 @@ export const getOrder = asyncHandler(async (req, res) => {
   );
 });
 
-export const createOrder = asyncHandler(async (req, res) => {
+const createOrder = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
   const incomingPayload = req.body as any;
 
-  // Start transaction
-  const queryRunner = AppDataSource.createQueryRunner();
-  await queryRunner.connect();
-  await queryRunner.startTransaction();
+  // Use transaction utility for cleaner transaction management
+  const createdOrder = await transactionUtils.withQueryRunner(async (queryRunner) => {
+    const manager = queryRunner.manager;
 
-  try {
-    // Fetch cart with items and product images (within transaction)
-    const cart = await queryRunner.manager.findOne(CartRepo.target, {
+    const cart = await manager.findOne(CartRepo.target, {
       where: { userId },
       relations: ["items", "items.product", "items.product.images"],
     });
 
     if (!cart || cart.items.length === 0) {
-      await queryRunner.rollbackTransaction();
-      return responseHandler.error(res, "Cart is empty", 400);
+      throw new Error("Cart is empty");
     }
 
-    // Filter out deleted products from cart items
-    const activeCartItems = cart.items.filter((item: any) => !item.product?.isDeleted);
-    
-    if (activeCartItems.length === 0) {
-      await queryRunner.rollbackTransaction();
-      return responseHandler.error(res, "No valid items in cart", 400);
+    // Only process selected, non-deleted items
+    const selectedItems = cart.items.filter(
+      (item: any) => item.isSelected && !item.product?.isDeleted,
+    );
+
+    if (selectedItems.length === 0) {
+      throw new Error("No selected items in cart");
     }
 
-    // Use only active items for order creation
-    const itemsForOrder = activeCartItems;
+    // Validate each selected item: product active + stock sufficient
+    const validationErrors: string[] = [];
+    for (const item of selectedItems as any[]) {
+      const product = await manager.findOne(ProductRepo.target, {
+        where: { id: item.productId },
+      });
 
-    // Fetch address by ID (within transaction)
-    const address = await queryRunner.manager.findOne(AddressRepo.target, {
+      if (!product || product.isDeleted) {
+        validationErrors.push(`"${item.product?.name || item.productId}" has been removed`);
+        item.isSelected = false;
+        await manager.save(CartItemRepo.target, item);
+        continue;
+      }
+
+      if (!product.isActive) {
+        validationErrors.push(`"${product.name}" is currently unavailable`);
+        item.isSelected = false;
+        await manager.save(CartItemRepo.target, item);
+        continue;
+      }
+
+      const inventory = await manager.findOne(InventoryRepo.target, {
+        where: { productId: item.productId },
+      });
+
+      if (!inventory || inventory.stockQuantity < item.quantity) {
+        const available = inventory?.stockQuantity || 0;
+        validationErrors.push(
+          `"${product.name}" has insufficient stock (requested: ${item.quantity}, available: ${available})`,
+        );
+        continue;
+      }
+    }
+
+    if (validationErrors.length > 0) {
+      throw new Error(`Checkout validation failed: ${validationErrors.join("; ")}`);
+    }
+
+    const itemsForOrder = selectedItems;
+
+    const address = await manager.findOne(AddressRepo.target, {
       where: { id: incomingPayload.addressId, userId, isActive: true },
     });
 
     if (!address) {
-      await queryRunner.rollbackTransaction();
-      return responseHandler.error(res, "Invalid delivery address", 400);
+      throw new Error("Invalid delivery address");
     }
 
-    // Build payload according to schema
     const payload = {
       deliveryAddress: {
         fullName: address.fullName,
-        phone: address.phoneNumber || "",
-        addressLine1: address.streetAddress,
-        addressLine2: address.apartment || "",
+        phoneNumber: address.phoneNumber || "",
+        streetAddress: address.streetAddress,
+        apartment: address.apartment || "",
         city: address.city,
         state: address.state || "",
         postalCode: address.postalCode,
@@ -165,7 +194,6 @@ export const createOrder = asyncHandler(async (req, res) => {
       })),
     };
 
-    // Validate against schema
     await orderSchemas.create.validateAsync(payload);
 
     const orderNumber = await generateOrderNumber();
@@ -177,8 +205,7 @@ export const createOrder = asyncHandler(async (req, res) => {
       cart.taxAmount || 0
     );
 
-    // Create order using query runner
-    const order = queryRunner.manager.create(OrderRepo.target, {
+    const order = manager.create(OrderRepo.target, {
       orderNumber,
       userId,
       status: OrderStatus.PENDING,
@@ -194,13 +221,12 @@ export const createOrder = asyncHandler(async (req, res) => {
       totalAmount: orderTotals.totalAmount,
     });
 
-    const savedOrder = await queryRunner.manager.save(order);
+    const savedOrder = await manager.save(order);
 
-    // Create line items using query runner - only for active items
     const lineItems = itemsForOrder.map((item: any) => {
       const product = item.product;
       const primaryImage = product.images?.find((img: any) => img.isPrimary) || product.images?.[0];
-      return queryRunner.manager.create(OrderLineItemRepo.target, {
+      return manager.create(OrderLineItemRepo.target, {
         orderId: savedOrder.id,
         productId: item.productId,
         productSnapshot: {
@@ -226,46 +252,47 @@ export const createOrder = asyncHandler(async (req, res) => {
       });
     });
 
-    await queryRunner.manager.save(lineItems);
+    await manager.save(lineItems);
 
-    // Note: Cart is intentionally NOT cleared after order creation
-    // This allows customers to reorder or continue shopping with the same items
-    // The cart will remain in the database for reference and convenience
+    // Remove only ordered items from cart, keep unselected items
+    const orderedItemIds = itemsForOrder.map((item: any) => item.id);
+    await manager.delete(CartItemRepo.target, orderedItemIds);
 
-    // Commit transaction
-    await queryRunner.commitTransaction();
+    // Recalculate cart totals for remaining items
+    const remainingItems = cart.items.filter((item: any) => !orderedItemIds.includes(item.id));
+    const totals = calculateCartTotals(remainingItems);
+    cart.subtotal = Number(totals.subtotal);
+    cart.deliveryCharge = Number(totals.deliveryCharge);
+    cart.taxAmount = Number(totals.taxAmount);
+    cart.totalAmount = Number(totals.totalAmount);
+    cart.totalItems = totals.totalItems;
+    cart.totalQuantity = totals.totalQuantity;
+    await manager.save(CartRepo.target, cart);
 
-    // Fetch created order with relations (outside transaction)
-    const createdOrder = await OrderRepo.findOne({
-      where: { id: savedOrder.id },
-      relations: ["lineItems"],
-    });
+    return savedOrder.id;
+  });
 
-    // Audit log: order creation
-    securityAuditService.log("order:create", userId, {
-      orderId: savedOrder.id,
-      totalAmount: createdOrder!.totalAmount,
-      itemCount: createdOrder!.lineItems.length,
-      paymentMethod: PaymentMethod.COD,
-    });
+  const result = await OrderRepo.findOne({
+    where: { id: createdOrder },
+    relations: ["lineItems"],
+  });
 
-    return responseHandler.success(
-      res,
-      createdOrder,
-      "Order created successfully",
-      201,
-    );
-  } catch (error) {
-    // Rollback on any error
-    await queryRunner.rollbackTransaction();
-    throw error;
-  } finally {
-    // Release query runner
-    await queryRunner.release();
-  }
+  securityAuditService.log("order:create", userId, {
+    orderId: result!.id,
+    totalAmount: result!.totalAmount,
+    itemCount: result!.lineItems.length,
+    paymentMethod: PaymentMethod.COD,
+  });
+
+  return responseHandler.success(
+    res,
+    result,
+    "Order created successfully",
+    201,
+  );
 });
 
-export const cancelOrder = asyncHandler(async (req, res) => {
+const cancelOrder = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
   const { id } = req.params;
   const payload = req.body as any;
@@ -307,26 +334,20 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     validatorMessage,
   });
 
-  // Send cancellation notification email with validator message
-  try {
-    await sendOrderStatusNotification(
-      order.user?.email || "",
-      order.orderNumber,
-      order.user?.fullName || "Customer",
-      OrderStatus.CANCELLED,
-      order.totalAmount,
-      payload.reason,
-      validatorMessage,
-    );
-  } catch (err) {
-    // Log error but don't fail the cancellation
-    console.error("Failed to send cancellation notification:", err);
-  }
+  sendOrderStatusNotification(
+    order.user?.email || "",
+    order.orderNumber,
+    order.user?.fullName || "Customer",
+    OrderStatus.CANCELLED,
+    order.totalAmount,
+    payload.reason,
+    validatorMessage,
+  ).catch((err) => console.error("Failed to send cancellation notification:", err));
 
   return responseHandler.success(res, updatedOrder, "Order cancelled");
 });
 
-export const getOrderTracking = asyncHandler(async (req, res) => {
+const getOrderTracking = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
   const { id } = req.params;
 
@@ -353,13 +374,13 @@ export const getOrderTracking = asyncHandler(async (req, res) => {
   );
 });
 
-export const confirmOrder = asyncHandler(async (req, res) => {
+const confirmOrder = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
   const { id } = req.params;
 
   const order = await OrderRepo.findOne({
     where: { id, userId },
-    relations: ["lineItems"],
+    relations: ["lineItems", "user"],
   });
 
   if (!order) return responseHandler.error(res, "Order not found", 404);
@@ -376,11 +397,9 @@ export const confirmOrder = asyncHandler(async (req, res) => {
     return responseHandler.error(res, "Invalid status transition", 400);
   }
 
-  // Update order status to CONFIRMED
   order.status = OrderStatus.CONFIRMED;
-  await OrderRepo.save(order);
+  const savedOrder = await OrderRepo.save(order);
 
-  // Audit log: order confirmation
   securityAuditService.log("order:confirm", userId, {
     orderId: id,
     totalAmount: order.totalAmount,
@@ -388,9 +407,17 @@ export const confirmOrder = asyncHandler(async (req, res) => {
     paymentMethod: order.payment.method,
   });
 
+  sendOrderStatusNotification(
+    order.user?.email || "",
+    savedOrder.orderNumber,
+    order.user?.fullName || "Customer",
+    OrderStatus.CONFIRMED,
+    savedOrder.totalAmount,
+  ).catch((err) => console.error("Failed to send order confirmation notification:", err));
+
   return responseHandler.success(
     res,
-    order,
+    savedOrder,
     "Order confirmed successfully",
   );
 });

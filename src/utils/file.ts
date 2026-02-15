@@ -1,6 +1,4 @@
-// Updated validateKey function to allow an optional leading "/"
 export const validateKey = (key = "") => {
-  // Regex to allow an optional leading "/" in the key
   const regex = /^(\/)?[a-zA-Z0-9-_]+\/[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+$/;
 
   if (!regex.test(key)) {
@@ -12,7 +10,7 @@ export const validateKey = (key = "") => {
 
 // Updated extractFolderAndFilename function to handle optional leading "/"
 export const extractFolderAndFilename = (key = "") => {
-  // Remove the leading "/" if it's present, so we handle it correctly
+
   if (key.startsWith("/")) {
     key = key.slice(1);
   }

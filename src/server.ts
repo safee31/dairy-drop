@@ -43,9 +43,20 @@ app.use(
 );
 
 // CORS configuration
+const allowedOrigins = config.ALLOWED_ORIGINS;
+
 app.use(
   cors({
-    origin: config.ORIGIN_URL,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (server-to-server, curl, mobile apps)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // In development, allow localhost origins
+      if (!config.IN_PROD && origin.match(/^https?:\/\/localhost(:\d+)?$/)) {
+        return callback(null, true);
+      }
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token"],
@@ -88,16 +99,20 @@ app.use(`/api/${API_VERSION}`, routes);
 
 // Serve uploaded files with CORS headers
 app.use("/uploads", (req, res, next) => {
-  const origin = req.headers.origin || config.ORIGIN_URL || "http://localhost:3000";
-  res.header("Access-Control-Allow-Origin", origin);
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  } else if (!config.IN_PROD) {
+    res.header("Access-Control-Allow-Origin", origin || "http://localhost:3000");
+  }
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type");
-  
+
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
-  next();
+  return next();
 });
 
 app.use(
@@ -128,8 +143,8 @@ const startServer = async () => {
         logger.error("COOKIE_DOMAIN is required in production but is not set");
         process.exit(1);
       }
-      if (!config.ORIGIN_URL) {
-        logger.error("ORIGIN_URL is required in production but is not set");
+      if (config.ALLOWED_ORIGINS.length === 0) {
+        logger.error("ALLOWED_ORIGINS or ORIGIN_URL is required in production but is not set");
         process.exit(1);
       }
     }

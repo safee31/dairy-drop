@@ -1,10 +1,11 @@
 import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
-import { ProductRepo } from "@/models/repositories";
+import { ProductRepo, ProductReviewRepo } from "@/models/repositories";
 import { CategoryLevel2Repo } from "@/models/repositories";
+import { ReviewStatus } from "@/models/productReview/entity";
 
 // Public product listing for customers
-export const listProducts = asyncHandler(async (req, res) => {
+const listProducts = asyncHandler(async (req, res) => {
   const {
     page = 1,
     limit = 20,
@@ -42,7 +43,6 @@ export const listProducts = asyncHandler(async (req, res) => {
   const parseCategoryIds = (ids: any): string[] => {
     if (!ids) return [];
     if (Array.isArray(ids)) return ids;
-    // If string (comma-separated), split it
     return typeof ids === 'string' ? ids.split(',').map(id => id.trim()).filter(Boolean) : [ids];
   };
 
@@ -85,10 +85,31 @@ export const listProducts = asyncHandler(async (req, res) => {
     .take(Number(limit))
     .getMany();
 
+  // Batch fetch review stats for all products
+  let productsWithRatings: any[] = products;
+  if (products.length > 0) {
+    const productIds = products.map((p) => p.id);
+    const reviewStats = await ProductReviewRepo.createQueryBuilder("review")
+      .select("review.productId", "productId")
+      .addSelect("COUNT(review.id)", "reviewCount")
+      .addSelect("ROUND(AVG(review.rating)::numeric, 1)", "averageRating")
+      .where("review.productId IN (:...productIds)", { productIds })
+      .andWhere("review.status = :status", { status: ReviewStatus.APPROVED })
+      .groupBy("review.productId")
+      .getRawMany();
+
+    const statsMap = new Map(reviewStats.map((s: any) => [s.productId, s]));
+    productsWithRatings = products.map((p) => ({
+      ...p,
+      averageRating: Number(statsMap.get(p.id)?.averageRating || 0),
+      reviewCount: Number(statsMap.get(p.id)?.reviewCount || 0),
+    }));
+  }
+
   return responseHandler.success(
     res,
     {
-      products,
+      products: productsWithRatings,
       pagination: {
         page: Number(page),
         limit: Number(limit),
@@ -100,7 +121,7 @@ export const listProducts = asyncHandler(async (req, res) => {
   );
 });
 // Popular products for home page - Most used categories in daily life
-export const getPopularProducts = asyncHandler(async (req, res, next) => {
+const getPopularProducts = asyncHandler(async (req, res, next) => {
   // Keywords for most commonly used dairy products in human life
   const popularKeywords = [
     "milk",
@@ -145,7 +166,7 @@ export const getPopularProducts = asyncHandler(async (req, res, next) => {
 
 
 
-export const getProduct = asyncHandler(async (req, res) => {
+const getProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const product = await ProductRepo.createQueryBuilder("product")
@@ -159,7 +180,29 @@ export const getProduct = asyncHandler(async (req, res) => {
 
   if (!product) return responseHandler.error(res, "Product not found", 404);
 
-  return responseHandler.success(res, product, "Product retrieved");
+  // Fetch approved reviews with user info and responses
+  const reviews = await ProductReviewRepo.createQueryBuilder("review")
+    .leftJoin("review.user", "user")
+    .addSelect(["user.id", "user.fullName"])
+    .leftJoinAndSelect("review.responses", "responses")
+    .leftJoin("responses.user", "respUser")
+    .addSelect(["respUser.id", "respUser.fullName"])
+    .where("review.productId = :productId", { productId: id })
+    .andWhere("review.status = :status", { status: ReviewStatus.APPROVED })
+    .orderBy("review.createdAt", "DESC")
+    .getMany();
+
+  const reviewCount = reviews.length;
+  const averageRating = reviewCount > 0
+    ? Math.round((reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviewCount) * 10) / 10
+    : 0;
+
+  return responseHandler.success(res, {
+    ...product,
+    reviews,
+    reviewCount,
+    averageRating,
+  }, "Product retrieved");
 });
 
 export default { listProducts, getProduct, getPopularProducts };

@@ -29,7 +29,6 @@ declare global {
   }
 }
 
-// Validate login session middleware
 const validateLoginSession = async (
   req: Request,
   res: Response,
@@ -39,25 +38,26 @@ const validateLoginSession = async (
     const sessionId = req.cookies?.sessionId as string | undefined;
 
     if (!sessionId) {
-      return responseHandler.unauthorized(res, AuthErrors.TOKEN_REQUIRED);
+      return responseHandler.unauthorized(res, AuthErrors.SESSION_REQUIRED);
     }
 
     const isRevoked = await loginSessionService.isSessionRevoked(sessionId);
     if (isRevoked) {
       clearCookie(res, "sessionId");
-      return responseHandler.unauthorized(res, AuthErrors.INVALID_TOKEN);
+      return responseHandler.unauthorized(res, AuthErrors.SESSION_REVOKED);
     }
 
     const clientIp = (req.ip || req.connection.remoteAddress || "unknown") as string;
     const validation = await loginSessionService.validateSession(sessionId, clientIp);
 
     if (!validation.isValid) {
-      const doClear = validation.reason === "Session revoked" || validation.reason === "Session not found" || validation.reason === "Session not found in user bucket";
-      if (doClear) clearCookie(res, "sessionId");
-      return responseHandler.unauthorized(res, AuthErrors.INVALID_TOKEN);
+      clearCookie(res, "sessionId");
+      if (validation.reason === "Session expired") {
+        return responseHandler.unauthorized(res, AuthErrors.SESSION_EXPIRED);
+      }
+      return responseHandler.unauthorized(res, AuthErrors.SESSION_NOT_FOUND);
     }
 
-    // Fetch user with role information
     const user = await UserRepo.findOne({
       where: { id: validation.userId!, isActive: true },
       relations: ["role"],
@@ -85,11 +85,10 @@ const validateLoginSession = async (
 
     next();
   } catch (error) {
-    return responseHandler.error(res, "Internal server error", 500);
+    return responseHandler.error(res, "Something went wrong. Please try again later.", 500);
   }
 };
 
-// Optional authentication middleware: non-fatal
 const optionalLoginSession = async (
   req: Request,
   _res: Response,
@@ -103,7 +102,6 @@ const optionalLoginSession = async (
     const validation = await loginSessionService.validateSession(sessionId, clientIp);
 
     if (validation.isValid) {
-      // Fetch user with role information
       const user = await UserRepo.findOne({
         where: { id: validation.userId!, isActive: true },
         relations: ["role"],

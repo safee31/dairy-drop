@@ -6,7 +6,6 @@ import {
 } from "@/models/repositories";
 import { OrderStatus, PaymentStatus } from "@/models/order";
 import { DeliveryStatus } from "@/models/order/entity";
-import orderDeliveryHistorySchemas from "@/models/order/orderdeliveryhistory.schema";
 import {
     isValidStatusTransition,
     isValidDeliveryStatusTransition,
@@ -14,11 +13,19 @@ import {
 } from "@/models/order/utils";
 import { sendDeliveryStatusNotification, sendOrderStatusNotification } from "@/utils/emailService";
 
-export const listAllOrders = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 50, status, deliveryStatus, search } = req.query as any;
+const listAllOrders = asyncHandler(async (req, res) => {
+    const {
+        page = 1,
+        limit = 50,
+        search = "",
+        status,
+        deliveryStatus,
+        sortBy = "createdAt",
+        sortOrder = "desc",
+    } = req.query as any;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const qb = OrderRepo.createQueryBuilder("order")
+    const queryBuilder = OrderRepo.createQueryBuilder("order")
         .leftJoinAndSelect("order.user", "user")
         .select([
             "order.id",
@@ -31,28 +38,30 @@ export const listAllOrders = asyncHandler(async (req, res) => {
             "user.id",
             "user.fullName",
             "user.email",
-        ])
-        .skip(skip)
-        .take(Number(limit));
-
-    if (status) {
-        qb.andWhere("order.status = :status", { status });
-    }
-
-    if (deliveryStatus) {
-        qb.andWhere("order.deliveryStatus = :deliveryStatus", { deliveryStatus });
-    }
+        ]);
 
     if (search) {
-        qb.andWhere(
+        queryBuilder.andWhere(
             "(CAST(order.orderNumber AS TEXT) ILIKE :search OR user.fullName ILIKE :search OR user.email ILIKE :search)",
             { search: `%${search}%` },
         );
     }
 
-    const [orders, total] = await qb
-        .orderBy("order.createdAt", "DESC")
-        .getManyAndCount();
+    if (status) {
+        queryBuilder.andWhere("order.status = :status", { status });
+    }
+
+    if (deliveryStatus) {
+        queryBuilder.andWhere("order.deliveryStatus = :deliveryStatus", { deliveryStatus });
+    }
+
+    const total = await queryBuilder.getCount();
+
+    const orders = await queryBuilder
+        .orderBy(`order.${String(sortBy)}`, String(sortOrder).toUpperCase() as "ASC" | "DESC")
+        .skip(skip)
+        .take(Number(limit))
+        .getMany();
 
     return responseHandler.success(
         res,
@@ -69,7 +78,7 @@ export const listAllOrders = asyncHandler(async (req, res) => {
     );
 });
 
-export const getOrderDetails = asyncHandler(async (req, res) => {
+const getOrderDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     const order = await OrderRepo.createQueryBuilder("order")
@@ -121,11 +130,9 @@ export const getOrderDetails = asyncHandler(async (req, res) => {
     return responseHandler.success(res, order, "Order retrieved");
 });
 
-export const updateOrderStatus = asyncHandler(async (req, res) => {
+const updateOrderStatus = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const payload = req.body as any;
-
-    await orderDeliveryHistorySchemas.updateStatus.validateAsync(payload);
 
     const order = await OrderRepo.findOne({
         where: { id },
@@ -138,9 +145,17 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
             "deliveryStatus",
             "payment",
         ],
-        relations: ["payment", "user"],
+        relations: ["user"],
     });
     if (!order) return responseHandler.error(res, "Order not found", 404);
+
+    if (order.status === OrderStatus.PENDING || order.status === OrderStatus.CANCELLED || order.status === OrderStatus.COMPLETED) {
+        return responseHandler.error(
+            res,
+            `Cannot change order status: Order is currently ${order.status}.`,
+            400,
+        );
+    }
 
     if (!isValidStatusTransition(order.status, payload.status)) {
         return responseHandler.error(
@@ -157,47 +172,39 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     }
 
     order.status = payload.status;
+    if (payload.notes) {
+        order.adminNote = payload.notes;
+    }
     const savedOrder = await OrderRepo.save(order);
 
-    const history = OrderDeliveryHistoryRepo.create({
-        orderId: savedOrder.id,
-        status: payload.status,
-        deliveryPersonName: payload.deliveryPersonName,
-        deliveryPersonPhone: payload.deliveryPersonPhone,
-        location: payload.location,
-        notes: payload.notes,
-        updatedBy: req?.user?.userId,
-    });
-
-    await OrderDeliveryHistoryRepo.save(history);
-
-    // Send notification for status change
-    try {
-        await sendOrderStatusNotification(
-            order.user?.email || "",
-            savedOrder.orderNumber,
-            order.user?.fullName || "Customer",
-            payload.status,
-            savedOrder.totalAmount,
-        );
-    } catch (err) {
-        console.error("Failed to send order status notification:", err);
-    }
+    sendOrderStatusNotification(
+        order.user?.email || "",
+        savedOrder.orderNumber,
+        order.user?.fullName || "Customer",
+        payload.status,
+        savedOrder.totalAmount,
+    ).catch((err) => console.error("Failed to send order status notification:", err));
 
     return responseHandler.success(res, savedOrder, "Order status updated");
 });
 
-export const updatePaymentStatus = asyncHandler(async (req, res) => {
+const updatePaymentStatus = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const payload = req.body as any;
 
-    await orderDeliveryHistorySchemas.updatePayment.validateAsync(payload);
-
     const order = await OrderRepo.findOne({
         where: { id },
-        select: ["id", "payment", "totalAmount", "orderNumber", "createdAt"],
+        select: ["id", "payment", "totalAmount", "orderNumber", "createdAt", "status"],
     });
     if (!order) return responseHandler.error(res, "Order not found", 404);
+
+    if (order.status === OrderStatus.PENDING || order.status === OrderStatus.CANCELLED || order.status === OrderStatus.COMPLETED) {
+        return responseHandler.error(
+            res,
+            `Cannot update payment status: Order is currently ${order.status}.`,
+            400,
+        );
+    }
 
     if (order.payment.status === PaymentStatus.PAID) {
         return responseHandler.error(res, "Order is already paid", 400);
@@ -213,13 +220,14 @@ export const updatePaymentStatus = asyncHandler(async (req, res) => {
     return responseHandler.success(res, updated, "Payment status updated");
 });
 
-export const cancelOrderAdmin = asyncHandler(async (req, res) => {
+const cancelOrderAdmin = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const payload = req.body as any;
 
     const order = await OrderRepo.findOne({
         where: { id },
         select: ["id", "status", "orderNumber", "totalAmount", "createdAt"],
+        relations: ["user"],
     });
     if (!order) return responseHandler.error(res, "Order not found", 404);
 
@@ -237,19 +245,36 @@ export const cancelOrderAdmin = asyncHandler(async (req, res) => {
 
     const updated = await OrderRepo.save(order);
 
+    sendOrderStatusNotification(
+        order.user?.email || "",
+        updated.orderNumber,
+        order.user?.fullName || "Customer",
+        OrderStatus.CANCELLED,
+        updated.totalAmount,
+        payload.reason || "Cancelled by admin",
+    ).catch((err) => console.error("Failed to send admin cancel notification:", err));
+
     return responseHandler.success(res, updated, "Order cancelled");
 });
 
-export const updateDeliveryStatus = asyncHandler(async (req, res) => {
+const updateDeliveryStatus = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const payload = req.body as any;
 
     const order = await OrderRepo.findOne({
         where: { id },
-        select: ["id", "orderNumber", "deliveryStatus", "createdAt", "totalAmount"],
+        select: ["id", "orderNumber", "deliveryStatus", "createdAt", "totalAmount", "status"],
         relations: ["user"],
     });
     if (!order) return responseHandler.error(res, "Order not found", 404);
+
+    if (order.status === OrderStatus.PENDING || order.status === OrderStatus.CANCELLED || order.status === OrderStatus.COMPLETED) {
+        return responseHandler.error(
+            res,
+            `Cannot update delivery status: Order is currently ${order.status}.`,
+            400,
+        );
+    }
 
     if (!order.deliveryStatus) {
         return responseHandler.error(
@@ -267,6 +292,11 @@ export const updateDeliveryStatus = asyncHandler(async (req, res) => {
     }
 
     order.deliveryStatus = newDeliveryStatus;
+
+    if (newDeliveryStatus === DeliveryStatus.DELIVERED) {
+        order.deliveredAt = new Date();
+    }
+
     const savedOrder = await OrderRepo.save(order);
 
     const history = OrderDeliveryHistoryRepo.create({
@@ -281,20 +311,15 @@ export const updateDeliveryStatus = asyncHandler(async (req, res) => {
 
     await OrderDeliveryHistoryRepo.save(history);
 
-    // Send notification for delivery status change
-    try {
-        await sendDeliveryStatusNotification(
-            order.user?.email || "",
-            savedOrder.orderNumber,
-            order.user?.fullName || "Customer",
-            newDeliveryStatus,
-            savedOrder.totalAmount,
-            deliveryPersonName,
-            deliveryPersonPhone,
-        );
-    } catch (err) {
-        console.error("Failed to send delivery status notification:", err);
-    }
+    sendDeliveryStatusNotification(
+        order.user?.email || "",
+        savedOrder.orderNumber,
+        order.user?.fullName || "Customer",
+        newDeliveryStatus,
+        savedOrder.totalAmount,
+        deliveryPersonName,
+        deliveryPersonPhone,
+    ).catch((err) => console.error("Failed to send delivery status notification:", err));
 
     return responseHandler.success(
         res,
@@ -322,7 +347,7 @@ function getFriendlyDeliveryStatusError(
     return `Cannot change delivery status from '${currentStatus}' to '${attemptedStatus}'. Please verify the current delivery status and try again.`;
 }
 
-export const getDeliveryHistory = asyncHandler(async (req, res) => {
+const getDeliveryHistory = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     const order = await OrderRepo.createQueryBuilder("order")
@@ -351,6 +376,43 @@ export const getDeliveryHistory = asyncHandler(async (req, res) => {
     );
 });
 
+const confirmOrderAdmin = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const order = await OrderRepo.findOne({
+        where: { id },
+        select: ["id", "status", "orderNumber", "totalAmount", "createdAt"],
+        relations: ["user", "lineItems"],
+    });
+
+    if (!order) return responseHandler.error(res, "Order not found", 404);
+
+    if (order.status !== OrderStatus.PENDING) {
+        return responseHandler.error(
+            res,
+            `Order cannot be confirmed. Current status: ${order.status}`,
+            400,
+        );
+    }
+
+    if (!isValidStatusTransition(order.status, OrderStatus.CONFIRMED)) {
+        return responseHandler.error(res, "Invalid status transition", 400);
+    }
+
+    order.status = OrderStatus.CONFIRMED;
+    const savedOrder = await OrderRepo.save(order);
+
+    sendOrderStatusNotification(
+        order.user?.email || "",
+        savedOrder.orderNumber,
+        order.user?.fullName || "Customer",
+        OrderStatus.CONFIRMED,
+        savedOrder.totalAmount,
+    ).catch((err) => console.error("Failed to send order confirmation notification:", err));
+
+    return responseHandler.success(res, savedOrder, "Order confirmed successfully");
+});
+
 export default {
     listAllOrders,
     getOrderDetails,
@@ -358,5 +420,6 @@ export default {
     updateDeliveryStatus,
     updatePaymentStatus,
     cancelOrderAdmin,
+    confirmOrderAdmin,
     getDeliveryHistory,
 };

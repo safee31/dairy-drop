@@ -14,7 +14,7 @@ import {
 /**
  * GET /products/:id/images - List all images for a product
  */
-export const listProductImages = asyncHandler(async (req, res) => {
+const listProductImages = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     // Verify product exists
@@ -32,7 +32,7 @@ export const listProductImages = asyncHandler(async (req, res) => {
  * POST /products/:id/images - Bulk upload multiple images (up to 5 per product)
  * Called from FE after product creation
  */
-export const uploadProductImages = asyncHandler(async (req, res) => {
+const uploadProductImages = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     if (!req.files || req.files.length === 0) {
@@ -58,7 +58,7 @@ export const uploadProductImages = asyncHandler(async (req, res) => {
 /**
  * POST /products/:id/images/add - Add single image to product
  */
-export const addProductImage = asyncHandler(async (req, res) => {
+const addProductImage = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
@@ -89,7 +89,7 @@ export const addProductImage = asyncHandler(async (req, res) => {
  * PATCH /products/:id/images/:imageId - Replace/update single image
  * User can replace one image at a time
  */
-export const updateProductImage = asyncHandler(async (req, res) => {
+const updateProductImage = asyncHandler(async (req, res) => {
     const { id, imageId } = req.params;
 
     if (!req.file) {
@@ -115,7 +115,7 @@ export const updateProductImage = asyncHandler(async (req, res) => {
 /**
  * DELETE /products/:id/images/:imageId - Delete single image
  */
-export const deleteProductImage = asyncHandler(async (req, res) => {
+const deleteProductImage = asyncHandler(async (req, res) => {
     const { id, imageId } = req.params;
 
     // Verify product exists
@@ -137,7 +137,7 @@ export const deleteProductImage = asyncHandler(async (req, res) => {
 /**
  * PATCH /products/:id/images/:imageId/set-primary - Set image as primary
  */
-export const setProductPrimaryImage = asyncHandler(async (req, res) => {
+const setProductPrimaryImage = asyncHandler(async (req, res) => {
     const { id, imageId } = req.params;
 
     // Verify product exists

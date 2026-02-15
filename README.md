@@ -51,3 +51,43 @@ Backend
 - **Cart** — Session & persistent cart, item management
 - **Addresses** — Billing & shipping address storage per user
 - **Infrastructure** — Database, file uploads, email, security middleware
+
+## Inventory API
+
+All inventory routes are under `/admin/inventory` and require admin authentication.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/` | List all inventory (paginated, searchable, filterable) |
+| GET | `/summary` | Total stock, low-stock count, out-of-stock count |
+| GET | `/low-stock` | Products at or below reorder level |
+| GET | `/:id` | Single inventory item with product + history |
+| POST | `/:id/adjust-stock` | Adjust stock quantity and/or reorder level |
+| GET | `/:inventoryId/history` | Stock change history (paginated, filterable by type) |
+
+### POST `/:id/adjust-stock`
+
+Single endpoint for all inventory modifications. At least one of `quantityChange` or `reorderLevel` is required.
+
+**Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `quantityChange` | integer | conditional | Delta to apply (e.g. `+10` or `-5`). Cannot be zero |
+| `operationType` | string | if quantityChange | `purchase`, `sale`, `return`, or `adjustment` |
+| `reorderLevel` | integer | conditional | New low-stock threshold (>= 0) |
+| `referenceId` | string | no | Link to order/PO (max 100 chars) |
+| `notes` | string | no | Admin notes |
+
+**Examples:**
+
+```json
+// Add 20 units from a purchase
+{ "quantityChange": 20, "operationType": "purchase", "notes": "Supplier delivery" }
+
+// Only update reorder level
+{ "reorderLevel": 15 }
+
+// Both at once
+{ "quantityChange": 10, "operationType": "purchase", "reorderLevel": 25 }
+```
