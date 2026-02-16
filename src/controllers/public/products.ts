@@ -1,7 +1,6 @@
 import asyncHandler from "@/utils/asyncHandler";
 import { responseHandler } from "@/middleware/responseHandler";
-import { ProductRepo, ProductReviewRepo } from "@/models/repositories";
-import { CategoryLevel2Repo } from "@/models/repositories";
+import { ProductRepo, ProductReviewRepo, OrderLineItemRepo } from "@/models/repositories";
 import { ReviewStatus } from "@/models/productReview/entity";
 
 // Public product listing for customers
@@ -120,47 +119,35 @@ const listProducts = asyncHandler(async (req, res) => {
     "Products retrieved",
   );
 });
-// Popular products for home page - Most used categories in daily life
 const getPopularProducts = asyncHandler(async (req, res, next) => {
-  // Keywords for most commonly used dairy products in human life
-  const popularKeywords = [
-    "milk",
-    "paneer",
-    "yogurt",
-    "curd",
-    "cheese",
-    "ice cream",
-    "butter",
-    "ghee",
-    "cream",
-    "lassi",
-    "dahi",
-  ];
+  const orderedProducts = await OrderLineItemRepo.createQueryBuilder("li")
+    .innerJoin(
+      "products",
+      "product",
+      'product.id = li."productId" AND product."isActive" = true AND product."isDeleted" = false',
+    )
+    .select("product.category_level2_id", "categoryLevel2Id")
+    .orderBy('MAX(li."createdAt")', "DESC")
+    .groupBy("product.category_level2_id")
+    .limit(10)
+    .getRawMany();
 
-  // Build regex pattern for popular categories
-  const regexPattern = popularKeywords.join("|");
+  const categoryLevel2Ids = orderedProducts
+    .map((r: any) => r.categoryLevel2Id)
+    .filter(Boolean);
 
-  // Find level 2 categories matching popular keywords
-  const popularCategories = await CategoryLevel2Repo.createQueryBuilder("cat")
-    .where(`cat.name ~* :pattern OR cat.description ~* :pattern`, {
-      pattern: regexPattern,
-    })
-    .orderBy("cat.displayOrder", "ASC")
-    .limit(20)
-    .getMany();
-
-  const popularCategoryIds = popularCategories.map((cat) => cat.id);
-
-  if (popularCategoryIds.length === 0) {
-    return responseHandler.success(res, [], "No popular products found");
+  if (categoryLevel2Ids.length === 0) {
+    return responseHandler.success(
+      res,
+      { products: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } },
+      "No popular products found",
+    );
   }
 
-  // Set query params to reuse listProducts controller
-  req.query.categoryLevel2Ids = popularCategoryIds.join(",");
-  req.query.limit = "20";
+  req.query.categoryLevel2Ids = categoryLevel2Ids.join(",");
+  req.query.limit = "10";
   req.query.page = "1";
 
-  // Call listProducts with the popular category filters
   await listProducts(req, res, next);
 });
 
