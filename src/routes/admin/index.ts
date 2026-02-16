@@ -10,6 +10,7 @@ import ordersRoutes from "./orders";
 import cartsRoutes from "./carts";
 import heroSectionsRoutes from "./heroSections";
 import reviewsRoutes from "./reviews";
+import dashboardRoutes from "./dashboard";
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use("/auth", adminAuthRoutes);
 router.use(validateLoginSession);
 router.use(requireAdmin);
 
+router.use("/dashboard", dashboardRoutes);
 router.use("/categories", categoriesRoutes);
 router.use("/customers", customersRoutes);
 router.use("/products", productsRoutes);
