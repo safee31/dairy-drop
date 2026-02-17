@@ -6,6 +6,7 @@ import profileRoutes from "./profile";
 import addressRoutes from "./addresses";
 import cartsRoutes from "./carts";
 import ordersRoutes from "./orders";
+import refundsRoutes from "./refunds";
 import reviewsRoutes from "./reviews";
 
 const router = Router();
@@ -21,6 +22,7 @@ router.use("/profile", profileRoutes);
 router.use("/addresses", addressRoutes);
 router.use("/carts", cartsRoutes);
 router.use("/orders", ordersRoutes);
+router.use("/refunds", refundsRoutes);
 router.use("/reviews", reviewsRoutes);
 
 export default router;

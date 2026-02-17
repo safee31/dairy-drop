@@ -93,6 +93,7 @@ const getOrder = asyncHandler(async (req, res) => {
       deliveredAt: order.deliveredAt,
       cancelledBy: order.cancelledBy,
       cancellationReason: order.cancellationReason,
+      refundStatus: order.refundStatus,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
       lineItems: order.lineItems || [],

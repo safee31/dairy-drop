@@ -101,6 +101,7 @@ const getOrderDetails = asyncHandler(async (req, res) => {
             "order.cancelledBy",
             "order.cancellationReason",
             "order.payment",
+            "order.refundStatus",
             "order.createdAt",
             "order.updatedAt",
             "user.id",

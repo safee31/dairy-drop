@@ -34,7 +34,8 @@ export const saveImage = async (
   validateImage(file);
 
   const timestamp = Date.now();
-  const fileName = `${folder}-${timestamp}.webp`;
+  const random = Math.random().toString(36).slice(2, 8);
+  const fileName = `${folder}-${timestamp}-${random}.webp`;
   const folderPath = path.join(process.cwd(), "uploads", folder);
   const filePath = path.join(folderPath, fileName);
 

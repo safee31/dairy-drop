@@ -21,6 +21,8 @@ import OrderDeliveryHistory from "@/models/order/orderdeliveryhistory.entity";
 import { HeroSection } from "@/models/heroSection";
 import { ProductReview } from "@/models/productReview";
 import ReviewResponse from "@/models/productReview/reviewresponse.entity";
+import { Refund } from "@/models/refund";
+import RefundHistory from "@/models/refund/refundhistory.entity";
 import { OrderSubscriber } from "@/models/order/order.subscriber";
 
 const getCacheConfig = () => {
@@ -43,7 +45,7 @@ const getCacheConfig = () => {
 const baseConfig: DataSourceOptions = {
   type: "postgres",
   url: config.DATABASE_URL,
-  entities: [User, Role, Address, Category, CategoryLevel1, CategoryLevel2, Product, ProductImage, Inventory, InventoryHistory, Cart, CartItem, Order, OrderLineItem, OrderDeliveryHistory, HeroSection, ProductReview, ReviewResponse],
+  entities: [User, Role, Address, Category, CategoryLevel1, CategoryLevel2, Product, ProductImage, Inventory, InventoryHistory, Cart, CartItem, Order, OrderLineItem, OrderDeliveryHistory, HeroSection, ProductReview, ReviewResponse, Refund, RefundHistory],
   migrations: ["src/migrations/*.ts"],
   subscribers: [OrderSubscriber],
   cache: getCacheConfig(),

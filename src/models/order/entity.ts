@@ -13,6 +13,7 @@ import {
 import { User } from "@/models/user";
 import type { OrderLineItem } from "./orderlineitem.entity";
 import type { OrderDeliveryHistory } from "./orderdeliveryhistory.entity";
+import type { Refund } from "@/models/refund/entity";
 
 export enum OrderStatus {
   PENDING = "pending",           // Order placed, awaiting confirmation
@@ -40,6 +41,12 @@ export enum PaymentStatus {
 
 export enum PaymentMethod {
   COD = "cod",
+}
+
+export enum OrderRefundStatus {
+  NONE = "none",
+  PARTIAL = "partial",
+  FULL = "full",
 }
 
 @Entity("orders")
@@ -127,6 +134,13 @@ export class Order {
   @Column("text", { nullable: true })
   cancellationReason?: string;
 
+  @Column({
+    type: "enum",
+    enum: OrderRefundStatus,
+    default: OrderRefundStatus.NONE,
+  })
+  refundStatus!: OrderRefundStatus;
+
   @CreateDateColumn()
   createdAt!: Date;
 
@@ -140,6 +154,9 @@ export class Order {
 
   @OneToMany("OrderDeliveryHistory", "order")
   deliveryHistory!: Relation<OrderDeliveryHistory[]>;
+
+  @OneToMany("Refund", "order")
+  refunds!: Relation<Refund[]>;
 }
 
 export default Order;
